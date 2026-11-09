@@ -25,6 +25,18 @@ const COMMON_PAIRS = [
   'BTC/USD',
 ];
 
+const COMMON_STRATEGIES = [
+  'SMC / Market Structure',
+  'Breakout Resistance/Support',
+  'SnR / Key Level Rejection',
+  'FVG (Fair Value Gap)',
+  'Trend Following / Pullback',
+  'Reversal / Divergence',
+  'Scalping Momentum',
+  'News Trading',
+  'Lainnya',
+];
+
 const COMMON_REASONS = [
   'MA50 Cross + News Positif',
   'RSI Divergence (Lawan Tren)',
@@ -64,6 +76,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   const [lot, setLot] = useState('1%');
   const [pips, setPips] = useState('');
   const [pnl, setPnl] = useState('');
+  const [strategi, setStrategi] = useState('SMC / Market Structure');
   const [alasan, setAlasan] = useState('');
   const [emosi, setEmosi] = useState<EmotionType>('Tenang');
   const [evaluasi, setEvaluasi] = useState('');

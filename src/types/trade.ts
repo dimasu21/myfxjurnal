@@ -11,6 +11,17 @@ export type EmotionType =
   | 'Serakah' 
   | 'Disiplin';
 
+export type StrategyType =
+  | 'SMC / Market Structure'
+  | 'Breakout Resistance/Support'
+  | 'SnR / Key Level Rejection'
+  | 'FVG (Fair Value Gap)'
+  | 'Trend Following / Pullback'
+  | 'Reversal / Divergence'
+  | 'Scalping Momentum'
+  | 'News Trading'
+  | 'Lainnya';
+
 export interface Trade {
   id: string;
   tanggal: string; // DD/MM/YYYY atau YYYY-MM-DD
@@ -24,6 +35,7 @@ export interface Trade {
   pips: number; // e.g. +45, -20
   pnl?: number; // Profit/Loss in USD e.g. +120, -50
   status: TradeResultStatus; // WIN, LOSS, BE, OPEN
+  strategi?: StrategyType | string; // Setup strategi trading
   alasan: string; // e.g. "MA50 Cross + News Positif"
   emosi: EmotionType | string; // e.g. "Percaya Diri"
   evaluasi: string; // Catatan evaluasi akhir / pelajaran
@@ -34,6 +46,7 @@ export interface TradeFilter {
   search: string;
   pair: string;
   status: string;
+  strategi?: string;
   emosi: string;
   sortBy: 'tanggal' | 'pips' | 'pnl' | 'pair';
   sortOrder: 'asc' | 'desc';

@@ -18,13 +18,15 @@ import {
   Globe2,
   Calculator,
   Calendar,
-  Radio
+  Radio,
+  CandlestickChart
 } from 'lucide-react';
 
 interface ExcelHeaderProps {
   documentTitle: string;
   onUpdateTitle: (newTitle: string) => void;
   onOpenNewModal: () => void;
+  onOpenLiveChart: () => void;
   onOpenAnalytics: () => void;
   onOpenLotCalc: () => void;
   onOpenEcoCalendar: () => void;
@@ -49,6 +51,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   documentTitle,
   onUpdateTitle,
   onOpenNewModal,
+  onOpenLiveChart,
   onOpenAnalytics,
   onOpenLotCalc,
   onOpenEcoCalendar,
@@ -231,7 +234,16 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
 
           <div className="w-[1px] h-4 bg-emerald-700 mx-1" />
 
-          {/* REALTIME FEATURES: Ticker, Market Sessions, Lot Calculator, Economic News */}
+          {/* REALTIME FEATURES: Chart, Ticker, Market Sessions, Lot Calculator, Economic News */}
+          <button
+            onClick={onOpenLiveChart}
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded text-white font-bold transition-all shadow-xs ring-1 ring-white/30 active:scale-95"
+            title="Buka Chart Candlestick TradingView Real-Time Langsung di Sini"
+          >
+            <CandlestickChart className="w-3.5 h-3.5 text-yellow-300" />
+            <span className="text-yellow-200">Live Chart</span>
+          </button>
+
           <button
             onClick={onToggleLiveTicker}
             className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${

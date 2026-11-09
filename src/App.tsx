@@ -15,6 +15,7 @@ import { ExcelFooter } from './components/ExcelFooter';
 import { AnalyticsModal } from './components/AnalyticsModal';
 import { LotCalculatorModal } from './components/LotCalculatorModal';
 import { EconomicCalendarModal } from './components/EconomicCalendarModal';
+import { LiveChartModal } from './components/LiveChartModal';
 import { Plus } from 'lucide-react';
 
 export default function App() {
@@ -36,6 +37,8 @@ export default function App() {
   const [showMarketSessions, setShowMarketSessions] = useState(true);
   const [isLotCalcOpen, setIsLotCalcOpen] = useState(false);
   const [isEcoCalendarOpen, setIsEcoCalendarOpen] = useState(false);
+  const [isLiveChartOpen, setIsLiveChartOpen] = useState(false);
+  const [chartPair, setChartPair] = useState('EUR/USD');
 
   // Active view: 'table' (Excel spreadsheet) or 'cards' (Touch-friendly card list)
   const [activeView, setActiveView] = useState<'table' | 'cards'>('table');
@@ -277,8 +280,13 @@ export default function App() {
     }
   };
 
+  const handleOpenLiveChart = (pair: string = 'EUR/USD') => {
+    setChartPair(pair);
+    setIsLiveChartOpen(true);
+  };
+
   const handleSelectTickerPair = (pair: string, price: number) => {
-    setFilter((prev) => ({ ...prev, search: pair }));
+    handleOpenLiveChart(pair);
   };
 
   return (
@@ -297,6 +305,7 @@ export default function App() {
         documentTitle={documentTitle}
         onUpdateTitle={handleUpdateTitle}
         onOpenNewModal={handleAddNew}
+        onOpenLiveChart={() => handleOpenLiveChart('EUR/USD')}
         onOpenAnalytics={() => setIsAnalyticsOpen(true)}
         onOpenLotCalc={() => setIsLotCalcOpen(true)}
         onOpenEcoCalendar={() => setIsEcoCalendarOpen(true)}
@@ -406,6 +415,13 @@ export default function App() {
       <EconomicCalendarModal
         isOpen={isEcoCalendarOpen}
         onClose={() => setIsEcoCalendarOpen(false)}
+      />
+
+      {/* REAL-TIME FEATURE 5: Live TradingView Real-Time Chart */}
+      <LiveChartModal
+        isOpen={isLiveChartOpen}
+        onClose={() => setIsLiveChartOpen(false)}
+        initialPair={chartPair}
       />
 
       {/* Deep Analytics & Trading Psychology Modal */}
