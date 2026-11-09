@@ -1,4 +1,6 @@
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { Trade } from '../types/trade';
 
 export function exportToExcel(trades: Trade[], filename = 'Jurnal_Trading_Forex.xlsx') {
@@ -59,6 +61,129 @@ export function exportToCsv(trades: Trade[], filename = 'Jurnal_Trading_Forex.cs
   document.body.removeChild(link);
 }
 
+export function exportToPdf(trades: Trade[], filename = 'Jurnal_Trading_Forex.pdf') {
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: 'a4',
+  });
+
+  // Header Bar Hijau ala Excel
+  doc.setFillColor(16, 124, 65); // #107c41 Excel Green
+  doc.rect(0, 0, 297, 16, 'F');
+
+  // Title
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'bold');
+  doc.text('JURNAL TRADING FOREX (EXCEL EDITION)', 12, 11);
+
+  // Meta info
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'normal');
+  const now = new Date();
+  const dateStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+  doc.text(`Tanggal Cetak: ${dateStr}  |  Total Baris: ${trades.length}`, 220, 11);
+
+  // Header tabel
+  const headers = [
+    [
+      'No',
+      'Tanggal',
+      'Pair',
+      'Posisi',
+      'Entry',
+      'SL',
+      'TP',
+      'Lot',
+      'Hasil',
+      'R:R',
+      'Alasan Eksekusi',
+      'Emosi',
+      'Evaluasi Akhir',
+    ],
+  ];
+
+  const body = trades.map((t, idx) => [
+    idx + 1,
+    t.tanggal,
+    t.pair,
+    t.posisi,
+    t.entry,
+    t.sl,
+    t.tp,
+    t.lot,
+    t.pips > 0 ? `+${t.pips} Pips` : `${t.pips} Pips`,
+    t.riskReward || '-',
+    t.alasan || '-',
+    t.emosi || '-',
+    t.evaluasi || '-',
+  ]);
+
+  autoTable(doc, {
+    startY: 22,
+    head: headers,
+    body: body,
+    theme: 'grid',
+    styles: {
+      fontSize: 8,
+      cellPadding: 2,
+      lineColor: [210, 215, 220],
+      lineWidth: 0.1,
+    },
+    headStyles: {
+      fillColor: [16, 124, 65],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      halign: 'center',
+    },
+    alternateRowStyles: {
+      fillColor: [248, 250, 252],
+    },
+    columnStyles: {
+      0: { halign: 'center', cellWidth: 10 },
+      1: { halign: 'center', cellWidth: 20 },
+      2: { halign: 'center', fontStyle: 'bold', cellWidth: 20 },
+      3: { halign: 'center', cellWidth: 16 },
+      4: { halign: 'right', cellWidth: 18 },
+      5: { halign: 'right', cellWidth: 18 },
+      6: { halign: 'right', cellWidth: 18 },
+      7: { halign: 'center', cellWidth: 14 },
+      8: { halign: 'center', fontStyle: 'bold', cellWidth: 22 },
+      9: { halign: 'center', cellWidth: 15 },
+      10: { cellWidth: 38 },
+      11: { halign: 'center', cellWidth: 25 },
+      12: { cellWidth: 40 },
+    },
+    didParseCell: (data) => {
+      // Pewarnaan Kolom Posisi
+      if (data.section === 'body' && data.column.index === 3) {
+        const val = String(data.cell.raw);
+        if (val === 'BUY') {
+          data.cell.styles.textColor = [16, 124, 65];
+          data.cell.styles.fontStyle = 'bold';
+        } else if (val === 'SELL') {
+          data.cell.styles.textColor = [220, 38, 38];
+          data.cell.styles.fontStyle = 'bold';
+        }
+      }
+      // Pewarnaan Kolom Hasil Pips
+      if (data.section === 'body' && data.column.index === 8) {
+        const val = String(data.cell.raw);
+        if (val.startsWith('+')) {
+          data.cell.styles.textColor = [16, 124, 65];
+          data.cell.styles.fontStyle = 'bold';
+        } else if (val.startsWith('-')) {
+          data.cell.styles.textColor = [220, 38, 38];
+          data.cell.styles.fontStyle = 'bold';
+        }
+      }
+    },
+  });
+
+  doc.save(filename);
+}
+
 export async function importFromSpreadsheet(file: File): Promise<Trade[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -113,4 +238,3 @@ export async function importFromSpreadsheet(file: File): Promise<Trade[]> {
     reader.readAsArrayBuffer(file);
   });
 }
-

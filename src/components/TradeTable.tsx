@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Trade } from '../types/trade';
-import { Trash2, Edit3, ArrowUpRight, ArrowDownRight, Plus } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Plus } from 'lucide-react';
 
 interface TradeTableProps {
   trades: Trade[];
@@ -24,7 +24,6 @@ const COLUMN_HEADERS = [
   { col: 'J', name: 'Alasan Eksekusi', key: 'alasan', width: 'w-64 min-w-[220px]' },
   { col: 'K', name: 'Emosi / Psikologi', key: 'emosi', width: 'w-40 min-w-[140px]' },
   { col: 'L', name: 'Evaluasi Akhir', key: 'evaluasi', width: 'w-72 min-w-[260px]' },
-  { col: 'M', name: 'Aksi', key: 'aksi', width: 'w-24 min-w-[80px]' },
 ];
 
 export const TradeTable: React.FC<TradeTableProps> = ({
@@ -35,6 +34,25 @@ export const TradeTable: React.FC<TradeTableProps> = ({
   onDeleteTrade,
   onAddNew,
 }) => {
+  // Shortcut keyboard Delete untuk menghapus baris yang sedang dipilih
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedTradeId) {
+        // Jangan hapus jika sedang mengetik di input text
+        const activeTag = document.activeElement?.tagName.toLowerCase();
+        if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') {
+          return;
+        }
+        const targetTrade = trades.find((t) => t.id === selectedTradeId);
+        if (targetTrade && confirm(`Hapus baris trade ${targetTrade.pair} (${targetTrade.tanggal})?`)) {
+          onDeleteTrade(selectedTradeId);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedTradeId, trades, onDeleteTrade]);
+
   const getEmotionBadge = (emosi: string) => {
     switch (emosi) {
       case 'Percaya Diri':
@@ -116,7 +134,7 @@ export const TradeTable: React.FC<TradeTableProps> = ({
                     ? 'bg-emerald-50/80 ring-2 ring-excel-green ring-inset'
                     : 'hover:bg-blue-50/40'
                 }`}
-                title="Klik untuk memilih sel, Double-click untuk Edit"
+                title="Klik untuk memilih baris, Double-click untuk Edit"
               >
                 {/* Sticky Row Number Index */}
                 <td
@@ -295,38 +313,6 @@ export const TradeTable: React.FC<TradeTableProps> = ({
                 >
                   {trade.evaluasi || '-'}
                 </td>
-
-                {/* Col M: Aksi (Edit & Hapus) */}
-                <td className="p-2 text-center whitespace-nowrap bg-white">
-                  <div className="flex items-center justify-center gap-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditTrade(trade);
-                      }}
-                      className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded transition-colors"
-                      title="Edit / Update trade ini"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (
-                          confirm(
-                            `Hapus baris trade ${trade.pair} tanggal ${trade.tanggal}?`
-                          )
-                        ) {
-                          onDeleteTrade(trade.id);
-                        }
-                      }}
-                      className="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-100 rounded transition-colors"
-                      title="Hapus baris ini"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </td>
               </tr>
             );
           })}
@@ -352,7 +338,7 @@ export const TradeTable: React.FC<TradeTableProps> = ({
                     className="p-2 text-gray-400 italic text-left bg-emerald-50/20 border-r border-gray-200"
                   >
                     <span className="flex items-center gap-1 text-emerald-700 font-medium text-xs">
-                      <Plus className="w-3.5 h-3.5" /> Lembar sheet masih kosong. Klik di sini untuk mencatat trade pertama Anda...
+                      <Plus className="w-3.5 h-3.5" /> Lembar sheet masih kosong. Klik di sini untuk mencatat trade...
                     </span>
                   </td>
                 ) : (

@@ -10,7 +10,8 @@ import {
   Table as TableIcon,
   Save,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  FileText
 } from 'lucide-react';
 
 interface ExcelHeaderProps {
@@ -18,6 +19,7 @@ interface ExcelHeaderProps {
   onOpenAnalytics: () => void;
   onExportExcel: () => void;
   onExportCsv: () => void;
+  onExportPdf: () => void;
   onImportClick: () => void;
   onClearAll: () => void;
   onManualSave: () => void;
@@ -33,6 +35,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   onOpenAnalytics,
   onExportExcel,
   onExportCsv,
+  onExportPdf,
   onImportClick,
   onClearAll,
   onManualSave,
@@ -54,18 +57,15 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
             Jurnal_Trading_Forex.xlsx
           </span>
 
-          {/* Manual Save Indicator */}
-          {hasUnsavedChanges ? (
+          {/* Indikator Status Save: Hanya tampil jika ada perubahan atau baru saja disimpan */}
+          {hasUnsavedChanges && (
             <span className="inline-flex items-center gap-1 text-[11px] bg-amber-400 text-gray-900 font-bold px-2 py-0.5 rounded shadow-xs animate-pulse">
               <AlertCircle className="w-3 h-3 text-amber-900" /> Belum Disimpan
             </span>
-          ) : isSaveSuccess ? (
+          )}
+          {isSaveSuccess && !hasUnsavedChanges && (
             <span className="inline-flex items-center gap-1 text-[11px] bg-emerald-800 text-emerald-200 px-2 py-0.5 rounded font-medium">
               <CheckCircle2 className="w-3 h-3 text-emerald-300" /> Tersimpan
-            </span>
-          ) : (
-            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] bg-emerald-900/60 px-2 py-0.5 rounded text-emerald-300">
-              Manual Save
             </span>
           )}
         </div>
@@ -152,6 +152,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
 
           <div className="w-[1px] h-4 bg-emerald-700 mx-1" />
 
+          {/* Export Buttons: XLSX, PDF, CSV */}
           <button
             onClick={onExportExcel}
             className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-white transition-colors"
@@ -159,6 +160,15 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
           >
             <Download className="w-3.5 h-3.5 text-emerald-200" />
             <span>Export .XLSX</span>
+          </button>
+
+          <button
+            onClick={onExportPdf}
+            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-white transition-colors"
+            title="Download Laporan PDF"
+          >
+            <FileText className="w-3.5 h-3.5 text-rose-300" />
+            <span className="font-bold text-rose-100">Export .PDF</span>
           </button>
 
           <button

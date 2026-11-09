@@ -10,6 +10,7 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           xlsx: ['xlsx'],
+          pdf: ['jspdf', 'jspdf-autotable'],
         },
       },
     },

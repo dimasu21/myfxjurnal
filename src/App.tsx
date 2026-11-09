@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Trade, TradeFilter } from './types/trade';
 import { getSavedTrades, saveTrades, clearSavedTrades } from './utils/storage';
-import { exportToExcel, exportToCsv, importFromSpreadsheet } from './utils/exportImport';
+import { exportToExcel, exportToCsv, exportToPdf, importFromSpreadsheet } from './utils/exportImport';
 import { ExcelHeader } from './components/ExcelHeader';
 import { FormulaBar } from './components/FormulaBar';
 import { StatsBar } from './components/StatsBar';
@@ -121,6 +121,11 @@ export default function App() {
     });
   }, [trades, activeSheet, filter]);
 
+  // Selected trade object
+  const selectedTrade = useMemo(() => {
+    return trades.find((t) => t.id === selectedTradeId) || null;
+  }, [trades, selectedTradeId]);
+
   // Available unique pairs for filter dropdown
   const availablePairs = useMemo(() => {
     const set = new Set<string>();
@@ -208,6 +213,14 @@ export default function App() {
     exportToCsv(trades);
   };
 
+  const handleExportPdf = () => {
+    if (trades.length === 0) {
+      alert('Belum ada data trade untuk diekspor ke PDF!');
+      return;
+    }
+    exportToPdf(trades);
+  };
+
   const handleImportClick = () => {
     fileInputRef.current?.click();
   };
@@ -221,7 +234,7 @@ export default function App() {
       if (imported.length > 0) {
         setTrades((prev) => [...imported, ...prev]);
         setHasUnsavedChanges(true);
-        alert(`Berhasil mengimpor ${imported.length} baris trade! Jangan lupa klik "Simpan" jika ingin menyimpannya.`);
+        alert(`Berhasil mengimpor ${imported.length} baris trade! Klik "Simpan" jika ingin menyimpannya.`);
       } else {
         alert('Tidak ada baris data valid dalam file tersebut.');
       }
@@ -244,12 +257,13 @@ export default function App() {
         onChange={handleFileChange}
       />
 
-      {/* Excel Ribbon Top Header dengan Tombol Simpan Manual */}
+      {/* Excel Ribbon Top Header dengan Tombol Simpan Manual & Export PDF */}
       <ExcelHeader
         onOpenNewModal={handleAddNew}
         onOpenAnalytics={() => setIsAnalyticsOpen(true)}
         onExportExcel={handleExportExcel}
         onExportCsv={handleExportCsv}
+        onExportPdf={handleExportPdf}
         onImportClick={handleImportClick}
         onClearAll={handleClearAll}
         onManualSave={handleManualSave}
@@ -260,10 +274,20 @@ export default function App() {
         totalTrades={trades.length}
       />
 
-      {/* Formula Bar dengan Cell Coordinates & Search */}
+      {/* Formula Bar dengan Cell Coordinates, Search, & Quick Row Actions */}
       <FormulaBar
         selectedCell={selectedCell}
         cellValue={cellValue}
+        selectedTrade={selectedTrade}
+        onEditSelectedTrade={() => selectedTrade && handleEdit(selectedTrade)}
+        onDeleteSelectedTrade={() => {
+          if (
+            selectedTrade &&
+            confirm(`Hapus baris trade ${selectedTrade.pair} (${selectedTrade.tanggal})?`)
+          ) {
+            handleDelete(selectedTrade.id);
+          }
+        }}
         filter={filter}
         setFilter={setFilter}
         availablePairs={availablePairs}
