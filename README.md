@@ -1,77 +1,84 @@
-# 📊 Jurnal Trading Forex (Excel Edition)
+# Jurnal Trading Forex - Professional Excel Edition
 
-Aplikasi Jurnal Trading Forex modern dengan tampilan spreadsheet khas **Microsoft Excel**, super ringan (Vite + React, bukan Next.js), cepat, responsif di HP/Mobile mau pun Desktop, dan siap dideploy langsung ke **Vercel**.
-
----
-
-## ✨ Fitur Utama
-
-1. **Tampilan Antarmuka Khas Excel**:
-   - Header Ribbon hijau khas Excel lengkap dengan formula bar `fx` (menampilkan alamat cell seperti `A1`, `B2`).
-   - Penomoran baris 1, 2, 3... dan kolom A, B, C...
-   - Kolom identik dengan contoh: **Tanggal**, **Pair**, **Posisi (Buy/Sell)**, **Entry**, **SL**, **TP**, **Lot**, **Hasil (Pips)**, **Alasan Eksekusi**, **Emosi/Psikologi**, **Evaluasi Akhir**.
-   - Tab Sheet di bawah: `Sheet1 - Semua`, `Win Only`, `Loss Only`, `Analisis Psikologi`.
-   - Status bar Excel: `COUNT`, `AVERAGE Pips`, `SUM Pips`.
-
-2. **Responsif & Nyaman di Akses lewat HP (Mobile)**:
-   - **Mode Sheet Excel**: Dilengkapi sticky freeze column (nomor baris tetap terkunci saat scroll horizontal di layar kecil).
-   - **Mode Kartu HP (Card View)**: Tampilan ringkas kartu trade yang dibuat khusus agar sangat nyaman dibaca dengan satu tangan di layar smartphone tanpa perlu geser kiri-kanan.
-   - Tombol **Floating Action Button (FAB) `+`** di pojok kanan bawah layar HP untuk mencatat trade dengan cepat.
-
-3. **Kalkulator & Analisis Psikologis**:
-   - Auto kalkulasi pips untuk Pair Mata Uang, Emas (XAU/USD), dan Crypto.
-   - Auto kalkulasi rasio **Risk : Reward (R:R)** dari Entry, SL, dan TP.
-   - Evaluasi aspek psikologis & pendeteksian trade akibat **FOMO** atau **Revenge Trading**.
-   - Modal Statistik lengkap (Win Rate %, Profit Factor, Trade Terbaik, Rekap Performa per Pair dan Emosi).
-
-4. **Simpan Data & Ekspor/Impor**:
-   - Data otomatis tersimpan di `localStorage` HP/Laptop (aman dan tidak hilang saat refresh).
-   - **Export ke File Excel Asli (.xlsx)** dan **CSV**.
-   - **Import dari file Excel (.xlsx / .csv)**.
+Aplikasi Jurnal Trading Forex web modern dan aman dengan antarmuka spreadsheet khas **Microsoft Excel** yang super ringan, cepat, 100% responsif di semua perangkat (Desktop, Tablet, dan Ponsel HP), serta memenuhi standar keamanan enterprise.
 
 ---
 
-## 🚀 Cara Menjalankan di Lokal (Laptop/PC)
+## Fitur Utama
+
+### 1. Antarmuka Spreadsheet Excel Interaktif
+- Ribbon toolbar hijau khas Microsoft Excel dengan navigasi cepat.
+- Formula bar `fx` dengan koordinat cell aktif (`A1`, `B2`, dst.).
+- Multi-sheet footer: `Sheet1 - Semua`, `Win Only`, `Loss Only`, `Analisis Psikologi`, dan `History Bulanan`.
+- Formula bar status kalkulasi real-time: `COUNT`, `AVERAGE Pips`, dan `SUM Pips`.
+- Manual Save (`Ctrl+S`) dengan proteksi peringatan data belum tersimpan (*unsaved changes guard*).
+
+### 2. Tampilan 1 Halaman Penuh (Full Page Workspace)
+Fitur pendukung trading dibuka sebagai **halaman kerja penuh 100% viewport** (bukan modal pop-up mengambang), dengan tombol `← Kembali ke Sheet` dan shortcut keyboard `Esc`:
+- **Hitung Lot & Manajemen Risiko**: Mendukung modal mikro ($10) hingga akun besar ($100k), akun cent (USC), dan proyeksi target rasio Risk-to-Reward (RRR).
+- **Kalender Berita Ekonomi**: Jam real-time WIB, agenda makro ekonomi global (CPI, NFP, Suku Bunga FOMC/ECB), filter dampak (*High/Med/Low*), pencarian instan, dan live feed TradingView.
+- **Heatmap Hari & Jam Trading**: Menemukan hari terbaik (Senin–Jumat) dan sesi pasar paling menguntungkan (Asia, London, New York) yang dihitung murni dari catatan jurnal Anda.
+- **Simulator Compounding**: Proyeksi pertumbuhan modal eksponensial berdasarkan target profit konsisten per bulan atau per trade.
+- **Statistik & Analisis Performa**: Grafik kurva ekuitas (*Equity Curve*) Recharts, rasio profit factor, win rate, breakdown strategi teknikal, dan evaluasi emosi/psikologi.
+- **Live Candlestick Chart**: Chart TradingView real-time dengan pilihan timeframe dan tautan langsung untuk login ke akun TradingView pribadi.
+
+### 3. Running Ticker Harga Forex Real-Time
+- Ticker harga berjalan (*infinite smooth marquee*) dari kanan ke kiri secara kontinu tanpa jeda.
+- Jeda otomatis saat kursor mouse diarahkan atau disentuh (*pause on hover/touch*) untuk mempermudah pengecekan dan pemilihan chart.
+
+### 4. Ekspor, Impor & Backup Data
+- **Export Microsoft Excel (.xlsx)**: Spreadsheet resmi siap cetak.
+- **Export PDF (.pdf)**: Laporan format Landscape A4 berstandar korporat.
+- **Export CSV (.csv)**: Data mentah untuk kompatibilitas ke platform lain.
+- **Backup & Restore Database (.json)**: Pencadangan dan pemulihan data lokal yang aman.
+- **Arsip History Bulanan Otomatis**: Mendeteksi dan mengarsipkan data trade saat terjadi pergantian bulan kalender.
+
+---
+
+## Standar Keamanan Enterprise (Security Hardened)
+
+Aplikasi ini dirancang dengan pendekatan **Local-First & Zero-Trust Privacy**:
+1. **Privasi 100% Tanpa Pelacakan**: Seluruh catatan transaksi disimpan secara lokal di perangkat Anda (`localStorage`), tidak ada transmisi data rahasia ke server luar atau broker meta trader pihak ketiga.
+2. **Sanitasi Data Bertingkat (XSS & Injection Protection)**: Input dan file impor (.xlsx, .csv, .json) disaring secara ketat untuk mencegah serangan Cross-Site Scripting (XSS), eksekusi script, dan Prototype Pollution.
+3. **HTTP Security Headers (Vercel & Nginx Ready)**:
+   - `X-Content-Type-Options: nosniff` (Mencegah sniffing MIME type).
+   - `X-Frame-Options: SAMEORIGIN` (Proteksi Clickjacking).
+   - `X-XSS-Protection: 1; mode=block`.
+   - `Referrer-Policy: strict-origin-when-cross-origin`.
+   - `Permissions-Policy: camera=(), microphone=(), geolocation=()`.
+   - `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload` (Enforce HTTPS).
+   - Content Security Policy (CSP) compliant.
+
+---
+
+## Responsif di Seluruh Perangkat
+
+- **Desktop & Laptop**: Tampilan spreadsheet lebar dengan freeze-pane, shortcut keyboard, dan visualisasi data luas.
+- **Tablet & Ponsel (Mobile)**:
+  - Toggle **Mode Kartu HP (Card View)** untuk membaca dan mereview transaksi dengan satu tangan tanpa perlu geser horizontal.
+  - Floating Action Button (FAB) `+` untuk mencatat transaksi dengan cepat.
+  - Ribbon horizontal scroll yang elastis (*swipe friendly*).
+
+---
+
+## Instalasi & Menjalankan di Lokal
 
 ```bash
-# 1. Masuk ke direktori
-cd d:\portofolio_2026\jurnal
+# 1. Clone repository
+git clone https://github.com/dimasu21/myfxjurnal.git
+cd myfxjurnal
 
-# 2. Jalankan mode pengembangan
+# 2. Install dependencies
+npm install
+
+# 3. Jalankan development server
 npm run dev
-```
 
-Buka URL yang muncul di browser (biasanya `http://localhost:5173`).
+# 4. Build produksi
+npm run build
+```
 
 ---
 
-## 🌐 Cara Deploy ke Vercel (Biar Bisa Diakses Lewat HP)
-
-### Opsi A: Lewat GitHub (Paling Direkomendasikan & Otomatis)
-1. Buat repository baru di akun **[GitHub](https://github.com/new)** (misal namanya: `jurnal-trading-forex`).
-2. Push kode project ini ke GitHub:
-   ```bash
-   git add .
-   git commit -m "feat: forex excel trading journal ready for vercel"
-   git branch -M main
-   git remote add origin https://github.com/USERNAME-ANDA/jurnal-trading-forex.git
-   git push -u origin main
-   ```
-3. Buka **[Vercel](https://vercel.com)** dan klik tombol **"Add New Project"**.
-4. Pilih repository `jurnal-trading-forex`.
-5. Vercel akan otomatis mengenali Vite:
-   - **Framework Preset**: `Vite`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-6. Klik **"Deploy"**! Dalam 30 detik website Anda akan aktif dengan domain publik seperti `https://jurnal-trading-forex.vercel.app` dan bisa dibuka langsung dari browser HP Anda.
-
-### Opsi B: Lewat Vercel CLI (Langsung dari Terminal)
-```bash
-# Install vercel cli
-npm i -g vercel
-
-# Deploy langsung
-vercel
-```
-Ikuti instruksi singkat di terminal, website langsung live!
-
+## Lisensi
+MIT License &copy; 2026. Dibuat untuk kalangan profesional trader forex dan investor mandiri.

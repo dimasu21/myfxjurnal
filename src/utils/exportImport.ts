@@ -224,6 +224,30 @@ export function exportToPdf(trades: Trade[], filename = 'Jurnal_Trading_Forex.pd
   doc.save(filename);
 }
 
+export function sanitizeText(val: unknown, maxLength = 300): string {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/[<>'"&]/g, (m) => {
+      switch (m) {
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case "'": return '&#39;';
+        case '"': return '&quot;';
+        case '&': return '&amp;';
+        default: return '';
+      }
+    })
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    .trim()
+    .slice(0, maxLength);
+}
+
+export function sanitizeNumber(val: unknown, defaultVal = 0): number {
+  const num = typeof val === 'number' ? val : parseFloat(String(val));
+  if (isNaN(num) || !isFinite(num)) return defaultVal;
+  return num;
+}
+
 export async function importFromSpreadsheet(file: File): Promise<Trade[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -245,26 +269,27 @@ export async function importFromSpreadsheet(file: File): Promise<Trade[]> {
           const posisiRaw = String(row['Posisi'] || row['posisi'] || 'BUY').toUpperCase();
           const posisi = posisiRaw.includes('SELL') || posisiRaw.includes('SHORT') ? 'SELL' : 'BUY';
 
-          const entry = parseFloat(row['Entry'] || row['entry']) || 0;
-          const sl = parseFloat(row['SL'] || row['sl']) || 0;
-          const tp = parseFloat(row['TP'] || row['tp']) || 0;
+          const entry = sanitizeNumber(row['Entry'] || row['entry'], 0);
+          const sl = sanitizeNumber(row['SL'] || row['sl'], 0);
+          const tp = sanitizeNumber(row['TP'] || row['tp'], 0);
 
           return {
             id: `tr-imp-${Date.now()}-${index}`,
-            tanggal: String(row['Tanggal'] || row['tanggal'] || new Date().toLocaleDateString('id-ID')),
-            pair: String(row['Pair'] || row['pair'] || 'EUR/USD').toUpperCase(),
+            tanggal: sanitizeText(row['Tanggal'] || row['tanggal'] || new Date().toLocaleDateString('id-ID'), 20),
+            pair: sanitizeText(row['Pair'] || row['pair'] || 'EUR/USD', 20).toUpperCase(),
             posisi,
             entry,
             sl,
             tp,
-            lot: String(row['Lot'] || row['lot'] || '0.1'),
+            lot: sanitizeText(row['Lot'] || row['lot'] || '0.01', 20),
             pips: pipsNum,
-            pnl: parseFloat(row['PnL_USD'] || row['PnL'] || row['pnl']) || pipsNum,
+            pnl: sanitizeNumber(row['PnL_USD'] || row['PnL'] || row['pnl'], pipsNum),
             status: pipsNum > 0 ? 'WIN' : pipsNum < 0 ? 'LOSS' : 'BE',
-            alasan: String(row['Alasan_Eksekusi'] || row['Alasan'] || row['alasan'] || '-'),
-            emosi: String(row['Emosi'] || row['emosi'] || 'Tenang'),
-            evaluasi: String(row['Evaluasi'] || row['evaluasi'] || '-'),
-            riskReward: String(row['Risk_Reward'] || row['RR'] || row['riskReward'] || '-'),
+            alasan: sanitizeText(row['Alasan_Eksekusi'] || row['Alasan'] || row['alasan'] || '-', 300),
+            emosi: sanitizeText(row['Emosi'] || row['emosi'] || 'Disiplin Sesuai Trading Plan', 100),
+            evaluasi: sanitizeText(row['Evaluasi'] || row['evaluasi'] || '-', 300),
+            riskReward: sanitizeText(row['Risk_Reward'] || row['RR'] || row['riskReward'] || '-', 20),
+            strategi: sanitizeText(row['Strategi'] || row['strategi'] || 'Breakout', 100),
           };
         });
 
@@ -296,7 +321,32 @@ export async function importFromJson(file: File): Promise<Trade[]> {
       try {
         const parsed = JSON.parse(e.target?.result as string);
         if (Array.isArray(parsed)) {
-          resolve(parsed as Trade[]);
+          const sanitized: Trade[] = parsed
+            .filter((item) => item && typeof item === 'object')
+            .map((item, index) => {
+              const pips = sanitizeNumber(item.pips, 0);
+              return {
+                id: sanitizeText(item.id || `tr-json-${Date.now()}-${index}`, 50),
+                tanggal: sanitizeText(item.tanggal || new Date().toLocaleDateString('id-ID'), 20),
+                pair: sanitizeText(item.pair || 'EUR/USD', 20).toUpperCase(),
+                posisi: item.posisi === 'SELL' ? 'SELL' : 'BUY',
+                entry: sanitizeNumber(item.entry, 0),
+                sl: sanitizeNumber(item.sl, 0),
+                tp: sanitizeNumber(item.tp, 0),
+                lot: sanitizeText(item.lot || '0.01', 20),
+                pips,
+                pnl: sanitizeNumber(item.pnl, pips),
+                status: item.status === 'WIN' || item.status === 'LOSS' || item.status === 'BE' 
+                  ? item.status 
+                  : (pips > 0 ? 'WIN' : pips < 0 ? 'LOSS' : 'BE'),
+                alasan: sanitizeText(item.alasan || '-', 300),
+                emosi: sanitizeText(item.emosi || 'Disiplin Sesuai Trading Plan', 100),
+                evaluasi: sanitizeText(item.evaluasi || '-', 300),
+                strategi: sanitizeText(item.strategi || 'Breakout', 100),
+                riskReward: sanitizeText(item.riskReward || '-', 20),
+              };
+            });
+          resolve(sanitized);
         } else {
           reject(new Error('Format file JSON bukan array trade yang valid'));
         }
