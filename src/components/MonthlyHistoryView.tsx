@@ -418,3 +418,4 @@ export const MonthlyHistoryView: React.FC<MonthlyHistoryViewProps> = ({
     </div>
   );
 };
+
