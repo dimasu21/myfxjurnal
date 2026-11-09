@@ -23,6 +23,9 @@ export interface TradingSession {
 
 export interface EconomicEvent {
   id: string;
+  dayOffset: number; // 0 = Hari ini, 1 = Besok, 2 = Lusa, 3 = Hari ke-3
+  dateLabel: string; // e.g. "Hari Ini (Selasa, 10 Nov)"
+  dateFormatted: string; // "10/11/2026"
   time: string; // HH:mm
   currency: string;
   country: string;
@@ -32,6 +35,8 @@ export interface EconomicEvent {
   actual: string;
   forecast: string;
   previous: string;
+  status: 'UPCOMING' | 'RELEASED' | 'IMMINENT';
+  countdown: string;
 }
 
 export interface LotCalculatorResult {

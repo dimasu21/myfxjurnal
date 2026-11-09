@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Trade } from '../types/trade';
 import { calculateStats } from '../utils/calculations';
-import { Trophy, Award, X, Download, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Trophy, Award, X, Download, CheckCircle2 } from 'lucide-react';
 
 interface TraderStatementCardModalProps {
   isOpen: boolean;
@@ -30,20 +30,20 @@ export const TraderStatementCardModal: React.FC<TraderStatementCardModalProps> =
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150 text-xs">
+      <div className="bg-white dark:bg-[#111827] rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-slate-800 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150 text-xs text-gray-800 dark:text-slate-100 transition-colors">
         {/* Modal Top Bar */}
-        <div className="bg-gray-100 px-4 py-2.5 flex items-center justify-between border-b border-gray-200">
-          <div className="flex items-center gap-1.5 font-bold text-gray-800 text-xs">
-            <Award className="w-4 h-4 text-emerald-600" />
+        <div className="bg-gray-100 dark:bg-slate-800 px-4 py-2.5 flex items-center justify-between border-b border-gray-200 dark:border-slate-700">
+          <div className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-slate-100 text-xs">
+            <Award className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>Trader Performance Statement Card</span>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 p-1">
+          <button onClick={onClose} className="text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-white p-1">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* The Aesthetic Printable Card Body */}
-        <div className="p-4 flex justify-center bg-gray-50">
+        <div className="p-4 flex justify-center bg-gray-50 dark:bg-slate-900/50">
           <div
             ref={cardRef}
             className="w-full bg-gradient-to-br from-emerald-900 via-[#0f5132] to-[#0a3622] rounded-2xl p-5 text-white shadow-xl relative overflow-hidden border border-emerald-700/50"
@@ -123,15 +123,15 @@ export const TraderStatementCardModal: React.FC<TraderStatementCardModalProps> =
         </div>
 
         {/* Modal Actions */}
-        <div className="p-3 bg-gray-100 border-t border-gray-200 flex items-center justify-between">
-          <span className="text-[11px] text-gray-500">
+        <div className="p-3 bg-gray-100 dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 flex items-center justify-between">
+          <span className="text-[11px] text-gray-500 dark:text-slate-400">
             Siap dibagikan ke Telegram / Komunitas
           </span>
           <button
             onClick={() => {
               window.print();
             }}
-            className="px-3.5 py-1.5 bg-excel-green text-white font-bold rounded-lg text-xs hover:bg-excel-darkgreen flex items-center gap-1.5 shadow-xs"
+            className="px-3.5 py-1.5 bg-excel-green text-white font-bold rounded-lg text-xs hover:bg-excel-darkgreen flex items-center gap-1.5 shadow-xs transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Cetak / Simpan Rapor</span>
@@ -141,4 +141,3 @@ export const TraderStatementCardModal: React.FC<TraderStatementCardModalProps> =
     </div>
   );
 };
-

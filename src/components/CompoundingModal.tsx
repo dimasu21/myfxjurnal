@@ -39,7 +39,7 @@ export const CompoundingModal: React.FC<CompoundingModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl border border-gray-200 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150 text-xs">
+      <div className="bg-white dark:bg-[#111827] rounded-xl shadow-2xl w-full max-w-xl border border-gray-200 dark:border-slate-800 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150 text-xs text-gray-800 dark:text-slate-100 transition-colors">
         {/* Header */}
         <div className="bg-excel-green px-4 py-3 text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -63,7 +63,7 @@ export const CompoundingModal: React.FC<CompoundingModalProps> = ({
         <div className="p-4 space-y-4">
           <div className="grid grid-cols-3 gap-2.5">
             <div>
-              <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+              <label className="block text-[11px] font-semibold text-gray-700 dark:text-slate-300 mb-1">
                 Modal Awal ($)
               </label>
               <input
@@ -71,7 +71,7 @@ export const CompoundingModal: React.FC<CompoundingModalProps> = ({
                 step="any"
                 value={initialCapital}
                 onChange={(e) => setInitialCapital(parseFloat(e.target.value) || 0)}
-                className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-xs font-mono font-bold focus:border-excel-green focus:outline-none"
+                className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-100 border border-gray-300 dark:border-slate-700 rounded text-xs font-mono font-bold focus:border-excel-green focus:outline-none"
               />
               <div className="flex gap-1 mt-1">
                 {[10, 50, 100, 500].map((v) => (
@@ -79,7 +79,7 @@ export const CompoundingModal: React.FC<CompoundingModalProps> = ({
                     key={v}
                     type="button"
                     onClick={() => setInitialCapital(v)}
-                    className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-gray-100 hover:bg-gray-200 text-gray-700 border"
+                    className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700"
                   >
                     ${v}
                   </button>
@@ -88,7 +88,7 @@ export const CompoundingModal: React.FC<CompoundingModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+              <label className="block text-[11px] font-semibold text-gray-700 dark:text-slate-300 mb-1">
                 Target Return (%)
               </label>
               <input
@@ -96,7 +96,7 @@ export const CompoundingModal: React.FC<CompoundingModalProps> = ({
                 step="0.5"
                 value={targetPercent}
                 onChange={(e) => setTargetPercent(parseFloat(e.target.value) || 0)}
-                className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-xs font-mono font-bold focus:border-excel-green focus:outline-none"
+                className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-100 border border-gray-300 dark:border-slate-700 rounded text-xs font-mono font-bold focus:border-excel-green focus:outline-none"
               />
               <div className="flex gap-1 mt-1">
                 {[5, 10, 15, 20].map((p) => (
@@ -104,7 +104,7 @@ export const CompoundingModal: React.FC<CompoundingModalProps> = ({
                     key={p}
                     type="button"
                     onClick={() => setTargetPercent(p)}
-                    className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-gray-100 hover:bg-gray-200 text-gray-700 border"
+                    className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700"
                   >
                     {p}%
                   </button>
@@ -113,7 +113,7 @@ export const CompoundingModal: React.FC<CompoundingModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+              <label className="block text-[11px] font-semibold text-gray-700 dark:text-slate-300 mb-1">
                 Jumlah Periode
               </label>
               <div className="flex gap-1">
@@ -121,12 +121,12 @@ export const CompoundingModal: React.FC<CompoundingModalProps> = ({
                   type="number"
                   value={periods}
                   onChange={(e) => setPeriods(Math.min(36, Math.max(1, parseInt(e.target.value) || 1)))}
-                  className="w-16 px-2 py-1.5 border border-gray-300 rounded text-xs font-mono font-bold focus:border-excel-green focus:outline-none"
+                  className="w-16 px-2 py-1.5 bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-100 border border-gray-300 dark:border-slate-700 rounded text-xs font-mono font-bold focus:border-excel-green focus:outline-none"
                 />
                 <select
                   value={periodType}
                   onChange={(e) => setPeriodType(e.target.value as any)}
-                  className="flex-1 px-1 py-1.5 border border-gray-300 rounded text-[11px] font-bold"
+                  className="flex-1 px-1 py-1.5 bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-100 border border-gray-300 dark:border-slate-700 rounded text-[11px] font-bold"
                 >
                   <option value="BULAN">Bulan</option>
                   <option value="TRADE">Trade</option>
@@ -136,29 +136,29 @@ export const CompoundingModal: React.FC<CompoundingModalProps> = ({
           </div>
 
           {/* Result Card Highlight */}
-          <div className="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-3 flex items-center justify-between">
+          <div className="bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-300 dark:border-emerald-700 rounded-xl p-3 flex items-center justify-between">
             <div>
-              <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">
+              <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold uppercase tracking-wider block">
                 Proyeksi Saldo Akhir ({periods} {periodType.toLowerCase()}):
               </span>
-              <span className="text-2xl font-extrabold text-emerald-950 font-mono">
+              <span className="text-2xl font-extrabold text-emerald-950 dark:text-emerald-200 font-mono">
                 ${finalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
             <div className="text-right">
-              <span className="text-xs font-bold text-emerald-700 block">
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 block">
                 Total Profit: +${totalGain.toFixed(2)}
               </span>
-              <span className="text-[11px] font-extrabold text-emerald-900 bg-emerald-200 px-2 py-0.5 rounded-full inline-block mt-0.5">
+              <span className="text-[11px] font-extrabold text-emerald-900 dark:text-emerald-200 bg-emerald-200 dark:bg-emerald-900 px-2 py-0.5 rounded-full inline-block mt-0.5">
                 +{totalGrowthPercent}%
               </span>
             </div>
           </div>
 
           {/* Table Breakdown */}
-          <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-xl scrollbar-thin">
+          <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-slate-700 rounded-xl scrollbar-thin">
             <table className="w-full text-left border-collapse">
-              <thead className="bg-gray-100 text-gray-600 font-semibold sticky top-0 border-b border-gray-200">
+              <thead className="bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 font-semibold sticky top-0 border-b border-gray-200 dark:border-slate-700">
                 <tr>
                   <th className="p-2"># {periodType}</th>
                   <th className="p-2 text-right">Saldo Awal</th>
@@ -166,19 +166,19 @@ export const CompoundingModal: React.FC<CompoundingModalProps> = ({
                   <th className="p-2 text-right">Saldo Akhir</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 font-mono">
+              <tbody className="divide-y divide-gray-200 dark:divide-slate-700 font-mono">
                 {rows.map((r) => (
-                  <tr key={r.period} className="hover:bg-gray-50">
-                    <td className="p-2 font-bold text-gray-800">
+                  <tr key={r.period} className="hover:bg-gray-50 dark:hover:bg-slate-800/60">
+                    <td className="p-2 font-bold text-gray-800 dark:text-slate-200">
                       {periodType === 'BULAN' ? `Bulan ${r.period}` : `Trade ${r.period}`}
                     </td>
-                    <td className="p-2 text-right text-gray-600">
+                    <td className="p-2 text-right text-gray-600 dark:text-slate-400">
                       ${r.start.toFixed(2)}
                     </td>
-                    <td className="p-2 text-right text-emerald-700 font-bold">
+                    <td className="p-2 text-right text-emerald-700 dark:text-emerald-400 font-bold">
                       +${r.profit.toFixed(2)}
                     </td>
-                    <td className="p-2 text-right font-extrabold text-gray-900">
+                    <td className="p-2 text-right font-extrabold text-gray-900 dark:text-slate-100">
                       ${r.end.toFixed(2)}
                     </td>
                   </tr>
@@ -189,7 +189,7 @@ export const CompoundingModal: React.FC<CompoundingModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+        <div className="p-3 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-200 dark:border-slate-800 flex justify-end">
           <button
             onClick={onClose}
             className="px-4 py-1.5 bg-excel-green text-white font-bold rounded text-xs hover:bg-excel-darkgreen transition-colors"
@@ -201,4 +201,3 @@ export const CompoundingModal: React.FC<CompoundingModalProps> = ({
     </div>
   );
 };
-
