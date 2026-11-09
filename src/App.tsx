@@ -23,7 +23,6 @@ import { CompoundingView } from './components/CompoundingView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { LiveChartView } from './components/LiveChartView';
 import { TraderStatementCardView } from './components/TraderStatementCardView';
-import { SiteFooter } from './components/SiteFooter';
 import { checkAndAutoArchiveMonth, getMonthlyArchives } from './utils/monthlyArchive';
 import { Plus } from 'lucide-react';
 
@@ -574,9 +573,6 @@ export default function App() {
         filteredTrades={filteredTrades}
         totalArchivedMonths={archivedMonthsCount}
       />
-
-      {/* Professional Site Footer (Desktop only) */}
-      <SiteFooter />
 
       {/* Persistent Bottom Navigation Bar Ala Myfxbook Mobile (Khusus Tampil di HP) */}
       <MobileBottomNav

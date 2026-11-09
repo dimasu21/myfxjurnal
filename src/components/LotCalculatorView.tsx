@@ -12,6 +12,7 @@ import {
   DollarSign,
   TrendingDown
 } from 'lucide-react';
+import { SiteFooter } from './SiteFooter';
 
 interface LotCalculatorViewProps {
   onBack: () => void;
@@ -382,6 +383,9 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
             )}
           </div>
         </div>
+
+        {/* Footer Ala Myfxbook */}
+        <SiteFooter />
       </div>
     </div>
   );

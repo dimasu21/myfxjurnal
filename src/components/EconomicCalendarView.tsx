@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { generateMultiDayEconomicCalendar } from '../utils/forexHelpers';
 import { EconomicEvent } from '../types/realtime';
 import { ArrowLeft, Search, Clock } from 'lucide-react';
+import { SiteFooter } from './SiteFooter';
 
 interface EconomicCalendarViewProps {
   onBack: () => void;
@@ -319,6 +320,9 @@ export const EconomicCalendarView: React.FC<EconomicCalendarViewProps> = ({ onBa
             ))}
           </div>
         )}
+
+        {/* Footer Ala Myfxbook */}
+        <SiteFooter />
       </div>
     </div>
   );

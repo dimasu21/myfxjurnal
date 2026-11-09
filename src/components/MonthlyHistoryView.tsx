@@ -25,6 +25,7 @@ import {
   AlertCircle,
   FolderOpen
 } from 'lucide-react';
+import { SiteFooter } from './SiteFooter';
 
 interface MonthlyHistoryViewProps {
   currentTrades: Trade[];
@@ -412,6 +413,9 @@ export const MonthlyHistoryView: React.FC<MonthlyHistoryViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* Footer Ala Myfxbook */}
+      <SiteFooter />
     </div>
   );
 };

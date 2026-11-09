@@ -21,6 +21,7 @@ import {
   Tooltip,
   CartesianGrid
 } from 'recharts';
+import { SiteFooter } from './SiteFooter';
 
 interface AnalyticsViewProps {
   onBack: () => void;
@@ -373,6 +374,9 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onBack, trades }) 
             </div>
           </div>
         </div>
+
+        {/* Footer Ala Myfxbook */}
+        <SiteFooter />
       </div>
     </div>
   );

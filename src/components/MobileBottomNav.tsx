@@ -363,6 +363,30 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 <span>Kosongkan Seluruh Sheet</span>
               </button>
             </div>
+
+            {/* Bantuan & Kontak Pengembang */}
+            <div className="pt-2 border-t border-gray-200 dark:border-slate-800 text-center space-y-1.5 text-xs text-gray-500 dark:text-slate-400">
+              <div className="flex items-center justify-center gap-3 text-[11px] font-semibold">
+                <a
+                  href="mailto:dimsartz021@gmail.com?subject=MyFX%20Journal%20Support"
+                  className="text-emerald-600 dark:text-emerald-400 hover:underline"
+                >
+                  Contact: dimsartz021@gmail.com
+                </a>
+                <span>·</span>
+                <a
+                  href="https://dimasu.site/"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="hover:underline font-bold text-gray-700 dark:text-slate-300"
+                >
+                  dimasu.site
+                </a>
+              </div>
+              <p className="text-[10px] text-gray-400 dark:text-slate-500">
+                &copy; 2026 MyFX Journal · All data stored locally
+              </p>
+            </div>
           </div>
         </div>
       )}

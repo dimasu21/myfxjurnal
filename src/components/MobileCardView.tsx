@@ -16,6 +16,7 @@ import {
   SlidersHorizontal,
   Plus
 } from 'lucide-react';
+import { SiteFooter } from './SiteFooter';
 
 interface MobileCardViewProps {
   trades: Trade[];
@@ -358,6 +359,9 @@ export const MobileCardView: React.FC<MobileCardViewProps> = ({
           })}
         </div>
       )}
+
+      {/* Footer Ala Myfxbook Mobile */}
+      <SiteFooter />
     </div>
   );
 };
