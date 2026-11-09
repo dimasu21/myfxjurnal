@@ -88,3 +88,4 @@ export const FormulaBar: React.FC<FormulaBarProps> = ({
     </div>
   );
 };
+

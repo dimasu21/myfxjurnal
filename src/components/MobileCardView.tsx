@@ -196,3 +196,4 @@ export const MobileCardView: React.FC<MobileCardViewProps> = ({
     </div>
   );
 };
+

@@ -113,3 +113,4 @@ export async function importFromSpreadsheet(file: File): Promise<Trade[]> {
     reader.readAsArrayBuffer(file);
   });
 }
+

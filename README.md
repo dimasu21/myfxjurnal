@@ -74,3 +74,4 @@ npm i -g vercel
 vercel
 ```
 Ikuti instruksi singkat di terminal, website langsung live!
+

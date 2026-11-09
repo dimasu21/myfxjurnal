@@ -126,3 +126,4 @@ export const ExcelFooter: React.FC<ExcelFooterProps> = ({
     </footer>
   );
 };
+

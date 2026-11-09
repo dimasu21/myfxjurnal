@@ -38,3 +38,4 @@ export interface TradeFilter {
   sortBy: 'tanggal' | 'pips' | 'pnl' | 'pair';
   sortOrder: 'asc' | 'desc';
 }
+

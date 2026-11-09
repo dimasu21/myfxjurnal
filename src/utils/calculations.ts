@@ -112,3 +112,4 @@ export function calculateStats(trades: Trade[]) {
     worstTradePips,
   };
 }
+

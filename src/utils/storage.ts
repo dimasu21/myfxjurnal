@@ -101,3 +101,4 @@ export function saveTrades(trades: Trade[]): void {
     console.error('Error saving trades to storage:', e);
   }
 }
+

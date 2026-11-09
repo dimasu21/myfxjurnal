@@ -494,3 +494,4 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     </div>
   );
 };
+

@@ -1,0 +1,16 @@
+{
+  "short_name": "Jurnal Forex",
+  "name": "Jurnal Trading Forex (Excel Edition)",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#107c41",
+  "theme_color": "#107c41",
+  "display": "standalone",
+  "orientation": "any"
+}

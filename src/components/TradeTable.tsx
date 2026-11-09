@@ -343,3 +343,4 @@ export const TradeTable: React.FC<TradeTableProps> = ({
     </div>
   );
 };
+

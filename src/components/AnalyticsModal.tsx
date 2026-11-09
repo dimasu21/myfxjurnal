@@ -230,3 +230,4 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
     </div>
   );
 };
+
