@@ -156,3 +156,4 @@ export const LiveChartView: React.FC<LiveChartViewProps> = ({
     </div>
   );
 };
+

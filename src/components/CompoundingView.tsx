@@ -314,3 +314,4 @@ export const CompoundingView: React.FC<CompoundingViewProps> = ({ onBack }) => {
     </div>
   );
 };
+

@@ -191,3 +191,4 @@ export const TraderStatementCardView: React.FC<TraderStatementCardViewProps> = (
     </div>
   );
 };
+

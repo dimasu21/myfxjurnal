@@ -269,3 +269,4 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ onBack, trades }) => {
     </div>
   );
 };
+

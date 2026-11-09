@@ -390,13 +390,13 @@ export default function App() {
         documentTitle={documentTitle}
         onUpdateTitle={handleUpdateTitle}
         onOpenNewModal={handleAddNew}
-        onOpenLiveChart={() => handleOpenLiveChart('EUR/USD')}
-        onOpenAnalytics={() => setActivePageView('analytics')}
-        onOpenLotCalc={() => setActivePageView('lot-calc')}
-        onOpenEcoCalendar={() => setActivePageView('calendar')}
-        onOpenHeatmap={() => setActivePageView('heatmap')}
-        onOpenCompounding={() => setActivePageView('compounding')}
-        onOpenStatementCard={() => setActivePageView('statement')}
+        onOpenLiveChart={() => setActivePageView((prev) => (prev === 'chart' ? 'sheet' : 'chart'))}
+        onOpenAnalytics={() => setActivePageView((prev) => (prev === 'analytics' ? 'sheet' : 'analytics'))}
+        onOpenLotCalc={() => setActivePageView((prev) => (prev === 'lot-calc' ? 'sheet' : 'lot-calc'))}
+        onOpenEcoCalendar={() => setActivePageView((prev) => (prev === 'calendar' ? 'sheet' : 'calendar'))}
+        onOpenHeatmap={() => setActivePageView((prev) => (prev === 'heatmap' ? 'sheet' : 'heatmap'))}
+        onOpenCompounding={() => setActivePageView((prev) => (prev === 'compounding' ? 'sheet' : 'compounding'))}
+        onOpenStatementCard={() => setActivePageView((prev) => (prev === 'statement' ? 'sheet' : 'statement'))}
         activePageView={activePageView}
         onSwitchToSheet={() => setActivePageView('sheet')}
         showMarketSessions={showMarketSessions}

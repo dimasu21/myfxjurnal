@@ -386,3 +386,4 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
     </div>
   );
 };
+
