@@ -81,7 +81,7 @@ export const CompoundingView: React.FC<CompoundingViewProps> = ({ onBack }) => {
       </div>
 
       {/* Main Container */}
-      <div className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 pb-20 md:pb-8 space-y-6">
         {/* Top Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-gradient-to-br from-slate-900 to-emerald-950 text-white rounded-xl p-5 shadow-xs border border-emerald-800/40">

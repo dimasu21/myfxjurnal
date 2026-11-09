@@ -101,7 +101,7 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
       </div>
 
       {/* Main Workspace Area */}
-      <div className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 pb-20 md:pb-8 space-y-6">
         {/* Responsive Grid: Inputs (Left) and Results (Right) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* LEFT: Parameters Card (7 cols on lg) */}

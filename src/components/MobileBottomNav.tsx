@@ -134,7 +134,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           }`}
         >
           <MenuIcon className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px]">Alat</span>
+          <span className="text-[10px]">Fitur</span>
         </button>
       </nav>
 
@@ -369,3 +369,4 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     </>
   );
 };
+

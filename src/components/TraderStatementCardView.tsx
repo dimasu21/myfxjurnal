@@ -106,7 +106,7 @@ export const TraderStatementCardView: React.FC<TraderStatementCardViewProps> = (
       </div>
 
       {/* Main Container */}
-      <div className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center space-y-6">
+      <div className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 lg:p-8 pb-20 md:pb-8 flex flex-col items-center justify-center space-y-6">
         {/* Name input */}
         <div className="w-full max-w-md bg-white dark:bg-[#111827] border border-gray-200 dark:border-slate-800 rounded-xl p-3.5 shadow-xs flex items-center gap-3">
           <label className="text-xs font-semibold text-gray-600 dark:text-slate-300 shrink-0">Nama Trader:</label>

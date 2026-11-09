@@ -180,7 +180,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
       {/* Top Title Bar */}
       <div className="px-3 py-1.5 flex items-center justify-between border-b border-white/10 text-xs sm:text-sm">
         {/* Document Title Area (CRUD Judul) */}
-        <div className="flex items-center gap-2 overflow-hidden max-w-[60%] sm:max-w-md">
+        <div className="flex items-center gap-2 overflow-hidden max-w-[55%] sm:max-w-md">
           <div className="bg-white/20 p-1 rounded flex items-center justify-center shrink-0">
             <FileSpreadsheet className="w-4 h-4 text-white" />
           </div>

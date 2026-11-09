@@ -319,7 +319,7 @@ export const MobileCardView: React.FC<MobileCardViewProps> = ({
 
                     {trade.alasan && trade.alasan !== '-' && (
                       <p className="w-full text-[11px] text-gray-500 dark:text-slate-400 italic line-clamp-1 mt-0.5">
-                        "{trade.alasan}"
+                        &ldquo;{trade.alasan}&rdquo;
                       </p>
                     )}
                   </div>
