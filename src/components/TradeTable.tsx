@@ -56,20 +56,20 @@ export const TradeTable: React.FC<TradeTableProps> = ({
   const getEmotionBadge = (emosi: string) => {
     switch (emosi) {
       case 'Percaya Diri':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+        return 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700';
       case 'Tenang':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
+        return 'bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-700';
       case 'Disiplin':
-        return 'bg-teal-100 text-teal-800 border-teal-300';
+        return 'bg-teal-100 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 border-teal-300 dark:border-teal-700';
       case 'Ragu/Cemas':
-        return 'bg-amber-100 text-amber-800 border-amber-300';
+        return 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700';
       case 'FOMO':
-        return 'bg-orange-100 text-orange-800 border-orange-300';
+        return 'bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-700';
       case 'Revenge Trade':
       case 'Serakah':
-        return 'bg-red-100 text-red-800 border-red-300 font-bold';
+        return 'bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border-red-300 dark:border-red-700 font-bold';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-300 border-gray-300 dark:border-slate-700';
     }
   };
 
@@ -78,19 +78,19 @@ export const TradeTable: React.FC<TradeTableProps> = ({
   const emptyRowsCount = Math.max(0, minRows - trades.length);
 
   return (
-    <div className="flex-1 overflow-auto bg-gray-50 border border-gray-300 select-none relative scrollbar-thin">
+    <div className="flex-1 overflow-auto bg-gray-50 dark:bg-[#0b1120] border border-gray-300 dark:border-slate-800 select-none relative scrollbar-thin">
       <table className="w-full border-collapse text-xs font-sans text-left">
         {/* Header Baris Kolom Huruf Excel (A, B, C...) */}
-        <thead className="bg-[#f3f4f6] sticky top-0 z-20 shadow-xs border-b border-gray-300">
+        <thead className="bg-[#f3f4f6] dark:bg-[#1e293b] sticky top-0 z-20 shadow-xs border-b border-gray-300 dark:border-slate-700">
           {/* Row 1: Excel Column Letters */}
-          <tr className="border-b border-gray-200 text-gray-500 font-mono text-[11px] leading-tight">
-            <th className="w-12 min-w-[48px] p-1 text-center bg-[#eaecee] border-r border-gray-300 sticky left-0 z-20">
+          <tr className="border-b border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 font-mono text-[11px] leading-tight">
+            <th className="w-12 min-w-[48px] p-1 text-center bg-[#eaecee] dark:bg-slate-800 border-r border-gray-300 dark:border-slate-700 sticky left-0 z-20">
               #
             </th>
             {COLUMN_HEADERS.map((h) => (
               <th
                 key={h.col}
-                className={`p-1 text-center font-normal border-r border-gray-200 ${h.width}`}
+                className={`p-1 text-center font-normal border-r border-gray-200 dark:border-slate-800 ${h.width}`}
               >
                 {h.col}
               </th>
@@ -98,14 +98,14 @@ export const TradeTable: React.FC<TradeTableProps> = ({
           </tr>
 
           {/* Row 2: Actual Column Names */}
-          <tr className="text-gray-800 font-semibold bg-[#e9ecef] border-b-2 border-gray-300">
-            <th className="p-2 text-center bg-[#dedede] border-r border-gray-300 sticky left-0 z-20">
+          <tr className="text-gray-800 dark:text-slate-100 font-semibold bg-[#e9ecef] dark:bg-[#1e293b] border-b-2 border-gray-300 dark:border-slate-700">
+            <th className="p-2 text-center bg-[#dedede] dark:bg-slate-800 border-r border-gray-300 dark:border-slate-700 sticky left-0 z-20">
               Row
             </th>
             {COLUMN_HEADERS.map((h) => (
               <th
                 key={h.key}
-                className={`p-2 border-r border-gray-300 whitespace-nowrap text-gray-800 font-medium ${h.width}`}
+                className={`p-2 border-r border-gray-300 dark:border-slate-700 whitespace-nowrap text-gray-800 dark:text-slate-200 font-medium ${h.width}`}
               >
                 <div className="flex items-center justify-between gap-1">
                   <span>{h.name}</span>
@@ -116,7 +116,7 @@ export const TradeTable: React.FC<TradeTableProps> = ({
         </thead>
 
         {/* Isi Data Tabel */}
-        <tbody className="divide-y divide-gray-200 bg-white">
+        <tbody className="divide-y divide-gray-200 dark:divide-slate-800 bg-white dark:bg-[#0f172a]">
           {/* Baris data trade yang sudah ada */}
           {trades.map((trade, idx) => {
             const rowIndex = idx + 1;
@@ -131,17 +131,17 @@ export const TradeTable: React.FC<TradeTableProps> = ({
                 onDoubleClick={() => onEditTrade(trade)}
                 className={`transition-colors cursor-pointer group ${
                   isSelected
-                    ? 'bg-emerald-50/80 ring-2 ring-excel-green ring-inset'
-                    : 'hover:bg-blue-50/40'
+                    ? 'bg-emerald-50/80 dark:bg-emerald-950/40 ring-2 ring-excel-green ring-inset'
+                    : 'hover:bg-blue-50/40 dark:hover:bg-slate-800/60'
                 }`}
                 title="Klik untuk memilih baris, Double-click untuk Edit"
               >
                 {/* Sticky Row Number Index */}
                 <td
-                  className={`p-2 text-center font-mono font-semibold border-r border-gray-300 sticky left-0 z-10 transition-colors ${
+                  className={`p-2 text-center font-mono font-semibold border-r border-gray-300 dark:border-slate-800 sticky left-0 z-10 transition-colors ${
                     isSelected
                       ? 'bg-excel-green text-white'
-                      : 'bg-[#f8f9fa] text-gray-600 group-hover:bg-gray-200'
+                      : 'bg-[#f8f9fa] dark:bg-slate-800 text-gray-600 dark:text-slate-400 group-hover:bg-gray-200 dark:group-hover:bg-slate-700'
                   }`}
                 >
                   {rowIndex}
@@ -153,7 +153,7 @@ export const TradeTable: React.FC<TradeTableProps> = ({
                     e.stopPropagation();
                     onSelectTrade(trade, `A${rowIndex}`, trade.tanggal);
                   }}
-                  className="p-2 border-r border-gray-200 whitespace-nowrap font-mono text-gray-700"
+                  className="p-2 border-r border-gray-200 dark:border-slate-800 whitespace-nowrap font-mono text-gray-700 dark:text-slate-300"
                 >
                   {trade.tanggal}
                 </td>
@@ -164,11 +164,9 @@ export const TradeTable: React.FC<TradeTableProps> = ({
                     e.stopPropagation();
                     onSelectTrade(trade, `B${rowIndex}`, trade.pair);
                   }}
-                  className="p-2 border-r border-gray-200 whitespace-nowrap font-bold text-gray-900"
+                  className="p-2 border-r border-gray-200 dark:border-slate-800 whitespace-nowrap font-bold text-gray-900 dark:text-white"
                 >
-                  <span className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-300">
-                    {trade.pair}
-                  </span>
+                  {trade.pair}
                 </td>
 
                 {/* Col C: Posisi (BUY / SELL) */}
@@ -177,31 +175,31 @@ export const TradeTable: React.FC<TradeTableProps> = ({
                     e.stopPropagation();
                     onSelectTrade(trade, `C${rowIndex}`, trade.posisi);
                   }}
-                  className="p-2 border-r border-gray-200 whitespace-nowrap text-center"
+                  className="p-2 border-r border-gray-200 dark:border-slate-800 whitespace-nowrap"
                 >
                   <span
-                    className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full font-bold text-[11px] border ${
+                    className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded font-bold text-[11px] ${
                       trade.posisi === 'BUY'
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                        : 'bg-rose-100 text-rose-800 border-rose-300'
+                        ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+                        : 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700'
                     }`}
                   >
                     {trade.posisi === 'BUY' ? (
-                      <ArrowUpRight className="w-3 h-3" />
+                      <ArrowUpRight className="w-3 h-3 text-emerald-600 dark:text-emerald-400 stroke-[2.5]" />
                     ) : (
-                      <ArrowDownRight className="w-3 h-3" />
+                      <ArrowDownRight className="w-3 h-3 text-rose-600 dark:text-rose-400 stroke-[2.5]" />
                     )}
                     {trade.posisi}
                   </span>
                 </td>
 
-                {/* Col D: Entry */}
+                {/* Col D: Entry Price */}
                 <td
                   onClick={(e) => {
                     e.stopPropagation();
                     onSelectTrade(trade, `D${rowIndex}`, String(trade.entry));
                   }}
-                  className="p-2 border-r border-gray-200 whitespace-nowrap font-mono text-right text-gray-800"
+                  className="p-2 border-r border-gray-200 dark:border-slate-800 whitespace-nowrap font-mono text-right text-gray-700 dark:text-slate-300"
                 >
                   {trade.entry}
                 </td>
@@ -212,7 +210,7 @@ export const TradeTable: React.FC<TradeTableProps> = ({
                     e.stopPropagation();
                     onSelectTrade(trade, `E${rowIndex}`, String(trade.sl));
                   }}
-                  className="p-2 border-r border-gray-200 whitespace-nowrap font-mono text-right text-rose-700 bg-rose-50/20"
+                  className="p-2 border-r border-gray-200 dark:border-slate-800 whitespace-nowrap font-mono text-right text-rose-600 dark:text-rose-400"
                 >
                   {trade.sl}
                 </td>
@@ -223,7 +221,7 @@ export const TradeTable: React.FC<TradeTableProps> = ({
                     e.stopPropagation();
                     onSelectTrade(trade, `F${rowIndex}`, String(trade.tp));
                   }}
-                  className="p-2 border-r border-gray-200 whitespace-nowrap font-mono text-right text-emerald-700 bg-emerald-50/20"
+                  className="p-2 border-r border-gray-200 dark:border-slate-800 whitespace-nowrap font-mono text-right text-emerald-600 dark:text-emerald-400"
                 >
                   {trade.tp}
                 </td>
@@ -232,66 +230,70 @@ export const TradeTable: React.FC<TradeTableProps> = ({
                 <td
                   onClick={(e) => {
                     e.stopPropagation();
-                    onSelectTrade(trade, `G${rowIndex}`, trade.lot);
+                    onSelectTrade(trade, `G${rowIndex}`, String(trade.lot));
                   }}
-                  className="p-2 border-r border-gray-200 whitespace-nowrap text-center font-medium text-gray-700"
+                  className="p-2 border-r border-gray-200 dark:border-slate-800 whitespace-nowrap font-mono text-center text-gray-700 dark:text-slate-300"
                 >
                   {trade.lot}
                 </td>
 
-                {/* Col H: Hasil (Pips) */}
+                {/* Col H: Pips */}
                 <td
                   onClick={(e) => {
                     e.stopPropagation();
-                    onSelectTrade(
-                      trade,
-                      `H${rowIndex}`,
-                      `${trade.pips > 0 ? '+' : ''}${trade.pips} Pips`
-                    );
+                    onSelectTrade(trade, `H${rowIndex}`, `${trade.pips} Pips`);
                   }}
-                  className={`p-2 border-r border-gray-200 whitespace-nowrap font-bold text-center ${
+                  className={`p-2 border-r border-gray-200 dark:border-slate-800 whitespace-nowrap font-mono font-bold text-center ${
                     isProfit
-                      ? 'text-emerald-700 bg-emerald-50/50'
+                      ? 'bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400'
                       : isLoss
-                      ? 'text-rose-700 bg-rose-50/50'
-                      : 'text-gray-600 bg-gray-50'
+                      ? 'bg-rose-50/70 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400'
+                      : 'text-gray-600 dark:text-slate-400'
                   }`}
                 >
-                  <span className="inline-block px-1.5 py-0.5 rounded">
-                    {trade.pips > 0 ? `+${trade.pips}` : trade.pips} Pips
+                  <span className="text-[11px] mr-0.5">
+                    {isProfit ? '▲' : isLoss ? '▼' : '—'}
                   </span>
+                  {isProfit ? `+${trade.pips}` : trade.pips}
                 </td>
 
-                {/* Col I: R:R */}
+                {/* Col I: Risk:Reward */}
                 <td
                   onClick={(e) => {
                     e.stopPropagation();
                     onSelectTrade(trade, `I${rowIndex}`, trade.riskReward || '-');
                   }}
-                  className="p-2 border-r border-gray-200 whitespace-nowrap text-center font-mono text-gray-700"
+                  className="p-2 border-r border-gray-200 dark:border-slate-800 whitespace-nowrap font-mono text-center text-gray-700 dark:text-slate-300"
                 >
-                  {trade.riskReward || '-'}
+                  {trade.riskReward}
                 </td>
 
-                {/* Col J: Alasan Eksekusi */}
+                {/* Col J: Alasan Eksekusi + Strategy Tag (Fitur #8) */}
                 <td
                   onClick={(e) => {
                     e.stopPropagation();
                     onSelectTrade(trade, `J${rowIndex}`, trade.alasan);
                   }}
-                  className="p-2 border-r border-gray-200 max-w-xs truncate text-gray-800"
+                  className="p-2 border-r border-gray-200 dark:border-slate-800 max-w-xs truncate text-gray-800 dark:text-slate-200"
                   title={trade.alasan}
                 >
-                  {trade.alasan}
+                  <div className="flex items-center gap-1.5 overflow-hidden">
+                    {trade.strategi && (
+                      <span className="shrink-0 text-[10px] bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 px-1.5 py-0.2 rounded font-semibold">
+                        {trade.strategi}
+                      </span>
+                    )}
+                    <span className="truncate">{trade.alasan}</span>
+                  </div>
                 </td>
 
-                {/* Col K: Emosi / Psikologi */}
+                {/* Col K: Emosi */}
                 <td
                   onClick={(e) => {
                     e.stopPropagation();
                     onSelectTrade(trade, `K${rowIndex}`, trade.emosi);
                   }}
-                  className="p-2 border-r border-gray-200 whitespace-nowrap"
+                  className="p-2 border-r border-gray-200 dark:border-slate-800 whitespace-nowrap"
                 >
                   <span
                     className={`inline-block px-2 py-0.5 rounded text-[11px] border font-medium ${getEmotionBadge(
@@ -308,7 +310,7 @@ export const TradeTable: React.FC<TradeTableProps> = ({
                     e.stopPropagation();
                     onSelectTrade(trade, `L${rowIndex}`, trade.evaluasi);
                   }}
-                  className="p-2 border-r border-gray-200 max-w-sm truncate text-gray-600"
+                  className="p-2 border-r border-gray-200 dark:border-slate-800 max-w-sm truncate text-gray-600 dark:text-slate-400"
                   title={trade.evaluasi}
                 >
                   {trade.evaluasi || '-'}
@@ -326,18 +328,18 @@ export const TradeTable: React.FC<TradeTableProps> = ({
               <tr
                 key={`empty-row-${rowIndex}`}
                 onClick={onAddNew}
-                className="hover:bg-emerald-50/30 cursor-pointer text-gray-300"
+                className="hover:bg-emerald-50/30 dark:hover:bg-slate-800/40 cursor-pointer text-gray-300 dark:text-slate-700"
                 title="Klik untuk mengisi data pada baris ini"
               >
-                <td className="p-2 text-center font-mono font-medium text-gray-400 bg-[#f8f9fa] border-r border-gray-300 sticky left-0 z-10">
+                <td className="p-2 text-center font-mono font-medium text-gray-400 dark:text-slate-500 bg-[#f8f9fa] dark:bg-slate-800 border-r border-gray-300 dark:border-slate-800 sticky left-0 z-10">
                   {rowIndex}
                 </td>
                 {isFirstBlank && trades.length === 0 ? (
                   <td
                     colSpan={COLUMN_HEADERS.length}
-                    className="p-2 text-gray-400 italic text-left bg-emerald-50/20 border-r border-gray-200"
+                    className="p-2 text-gray-400 dark:text-slate-500 italic text-left bg-emerald-50/20 dark:bg-emerald-950/20 border-r border-gray-200 dark:border-slate-800"
                   >
-                    <span className="flex items-center gap-1 text-emerald-700 font-medium text-xs">
+                    <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-medium text-xs">
                       <Plus className="w-3.5 h-3.5" /> Lembar sheet masih kosong. Klik di sini untuk mencatat trade...
                     </span>
                   </td>
@@ -345,7 +347,7 @@ export const TradeTable: React.FC<TradeTableProps> = ({
                   COLUMN_HEADERS.map((h) => (
                     <td
                       key={h.col}
-                      className="p-2 border-r border-gray-200 h-8"
+                      className="p-2 border-r border-gray-200 dark:border-slate-800 h-8"
                     >
                       &nbsp;
                     </td>

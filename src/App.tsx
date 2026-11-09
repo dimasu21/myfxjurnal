@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Trade, TradeFilter } from './types/trade';
 import { getSavedTrades, saveTrades, clearSavedTrades } from './utils/storage';
-import { exportToExcel, exportToCsv, exportToPdf, importFromSpreadsheet } from './utils/exportImport';
+import { exportToExcel, exportToCsv, exportToPdf, importFromSpreadsheet, exportToJson, importFromJson } from './utils/exportImport';
 import { useForexTickers } from './utils/useForexTickers';
+import { evaluateDiscipline } from './utils/disciplineGuard';
 import { ExcelHeader } from './components/ExcelHeader';
 import { LiveTicker } from './components/LiveTicker';
 import { MarketSessions } from './components/MarketSessions';
@@ -16,6 +17,10 @@ import { AnalyticsModal } from './components/AnalyticsModal';
 import { LotCalculatorModal } from './components/LotCalculatorModal';
 import { EconomicCalendarModal } from './components/EconomicCalendarModal';
 import { LiveChartModal } from './components/LiveChartModal';
+import { DisciplineAlertBanner } from './components/DisciplineAlertBanner';
+import { HeatmapModal } from './components/HeatmapModal';
+import { CompoundingModal } from './components/CompoundingModal';
+import { TraderStatementCardModal } from './components/TraderStatementCardModal';
 import { Plus } from 'lucide-react';
 
 export default function App() {
@@ -25,6 +30,34 @@ export default function App() {
       ? localStorage.getItem('forex_journal_doc_title') || 'Jurnal_Trading_Forex.xlsx'
       : 'Jurnal_Trading_Forex.xlsx';
   });
+
+  // Dark Mode Theme (Bloomberg / TradingView Dark)
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('forex_journal_dark_mode');
+      if (saved !== null) return saved === 'true';
+      return false;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      try {
+        localStorage.setItem('forex_journal_dark_mode', 'true');
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      document.documentElement.classList.remove('dark');
+      try {
+        localStorage.setItem('forex_journal_dark_mode', 'false');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, [isDarkMode]);
 
   // Data trades default kosong (tanpa dummy data awal)
   const [trades, setTrades] = useState<Trade[]>([]);
@@ -39,6 +72,11 @@ export default function App() {
   const [isEcoCalendarOpen, setIsEcoCalendarOpen] = useState(false);
   const [isLiveChartOpen, setIsLiveChartOpen] = useState(false);
   const [chartPair, setChartPair] = useState('EUR/USD');
+
+  // Modals for Features 4, 5, 7, 8
+  const [isHeatmapOpen, setIsHeatmapOpen] = useState(false);
+  const [isCompoundingOpen, setIsCompoundingOpen] = useState(false);
+  const [isStatementCardOpen, setIsStatementCardOpen] = useState(false);
 
   // Active view: 'table' (Excel spreadsheet) or 'cards' (Touch-friendly card list)
   const [activeView, setActiveView] = useState<'table' | 'cards'>('table');
@@ -62,11 +100,13 @@ export default function App() {
     pair: '',
     status: '',
     emosi: '',
+    strategi: '',
     sortBy: 'tanggal',
     sortOrder: 'desc',
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const jsonFileInputRef = useRef<HTMLInputElement>(null);
 
   // Load from localStorage on mount (hanya sekali saat pertama buka)
   useEffect(() => {
@@ -81,6 +121,9 @@ export default function App() {
       setActiveView('cards');
     }
   }, []);
+
+  // Evaluasi kedisiplinan trading
+  const disciplineWarnings = useMemo(() => evaluateDiscipline(trades), [trades]);
 
   // Update Judul Dokumen (CRUD Judul)
   const handleUpdateTitle = (newTitle: string) => {
@@ -136,14 +179,18 @@ export default function App() {
       // Pair filter
       if (filter.pair && trade.pair !== filter.pair) return false;
 
-      // Search query (matches pair, alasan, evaluasi, emosi)
+      // Strategi filter
+      if (filter.strategi && trade.strategi !== filter.strategi) return false;
+
+      // Search query (matches pair, alasan, evaluasi, emosi, strategi)
       if (filter.search) {
         const q = filter.search.toLowerCase();
         const matchPair = trade.pair.toLowerCase().includes(q);
         const matchAlasan = trade.alasan.toLowerCase().includes(q);
         const matchEvaluasi = trade.evaluasi?.toLowerCase().includes(q);
         const matchEmosi = trade.emosi?.toLowerCase().includes(q);
-        if (!matchPair && !matchAlasan && !matchEvaluasi && !matchEmosi) {
+        const matchStrategi = trade.strategi?.toLowerCase().includes(q);
+        if (!matchPair && !matchAlasan && !matchEvaluasi && !matchEmosi && !matchStrategi) {
           return false;
         }
       }
@@ -255,8 +302,20 @@ export default function App() {
     exportToPdf(trades, `${cleanBaseName}.pdf`);
   };
 
+  const handleExportBackupJson = () => {
+    if (trades.length === 0) {
+      alert('Belum ada data trade untuk di-backup ke JSON!');
+      return;
+    }
+    exportToJson(trades, `${cleanBaseName}_backup.json`);
+  };
+
   const handleImportClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleImportJsonClick = () => {
+    jsonFileInputRef.current?.click();
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,18 +339,39 @@ export default function App() {
     }
   };
 
+  const handleJsonFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const imported = await importFromJson(file);
+      if (imported.length > 0) {
+        setTrades((prev) => [...imported, ...prev]);
+        setHasUnsavedChanges(true);
+        alert(`Berhasil me-restore ${imported.length} baris data trade dari file backup JSON! Klik "Simpan" untuk menyimpan permanen.`);
+      } else {
+        alert('Tidak ada baris data trade valid dalam file JSON tersebut.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Gagal me-restore file JSON. Pastikan file valid.');
+    } finally {
+      if (jsonFileInputRef.current) jsonFileInputRef.current.value = '';
+    }
+  };
+
   const handleOpenLiveChart = (pair: string = 'EUR/USD') => {
     setChartPair(pair);
     setIsLiveChartOpen(true);
   };
 
-  const handleSelectTickerPair = (pair: string, price: number) => {
+  const handleSelectTickerPair = (pair: string) => {
     handleOpenLiveChart(pair);
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-white text-gray-800 font-sans">
-      {/* Hidden File Input for Excel Import */}
+    <div className={`flex flex-col h-screen w-screen overflow-hidden ${isDarkMode ? 'bg-[#0f172a] text-slate-100' : 'bg-white text-gray-800'} font-sans`}>
+      {/* Hidden File Input for Excel/CSV Import */}
       <input
         ref={fileInputRef}
         type="file"
@@ -300,7 +380,16 @@ export default function App() {
         onChange={handleFileChange}
       />
 
-      {/* Excel Ribbon Top Header */}
+      {/* Hidden File Input for JSON Backup Restore */}
+      <input
+        ref={jsonFileInputRef}
+        type="file"
+        accept=".json"
+        className="hidden"
+        onChange={handleJsonFileChange}
+      />
+
+      {/* Excel Ribbon Top Header with Dropdown File & Ekspor */}
       <ExcelHeader
         documentTitle={documentTitle}
         onUpdateTitle={handleUpdateTitle}
@@ -309,6 +398,9 @@ export default function App() {
         onOpenAnalytics={() => setIsAnalyticsOpen(true)}
         onOpenLotCalc={() => setIsLotCalcOpen(true)}
         onOpenEcoCalendar={() => setIsEcoCalendarOpen(true)}
+        onOpenHeatmap={() => setIsHeatmapOpen(true)}
+        onOpenCompounding={() => setIsCompoundingOpen(true)}
+        onOpenStatementCard={() => setIsStatementCardOpen(true)}
         showMarketSessions={showMarketSessions}
         onToggleMarketSessions={() => setShowMarketSessions((prev) => !prev)}
         showLiveTicker={showLiveTicker}
@@ -316,15 +408,22 @@ export default function App() {
         onExportExcel={handleExportExcel}
         onExportCsv={handleExportCsv}
         onExportPdf={handleExportPdf}
+        onExportBackupJson={handleExportBackupJson}
         onImportClick={handleImportClick}
+        onImportJsonClick={handleImportJsonClick}
         onClearAll={handleClearAll}
         onManualSave={handleManualSave}
         hasUnsavedChanges={hasUnsavedChanges}
         isSaveSuccess={isSaveSuccess}
         activeView={activeView}
         setActiveView={setActiveView}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={() => setIsDarkMode((prev) => !prev)}
         totalTrades={trades.length}
       />
+
+      {/* Discipline Alert Banner (Overtrading / Revenge Trade / Loss Streak) */}
+      <DisciplineAlertBanner warnings={disciplineWarnings} />
 
       {/* REAL-TIME FEATURE 1: Running Forex & Gold Price Ticker */}
       {showLiveTicker && (
@@ -405,7 +504,7 @@ export default function App() {
         editingTrade={editingTrade}
       />
 
-      {/* REAL-TIME FEATURE 3: Lot Size & Risk Calculator Modal */}
+      {/* REAL-TIME FEATURE 3: Lot Size & Risk Calculator Modal (Support $10 & Cent Account) */}
       <LotCalculatorModal
         isOpen={isLotCalcOpen}
         onClose={() => setIsLotCalcOpen(false)}
@@ -417,14 +516,35 @@ export default function App() {
         onClose={() => setIsEcoCalendarOpen(false)}
       />
 
-      {/* REAL-TIME FEATURE 5: Live TradingView Real-Time Chart */}
+      {/* REAL-TIME FEATURE 5: Live TradingView Real-Time Chart (Includes Login Account Link) */}
       <LiveChartModal
         isOpen={isLiveChartOpen}
         onClose={() => setIsLiveChartOpen(false)}
         initialPair={chartPair}
       />
 
-      {/* Deep Analytics & Trading Psychology Modal */}
+      {/* FITUR 4: Heatmap Jam & Hari Trading Terbaik */}
+      <HeatmapModal
+        isOpen={isHeatmapOpen}
+        onClose={() => setIsHeatmapOpen(false)}
+        trades={trades}
+      />
+
+      {/* FITUR 5: Simulator Target Compounding Modal */}
+      <CompoundingModal
+        isOpen={isCompoundingOpen}
+        onClose={() => setIsCompoundingOpen(false)}
+      />
+
+      {/* FITUR 7: Trader Statement Performance Card */}
+      <TraderStatementCardModal
+        isOpen={isStatementCardOpen}
+        onClose={() => setIsStatementCardOpen(false)}
+        trades={trades}
+        documentTitle={documentTitle}
+      />
+
+      {/* Deep Analytics & Fitur 8 Strategy Breakdown Modal */}
       <AnalyticsModal
         isOpen={isAnalyticsOpen}
         onClose={() => {

@@ -78,3 +78,4 @@ export function evaluateDiscipline(trades: Trade[]): DisciplineWarning[] {
 
   return warnings;
 }
+

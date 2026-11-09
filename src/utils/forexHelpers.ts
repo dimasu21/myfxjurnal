@@ -1,16 +1,10 @@
 import { TradingSession, EconomicEvent, LotCalculatorResult } from '../types/realtime';
 
 export function getTradingSessions(now: Date = new Date()): TradingSession[] {
-  // Get current UTC hour & minute
   const utcHours = now.getUTCHours();
   const utcMinutes = now.getUTCMinutes();
   const utcTime = utcHours + utcMinutes / 60;
 
-  // Session definition in UTC:
-  // Sydney: 21:00 UTC - 06:00 UTC (Next day)
-  // Tokyo: 00:00 UTC - 09:00 UTC
-  // London: 08:00 UTC - 16:00 UTC (or 07-15 / 08-16 standard)
-  // New York: 13:00 UTC - 22:00 UTC
   const rawSessions = [
     { name: 'Sydney', city: 'Australia', flag: '🇦🇺', openUtc: 21, closeUtc: 6, tzName: 'AEST (UTC+10)' },
     { name: 'Tokyo', city: 'Asia', flag: '🇯🇵', openUtc: 0, closeUtc: 9, tzName: 'JST (UTC+9)' },
@@ -25,7 +19,6 @@ export function getTradingSessions(now: Date = new Date()): TradingSession[] {
     let opensIn = '';
 
     if (s.openUtc > s.closeUtc) {
-      // Over midnight UTC (e.g., Sydney 21:00 - 06:00)
       isOpen = utcTime >= s.openUtc || utcTime < s.closeUtc;
       const totalDuration = 24 - s.openUtc + s.closeUtc;
       if (isOpen) {
@@ -38,7 +31,6 @@ export function getTradingSessions(now: Date = new Date()): TradingSession[] {
         opensIn = `${Math.floor(waitHours)}j ${Math.round((waitHours % 1) * 60)}m`;
       }
     } else {
-      // Normal range within same UTC day
       isOpen = utcTime >= s.openUtc && utcTime < s.closeUtc;
       const totalDuration = s.closeUtc - s.openUtc;
       if (isOpen) {
@@ -157,37 +149,58 @@ export function calculateLotSize(
       standardLots: 0,
       miniLots: 0,
       microLots: 0,
+      centLots: 0,
       units: 0,
       pipValue: 0,
+      recommendedLot: '0.01 Lot',
+      isSmallAccount: false,
     };
   }
 
   // 1 pip value in USD per 1 Standard Lot (100,000 units):
-  // EUR/USD, GBP/USD, AUD/USD, NZD/USD = $10 per pip per lot
-  // USD/JPY = ~$6.50 - $10 depending on rate
-  // XAU/USD = $10 per pip (0.10 price move = $10 on 100oz standard lot)
   let pipValuePerStandardLot = 10;
   const cleanPair = pair.toUpperCase();
   if (cleanPair.includes('JPY')) {
     pipValuePerStandardLot = 6.6; // approx on USD/JPY 150+
   }
 
-  // riskAmount = standardLots * stopLossPips * pipValuePerStandardLot
-  const standardLots = riskAmount / (stopLossPips * pipValuePerStandardLot);
-  const roundedStandard = parseFloat(standardLots.toFixed(2));
-  const miniLots = parseFloat((standardLots * 10).toFixed(2));
-  const microLots = parseFloat((standardLots * 100).toFixed(2));
-  const units = Math.round(standardLots * 100000);
-  const pipValue = parseFloat((standardLots * pipValuePerStandardLot).toFixed(2));
+  // Raw lot calculation
+  const rawStandard = riskAmount / (stopLossPips * pipValuePerStandardLot);
+  
+  // Format with high precision to prevent $10 balance from rounding to 0.00
+  const standardLots = rawStandard < 0.01 
+    ? parseFloat(rawStandard.toFixed(4))
+    : parseFloat(rawStandard.toFixed(2));
+    
+  const miniLots = parseFloat((rawStandard * 10).toFixed(3));
+  const microLots = parseFloat((rawStandard * 100).toFixed(2));
+  const centLots = parseFloat((rawStandard * 100).toFixed(2)); // Cent account standard
+  const units = Math.max(1, Math.round(rawStandard * 100000));
+  const pipValue = parseFloat((rawStandard * pipValuePerStandardLot).toFixed(4));
+
+  const isSmallAccount = rawStandard < 0.01;
+  let recommendedLot = '';
+  let brokerMinNote = '';
+
+  if (isSmallAccount) {
+    // Pada modal kecil seperti $10:
+    recommendedLot = '0.01 Lot (Min Broker)';
+    brokerMinNote = `Untuk modal $${accountBalance}, lot matematis adalah ${rawStandard.toFixed(4)} Lot. Pada broker standar MT4/MT5, minimum order adalah 0.01 Lot ($0.10/pip). Jika menggunakan Akun Cent (USC), gunakan ${centLots > 0 ? centLots : '0.10'} Cent Lot agar risiko tetap presisi ${riskPercent}% ($${riskAmount.toFixed(2)})!`;
+  } else {
+    recommendedLot = `${standardLots} Lot`;
+  }
 
   return {
     riskAmount: parseFloat(riskAmount.toFixed(2)),
     stopLossPips,
-    standardLots: roundedStandard,
+    standardLots,
     miniLots,
     microLots,
+    centLots,
     units,
     pipValue,
+    recommendedLot,
+    brokerMinNote,
+    isSmallAccount,
   };
 }
-

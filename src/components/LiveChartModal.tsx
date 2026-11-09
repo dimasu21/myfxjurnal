@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Maximize2, Minimize2, ExternalLink, CandlestickChart } from 'lucide-react';
+import { X, Maximize2, Minimize2, ExternalLink, CandlestickChart, LogIn } from 'lucide-react';
 
 interface LiveChartModalProps {
   isOpen: boolean;
@@ -53,6 +53,9 @@ export const LiveChartModal: React.FC<LiveChartModalProps> = ({
     selectedSymbol
   )}&interval=${interval}&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=%5B%5D&theme=${theme}&style=1&timezone=Asia%2FJakarta&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=id&utm_source=localhost`;
 
+  // URL untuk membuka langsung di akun TradingView user
+  const directTvUrl = `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(selectedSymbol)}&interval=${interval}`;
+
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-1 sm:p-3 overflow-hidden animate-in fade-in duration-150">
       <div
@@ -70,17 +73,30 @@ export const LiveChartModal: React.FC<LiveChartModalProps> = ({
               <h3 className="font-bold text-xs sm:text-sm flex items-center gap-2">
                 <span>TradingView Live Chart</span>
                 <span className="text-[10px] bg-emerald-950/60 text-emerald-200 px-1.5 py-0.2 rounded font-mono font-normal">
-                  Real-Time Candlestick
+                  Real-Time
                 </span>
               </h3>
             </div>
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">
+            {/* Tombol Buka di Akun TradingView User Sendiri (Login) */}
+            <a
+              href={directTvUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-[11px] bg-blue-600 hover:bg-blue-500 text-white font-bold px-2.5 py-1 rounded shadow-xs transition-colors"
+              title="Buka chart ini langsung di akun TradingView Anda (dengan layout & template tersimpan)"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Buka Akun TradingView</span>
+              <ExternalLink className="w-3 h-3 opacity-80" />
+            </a>
+
             {/* Theme Toggle inside Chart */}
             <button
               onClick={() => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))}
-              className="text-[11px] px-2 py-0.5 rounded bg-white/15 hover:bg-white/25 transition-colors"
+              className="text-[11px] px-2 py-1 rounded bg-white/15 hover:bg-white/25 transition-colors font-medium"
             >
               {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
             </button>
@@ -155,18 +171,30 @@ export const LiveChartModal: React.FC<LiveChartModalProps> = ({
             src={widgetUrl}
             title="TradingView Live Chart"
             className="w-full h-full border-0"
-            allow="fullscreen"
+            allow="clipboard-write; fullscreen; web-share"
           />
         </div>
 
         {/* Footer info */}
-        <div className="bg-gray-50 border-t border-gray-200 px-3 py-1 flex items-center justify-between text-[11px] text-gray-500 shrink-0">
-          <span>
-            Simbol Aktif: <strong className="text-gray-800">{selectedSymbol}</strong> | Timeframe: <strong>{interval}</strong>
-          </span>
-          <span className="hidden sm:inline">
-            Didukung oleh Official TradingView Advanced Charts (Zero Lag & Real-Time)
-          </span>
+        <div className="bg-gray-50 border-t border-gray-200 px-3 py-1.5 flex items-center justify-between text-[11px] text-gray-500 shrink-0">
+          <div className="flex items-center gap-2">
+            <span>
+              Simbol Aktif: <strong className="text-gray-800">{selectedSymbol}</strong> | Timeframe: <strong>{interval}</strong>
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline">
+              Ingin pakai template & indikator akun pribadi?
+            </span>
+            <a
+              href={directTvUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline font-bold flex items-center gap-0.5"
+            >
+              Buka {selectedSymbol} di Akun TradingView Anda &rarr;
+            </a>
+          </div>
         </div>
       </div>
     </div>

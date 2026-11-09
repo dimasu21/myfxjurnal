@@ -8,7 +8,8 @@ import {
   AlertTriangle, 
   CheckCircle2, 
   LineChart as LineChartIcon,
-  ShieldCheck
+  ShieldCheck,
+  Target
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -59,6 +60,18 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
     pairStats[p].pips += t.pips;
   });
 
+  // Performa berdasarkan Strategi Setup (Fitur #8)
+  const strategyStats: { [strat: string]: { count: number; wins: number; pips: number } } = {};
+  trades.forEach((t) => {
+    const st = t.strategi || 'Lainnya';
+    if (!strategyStats[st]) {
+      strategyStats[st] = { count: 0, wins: 0, pips: 0 };
+    }
+    strategyStats[st].count += 1;
+    if (t.pips > 0) strategyStats[st].wins += 1;
+    strategyStats[st].pips += t.pips;
+  });
+
   // Kumulatif Pips / Equity Curve Data
   let runningPips = 0;
   const equityData = trades.map((t, i) => {
@@ -83,7 +96,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                 Laporan Analisis & Evaluasi Psikologi
               </h3>
               <p className="text-[11px] text-emerald-200">
-                Equity curve, deteksi FOMO/Revenge Trading & performa pair
+                Equity curve, performa strategi & analisis psikologi
               </p>
             </div>
           </div>
@@ -178,6 +191,65 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
             </div>
           )}
 
+          {/* Analisis Setup Strategi (Fitur #8) */}
+          <div>
+            <h4 className="font-bold text-gray-800 text-sm mb-2 flex items-center gap-1.5">
+              <Target className="w-4 h-4 text-purple-600" />
+              <span>Efektivitas Setup Strategi (Strategi Mana yang Paling Menghasilkan?)</span>
+            </h4>
+            <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-gray-100 text-gray-600 border-b border-gray-200">
+                  <tr>
+                    <th className="p-2 font-semibold">Nama Setup / Teknik</th>
+                    <th className="p-2 font-semibold text-center">Jumlah Trade</th>
+                    <th className="p-2 font-semibold text-center">Win Rate</th>
+                    <th className="p-2 font-semibold text-right">Net Pips</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {Object.entries(strategyStats).length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="p-4 text-center text-gray-400">
+                        Belum ada strategi yang di-tag.
+                      </td>
+                    </tr>
+                  ) : (
+                    Object.entries(strategyStats).map(([strat, data]) => {
+                      const winrate = ((data.wins / data.count) * 100).toFixed(0);
+                      const isPositive = data.pips >= 0;
+
+                      return (
+                        <tr key={strat} className="hover:bg-white">
+                          <td className="p-2 font-bold text-gray-800">
+                            🎯 {strat}
+                          </td>
+                          <td className="p-2 text-center text-gray-600">{data.count}</td>
+                          <td className="p-2 text-center">
+                            <span
+                              className={`font-semibold ${
+                                Number(winrate) >= 50 ? 'text-emerald-700' : 'text-rose-700'
+                              }`}
+                            >
+                              {winrate}%
+                            </span>
+                          </td>
+                          <td
+                            className={`p-2 text-right font-bold ${
+                              isPositive ? 'text-emerald-700' : 'text-rose-700'
+                            }`}
+                          >
+                            {data.pips > 0 ? `+${data.pips}` : data.pips} Pips
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           {/* Analisis Psikologi Trading */}
           <div>
             <h4 className="font-bold text-gray-800 text-sm mb-2 flex items-center gap-1.5">
@@ -210,7 +282,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                         <tr key={emotion} className="hover:bg-white">
                           <td className="p-2 font-medium text-gray-800">
                             {emotion === 'FOMO' || emotion === 'Revenge Trade' ? (
-                              <span className="text-rose-600 flex items-center gap-1">
+                              <span className="text-rose-600 flex items-center gap-1 font-bold">
                                 <AlertTriangle className="w-3.5 h-3.5" /> {emotion}
                               </span>
                             ) : (
@@ -294,7 +366,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
               <ShieldCheck className="w-4 h-4 text-amber-600" /> Insight Trader Forex:
             </h5>
             <p className="text-[11px] leading-relaxed">
-              Catatan jurnal membuktikan bahwa trader yang disiplin membatasi risiko maksimal <strong>1-2% modal per trade</strong> dan tidak melakukan <strong>Revenge Trading</strong> pasca SL tersentuh memiliki probabilitas bertahan hidup di pasar forex di atas 90%.
+              Fokuslah hanya pada strategi dengan <strong>Win Rate &gt; 50%</strong> dan rasio Risk:Reward minimal <strong>1:2</strong>. Jangan memaksakan trade di luar setup teruji Anda saat market sedang lambat.
             </p>
           </div>
         </div>

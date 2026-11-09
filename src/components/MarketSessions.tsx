@@ -31,21 +31,21 @@ export const MarketSessions: React.FC = () => {
   const isOverlap = openCount >= 2;
 
   return (
-    <div className="bg-white border-b border-gray-300 px-3 py-2 text-xs">
+    <div className="bg-white dark:bg-[#111827] border-b border-gray-300 dark:border-slate-800 px-3 py-2 text-xs transition-colors">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-1.5 font-bold text-gray-800">
-          <Globe2 className="w-4 h-4 text-excel-green" />
+        <div className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-slate-100">
+          <Globe2 className="w-4 h-4 text-excel-green dark:text-emerald-400" />
           <span>Sesi Pasar Forex Dunia (Real-Time)</span>
           {isOverlap && (
-            <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-bold border border-amber-300 animate-pulse">
-              <Zap className="w-3 h-3 text-amber-600" /> Overlap Sesi: Volatilitas Tinggi!
+            <span className="inline-flex items-center gap-1 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 text-[10px] px-2 py-0.5 rounded-full font-bold border border-amber-300 dark:border-amber-700 animate-pulse">
+              <Zap className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Overlap Sesi: Volatilitas Tinggi!
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 font-mono text-gray-600 text-[11px] bg-gray-100 px-2.5 py-0.5 rounded border border-gray-200">
-          <Clock className="w-3 h-3 text-gray-500" />
-          <span>Waktu Anda: <strong className="text-gray-900">{currentTimeStr}</strong></span>
+        <div className="flex items-center gap-1.5 font-mono text-gray-600 dark:text-slate-300 text-[11px] bg-gray-100 dark:bg-slate-800 px-2.5 py-0.5 rounded border border-gray-200 dark:border-slate-700">
+          <Clock className="w-3 h-3 text-gray-500 dark:text-slate-400" />
+          <span>Waktu Anda: <strong className="text-gray-900 dark:text-white">{currentTimeStr}</strong></span>
         </div>
       </div>
 
@@ -58,12 +58,12 @@ export const MarketSessions: React.FC = () => {
               key={s.name}
               className={`p-2.5 rounded-lg border transition-all ${
                 isOpen
-                  ? 'bg-emerald-50/90 border-emerald-300 ring-1 ring-emerald-400/50 shadow-xs'
-                  : 'bg-gray-50/70 border-gray-200 opacity-75'
+                  ? 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 ring-1 ring-emerald-400/50 shadow-xs'
+                  : 'bg-gray-50/70 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 opacity-75'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-gray-800 text-xs flex items-center gap-1">
+                <span className="font-bold text-gray-800 dark:text-slate-200 text-xs flex items-center gap-1">
                   <span>{s.flag}</span>
                   <span>{s.name}</span>
                 </span>
@@ -71,25 +71,25 @@ export const MarketSessions: React.FC = () => {
                   className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full uppercase ${
                     isOpen
                       ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'bg-gray-300 text-gray-700'
+                      : 'bg-gray-300 dark:bg-slate-700 text-gray-700 dark:text-slate-300'
                   }`}
                 >
                   {isOpen ? 'Buka' : 'Tutup'}
                 </span>
               </div>
 
-              <div className="text-[10px] text-gray-500 mt-1 flex items-center justify-between">
+              <div className="text-[10px] text-gray-500 dark:text-slate-400 mt-1 flex items-center justify-between">
                 <span>{s.city}</span>
-                <span className="font-mono text-gray-600 font-medium">
+                <span className="font-mono text-gray-600 dark:text-slate-300 font-medium">
                   {isOpen ? `Tutup: ${s.closesIn}` : `Buka: ${s.opensIn}`}
                 </span>
               </div>
 
               {/* Progress bar inside session */}
-              <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1.5 overflow-hidden">
+              <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 mt-1.5 overflow-hidden">
                 <div
                   className={`h-1.5 rounded-full transition-all duration-500 ${
-                    isOpen ? 'bg-emerald-500' : 'bg-gray-400'
+                    isOpen ? 'bg-emerald-500' : 'bg-gray-400 dark:bg-slate-600'
                   }`}
                   style={{ width: `${isOpen ? s.progress : 0}%` }}
                 />
@@ -101,4 +101,3 @@ export const MarketSessions: React.FC = () => {
     </div>
   );
 };
-

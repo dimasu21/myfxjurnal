@@ -40,7 +40,10 @@ export interface LotCalculatorResult {
   standardLots: number;
   miniLots: number;
   microLots: number;
+  centLots: number;
   units: number;
   pipValue: number;
+  recommendedLot: string;
+  brokerMinNote?: string;
+  isSmallAccount: boolean;
 }
-

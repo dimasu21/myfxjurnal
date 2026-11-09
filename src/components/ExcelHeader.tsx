@@ -19,7 +19,14 @@ import {
   Calculator,
   Calendar,
   Radio,
-  CandlestickChart
+  CandlestickChart,
+  Flame,
+  TrendingUp,
+  Award,
+  ChevronDown,
+  Database,
+  Moon,
+  Sun
 } from 'lucide-react';
 
 interface ExcelHeaderProps {
@@ -30,6 +37,9 @@ interface ExcelHeaderProps {
   onOpenAnalytics: () => void;
   onOpenLotCalc: () => void;
   onOpenEcoCalendar: () => void;
+  onOpenHeatmap: () => void;
+  onOpenCompounding: () => void;
+  onOpenStatementCard: () => void;
   showMarketSessions: boolean;
   onToggleMarketSessions: () => void;
   showLiveTicker: boolean;
@@ -37,13 +47,17 @@ interface ExcelHeaderProps {
   onExportExcel: () => void;
   onExportCsv: () => void;
   onExportPdf: () => void;
+  onExportBackupJson: () => void;
   onImportClick: () => void;
+  onImportJsonClick: () => void;
   onClearAll: () => void;
   onManualSave: () => void;
   hasUnsavedChanges: boolean;
   isSaveSuccess: boolean;
   activeView: 'table' | 'cards';
   setActiveView: (view: 'table' | 'cards') => void;
+  isDarkMode: boolean;
+  onToggleDarkMode: () => void;
   totalTrades: number;
 }
 
@@ -55,6 +69,9 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   onOpenAnalytics,
   onOpenLotCalc,
   onOpenEcoCalendar,
+  onOpenHeatmap,
+  onOpenCompounding,
+  onOpenStatementCard,
   showMarketSessions,
   onToggleMarketSessions,
   showLiveTicker,
@@ -62,18 +79,24 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   onExportExcel,
   onExportCsv,
   onExportPdf,
+  onExportBackupJson,
   onImportClick,
+  onImportJsonClick,
   onClearAll,
   onManualSave,
   hasUnsavedChanges,
   isSaveSuccess,
   activeView,
   setActiveView,
+  isDarkMode,
+  onToggleDarkMode,
   totalTrades
 }) => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(documentTitle);
+  const [isFileMenuOpen, setIsFileMenuOpen] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const fileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setTitleInput(documentTitle);
@@ -85,6 +108,17 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
       titleInputRef.current?.select();
     }
   }, [isEditingTitle]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (fileMenuRef.current && !fileMenuRef.current.contains(e.target as Node)) {
+        setIsFileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSaveTitle = () => {
     const trimmed = titleInput.trim();
@@ -110,11 +144,11 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   };
 
   return (
-    <header className="bg-excel-green text-white shadow-md select-none sticky top-0 z-30">
-      {/* Top Title Bar ala Excel */}
-      <div className="px-3 py-1.5 flex items-center justify-between border-b border-emerald-800 text-xs sm:text-sm">
+    <header className={`${isDarkMode ? 'bg-[#0f172a] border-b border-slate-700' : 'bg-excel-green'} text-white shadow-md select-none sticky top-0 z-30 transition-colors`}>
+      {/* Top Title Bar */}
+      <div className="px-3 py-1.5 flex items-center justify-between border-b border-white/10 text-xs sm:text-sm">
         {/* Document Title Area (CRUD Judul) */}
-        <div className="flex items-center gap-2 overflow-hidden max-w-[65%] sm:max-w-md">
+        <div className="flex items-center gap-2 overflow-hidden max-w-[60%] sm:max-w-md">
           <div className="bg-white/20 p-1 rounded flex items-center justify-center shrink-0">
             <FileSpreadsheet className="w-4 h-4 text-white" />
           </div>
@@ -173,12 +207,31 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
 
         {/* Action Buttons Top Right */}
         <div className="flex items-center gap-2">
+          {/* Fitur #9: Dark Mode Toggle */}
+          <button
+            onClick={onToggleDarkMode}
+            className="flex items-center gap-1 px-2 py-1 rounded bg-white/15 hover:bg-white/25 text-white transition-colors text-xs font-semibold"
+            title={isDarkMode ? 'Beralih ke Tema Excel Terang' : 'Beralih ke Tema TradingView Dark'}
+          >
+            {isDarkMode ? (
+              <>
+                <Sun className="w-3.5 h-3.5 text-yellow-300" />
+                <span className="hidden sm:inline">Light</span>
+              </>
+            ) : (
+              <>
+                <Moon className="w-3.5 h-3.5 text-slate-200" />
+                <span className="hidden sm:inline">Dark</span>
+              </>
+            )}
+          </button>
+
           {/* View Toggle on Mobile */}
-          <div className="flex bg-emerald-900/70 p-0.5 rounded text-xs">
+          <div className="flex bg-black/25 p-0.5 rounded text-xs">
             <button
               onClick={() => setActiveView('table')}
               className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                activeView === 'table' ? 'bg-white text-excel-green font-bold shadow-sm' : 'text-emerald-100 hover:text-white'
+                activeView === 'table' ? 'bg-white text-emerald-800 font-bold shadow-xs' : 'text-emerald-100 hover:text-white'
               }`}
               title="Tampilan Tabel Excel"
             >
@@ -188,7 +241,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
             <button
               onClick={() => setActiveView('cards')}
               className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                activeView === 'cards' ? 'bg-white text-excel-green font-bold shadow-sm' : 'text-emerald-100 hover:text-white'
+                activeView === 'cards' ? 'bg-white text-emerald-800 font-bold shadow-xs' : 'text-emerald-100 hover:text-white'
               }`}
               title="Tampilan Kartu Ringkas (Cocok di HP)"
             >
@@ -208,9 +261,10 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
         </div>
       </div>
 
-      {/* Excel Ribbon Quick Action Bar */}
-      <div className="bg-[#0e6b37] px-3 py-1.5 flex items-center justify-between gap-2 overflow-x-auto text-xs scrollbar-none">
+      {/* Excel Ribbon Quick Action Bar (RAPI DENGAN DROPDOWN EKSPOR/IMPORT) */}
+      <div className={`px-3 py-1.5 flex items-center justify-between gap-2 overflow-x-auto text-xs scrollbar-none ${isDarkMode ? 'bg-[#1e293b]' : 'bg-[#0e6b37]'}`}>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          {/* SECTION 1: ENTRI & SIMPAN */}
           <button
             onClick={onOpenNewModal}
             className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-white transition-colors"
@@ -232,27 +286,16 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
             <span>Simpan (Ctrl+S)</span>
           </button>
 
-          <div className="w-[1px] h-4 bg-emerald-700 mx-1" />
+          <div className="w-[1px] h-4 bg-white/20 mx-1" />
 
-          {/* REALTIME FEATURES: Chart, Ticker, Market Sessions, Lot Calculator, Economic News */}
+          {/* SECTION 2: FITUR REALTIME & ANALISA TRADING */}
           <button
             onClick={onOpenLiveChart}
-            className="flex items-center gap-1.5 px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded text-white font-bold transition-all shadow-xs ring-1 ring-white/30 active:scale-95"
-            title="Buka Chart Candlestick TradingView Real-Time Langsung di Sini"
+            className="flex items-center gap-1 px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded text-white font-bold transition-all shadow-xs ring-1 ring-white/30 active:scale-95"
+            title="Buka Chart Candlestick TradingView Real-Time"
           >
             <CandlestickChart className="w-3.5 h-3.5 text-yellow-300" />
             <span className="text-yellow-200">Live Chart</span>
-          </button>
-
-          <button
-            onClick={onToggleLiveTicker}
-            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-              showLiveTicker ? 'bg-white/25 text-white font-bold' : 'hover:bg-white/15 text-emerald-100'
-            }`}
-            title="Tampilkan / Sembunyikan Running Price Ticker Real-Time"
-          >
-            <Radio className="w-3.5 h-3.5 text-red-400 animate-pulse" />
-            <span>Live Price</span>
           </button>
 
           <button
@@ -269,7 +312,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
           <button
             onClick={onOpenLotCalc}
             className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-emerald-100 hover:text-white transition-colors"
-            title="Kalkulator Ukuran Lot & Manajemen Risiko Akun"
+            title="Kalkulator Ukuran Lot & Manajemen Risiko Akun (Support $10 hingga $100k)"
           >
             <Calculator className="w-3.5 h-3.5 text-amber-300" />
             <span>Hitung Lot</span>
@@ -285,62 +328,174 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
           </button>
 
           <button
+            onClick={onOpenHeatmap}
+            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-emerald-100 hover:text-white transition-colors"
+            title="Fitur #4: Heatmap Hari & Jam Trading Terbaik"
+          >
+            <Flame className="w-3.5 h-3.5 text-orange-300" />
+            <span>Heatmap</span>
+          </button>
+
+          <button
+            onClick={onOpenCompounding}
+            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-emerald-100 hover:text-white transition-colors"
+            title="Fitur #5: Simulator Pertumbuhan Modal (Compounding)"
+          >
+            <TrendingUp className="w-3.5 h-3.5 text-cyan-300" />
+            <span>Target Modal</span>
+          </button>
+
+          <button
             onClick={onOpenAnalytics}
             className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-white transition-colors"
+            title="Fitur #8: Statistik, Analisis Strategi & Equity Curve"
           >
             <BarChart3 className="w-3.5 h-3.5 text-emerald-300" />
             <span>Statistik</span>
           </button>
 
-          <div className="w-[1px] h-4 bg-emerald-700 mx-1" />
+          <div className="w-[1px] h-4 bg-white/20 mx-1" />
 
-          {/* Export Buttons: XLSX, PDF, CSV */}
-          <button
-            onClick={onExportExcel}
-            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-white transition-colors"
-            title="Download file Excel .xlsx"
-          >
-            <Download className="w-3.5 h-3.5 text-emerald-200" />
-            <span>Export .XLSX</span>
-          </button>
+          {/* SECTION 3: DROPDOWN FILE & EKSPOR/IMPOR RAPI */}
+          <div className="relative" ref={fileMenuRef}>
+            <button
+              onClick={() => setIsFileMenuOpen((prev) => !prev)}
+              className="flex items-center gap-1.5 px-3 py-1 bg-white/15 hover:bg-white/25 rounded text-white font-bold transition-all shadow-xs"
+            >
+              <Download className="w-3.5 h-3.5 text-emerald-300" />
+              <span>File & Ekspor</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isFileMenuOpen ? 'rotate-180' : ''}`} />
+            </button>
 
-          <button
-            onClick={onExportPdf}
-            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-white transition-colors"
-            title="Download Laporan PDF"
-          >
-            <FileText className="w-3.5 h-3.5 text-rose-300" />
-            <span className="font-bold text-rose-100">Export .PDF</span>
-          </button>
+            {/* Dropdown Menu Popup */}
+            {isFileMenuOpen && (
+              <div className="absolute left-0 mt-1.5 w-60 bg-white text-gray-800 rounded-xl shadow-2xl border border-gray-200 py-1.5 z-50 animate-in fade-in slide-in-from-top-2 text-xs font-sans">
+                <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  Ekspor Laporan
+                </div>
 
-          <button
-            onClick={onExportCsv}
-            className="hidden sm:flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-white transition-colors"
-            title="Download CSV"
-          >
-            <Download className="w-3.5 h-3.5 text-emerald-200" />
-            <span>CSV</span>
-          </button>
+                <button
+                  onClick={() => {
+                    onExportExcel();
+                    setIsFileMenuOpen(false);
+                  }}
+                  className="w-full px-3 py-2 text-left hover:bg-emerald-50 flex items-center gap-2 text-gray-800 font-medium"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-excel-green" />
+                  <div>
+                    <strong className="block text-xs">Export ke Microsoft Excel (.xlsx)</strong>
+                    <span className="text-[10px] text-gray-500">Format spreadsheet resmi</span>
+                  </div>
+                </button>
 
-          <button
-            onClick={onImportClick}
-            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-white transition-colors"
-            title="Import data Excel atau CSV"
-          >
-            <Upload className="w-3.5 h-3.5 text-emerald-200" />
-            <span>Import</span>
-          </button>
+                <button
+                  onClick={() => {
+                    onExportPdf();
+                    setIsFileMenuOpen(false);
+                  }}
+                  className="w-full px-3 py-2 text-left hover:bg-rose-50 flex items-center gap-2 text-gray-800 font-medium"
+                >
+                  <FileText className="w-4 h-4 text-rose-600" />
+                  <div>
+                    <strong className="block text-xs">Export Dokumen PDF (.pdf)</strong>
+                    <span className="text-[10px] text-gray-500">Laporan cetak Landscape A4</span>
+                  </div>
+                </button>
 
-          <div className="w-[1px] h-4 bg-emerald-700 mx-1" />
+                <button
+                  onClick={() => {
+                    onExportCsv();
+                    setIsFileMenuOpen(false);
+                  }}
+                  className="w-full px-3 py-2 text-left hover:bg-blue-50 flex items-center gap-2 text-gray-800 font-medium"
+                >
+                  <Download className="w-4 h-4 text-blue-600" />
+                  <div>
+                    <strong className="block text-xs">Export Data Mentah (.csv)</strong>
+                    <span className="text-[10px] text-gray-500">Kompatibel semua software</span>
+                  </div>
+                </button>
 
-          <button
-            onClick={onClearAll}
-            className="flex items-center gap-1 px-2 py-1 hover:bg-rose-900/60 rounded text-rose-200 hover:text-white transition-colors"
-            title="Kosongkan semua data dalam sheet"
-          >
-            <Trash2 className="w-3 h-3 text-rose-300" />
-            <span>Kosongkan Sheet</span>
-          </button>
+                <button
+                  onClick={() => {
+                    onOpenStatementCard();
+                    setIsFileMenuOpen(false);
+                  }}
+                  className="w-full px-3 py-2 text-left hover:bg-amber-50 flex items-center gap-2 text-gray-800 font-medium border-t border-gray-100"
+                >
+                  <Award className="w-4 h-4 text-amber-500" />
+                  <div>
+                    <strong className="block text-xs text-amber-900">Cetak Statement Card Rapor</strong>
+                    <span className="text-[10px] text-gray-500">Kartu performa untuk dibagikan</span>
+                  </div>
+                </button>
+
+                <div className="border-t border-gray-200 my-1.5" />
+
+                <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  Impor & Backup (Fitur #10)
+                </div>
+
+                <button
+                  onClick={() => {
+                    onImportClick();
+                    setIsFileMenuOpen(false);
+                  }}
+                  className="w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-gray-800 font-medium"
+                >
+                  <Upload className="w-4 h-4 text-gray-600" />
+                  <div>
+                    <strong className="block text-xs">Import Excel / CSV</strong>
+                    <span className="text-[10px] text-gray-500">Masukkan catatan dari file luar</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onExportBackupJson();
+                    setIsFileMenuOpen(false);
+                  }}
+                  className="w-full px-3 py-2 text-left hover:bg-purple-50 flex items-center gap-2 text-gray-800 font-medium"
+                >
+                  <Database className="w-4 h-4 text-purple-600" />
+                  <div>
+                    <strong className="block text-xs">Backup Database (.json)</strong>
+                    <span className="text-[10px] text-gray-500">Simpan backup cadangan aman</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onImportJsonClick();
+                    setIsFileMenuOpen(false);
+                  }}
+                  className="w-full px-3 py-2 text-left hover:bg-purple-50 flex items-center gap-2 text-gray-800 font-medium"
+                >
+                  <Upload className="w-4 h-4 text-purple-600" />
+                  <div>
+                    <strong className="block text-xs">Restore Database (.json)</strong>
+                    <span className="text-[10px] text-gray-500">Pulihkan data dari file backup</span>
+                  </div>
+                </button>
+
+                <div className="border-t border-gray-200 my-1.5" />
+
+                <button
+                  onClick={() => {
+                    onClearAll();
+                    setIsFileMenuOpen(false);
+                  }}
+                  className="w-full px-3 py-2 text-left hover:bg-rose-100 flex items-center gap-2 text-rose-700 font-medium"
+                >
+                  <Trash2 className="w-4 h-4 text-rose-600" />
+                  <div>
+                    <strong className="block text-xs">Kosongkan Seluruh Sheet</strong>
+                    <span className="text-[10px] text-rose-500">Hapus semua data trade saat ini</span>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="text-[11px] text-emerald-200 shrink-0 font-mono">

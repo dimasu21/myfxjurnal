@@ -103,6 +103,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
       setLot(editingTrade.lot || '1%');
       setPips(String(editingTrade.pips || ''));
       setPnl(editingTrade.pnl !== undefined ? String(editingTrade.pnl) : '');
+      setStrategi(editingTrade.strategi || 'SMC / Market Structure');
       setAlasan(editingTrade.alasan || '');
       setEmosi((editingTrade.emosi as EmotionType) || 'Tenang');
       setEvaluasi(editingTrade.evaluasi || '');
@@ -188,6 +189,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
       pips: pipsNum,
       pnl: pnlNum,
       status,
+      strategi: strategi || 'Lainnya',
       alasan: alasan || '-',
       emosi,
       evaluasi: evaluasi || '-',
@@ -437,6 +439,24 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* Row: Strategi Setup (Tagging) */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Setup Strategi (Tagging)
+            </label>
+            <select
+              value={strategi}
+              onChange={(e) => setStrategi(e.target.value)}
+              className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-xs font-semibold text-gray-800 focus:border-excel-green focus:outline-none bg-white"
+            >
+              {COMMON_STRATEGIES.map((st) => (
+                <option key={st} value={st}>
+                  🎯 {st}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Row 5: Alasan Eksekusi */}

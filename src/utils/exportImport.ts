@@ -238,3 +238,33 @@ export async function importFromSpreadsheet(file: File): Promise<Trade[]> {
     reader.readAsArrayBuffer(file);
   });
 }
+
+export function exportToJson(trades: Trade[], filename = 'Jurnal_Trading_Forex_Backup.json') {
+  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(trades, null, 2));
+  const link = document.createElement('a');
+  link.setAttribute('href', dataStr);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+export async function importFromJson(file: File): Promise<Trade[]> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target?.result as string);
+        if (Array.isArray(parsed)) {
+          resolve(parsed as Trade[]);
+        } else {
+          reject(new Error('Format file JSON bukan array trade yang valid'));
+        }
+      } catch (err) {
+        reject(err);
+      }
+    };
+    reader.onerror = (err) => reject(err);
+    reader.readAsText(file);
+  });
+}
