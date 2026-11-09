@@ -13,6 +13,7 @@ import { TradeTable } from './components/TradeTable';
 import { MobileCardView } from './components/MobileCardView';
 import { TradeModal } from './components/TradeModal';
 import { ExcelFooter } from './components/ExcelFooter';
+import { MobileBottomNav } from './components/MobileBottomNav';
 import { DisciplineAlertBanner } from './components/DisciplineAlertBanner';
 import { MonthlyHistoryView } from './components/MonthlyHistoryView';
 import { LotCalculatorView } from './components/LotCalculatorView';
@@ -76,8 +77,28 @@ export default function App() {
   type PageView = 'sheet' | 'lot-calc' | 'calendar' | 'heatmap' | 'compounding' | 'analytics' | 'chart' | 'statement';
   const [activePageView, setActivePageView] = useState<PageView>('sheet');
 
-  // Active view: 'table' (Excel spreadsheet) or 'cards' (Touch-friendly card list)
-  const [activeView, setActiveView] = useState<'table' | 'cards'>('table');
+  // Active view: 'cards' default di Mobile (< 768px ala Myfxbook), 'table' default di Desktop
+  const [activeView, setActiveView] = useState<'table' | 'cards'>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768 ? 'cards' : 'table';
+    }
+    return 'table';
+  });
+
+  // Listener resize otomatis untuk transisi responsif
+  useEffect(() => {
+    const handleResize = () => {
+      // Jika user pertama kali buka di HP, otomatis beralih ke kartu Myfxbook
+      if (window.innerWidth < 768 && activeView === 'table') {
+        const hasManuallyChosen = sessionStorage.getItem('user_view_preference');
+        if (!hasManuallyChosen) {
+          setActiveView('cards');
+        }
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [activeView]);
 
   // Sheet Tabs: 'all' | 'win' | 'loss' | 'summary' | 'history'
   const [activeSheet, setActiveSheet] = useState<'all' | 'win' | 'loss' | 'summary' | 'history'>('all');
@@ -366,7 +387,7 @@ export default function App() {
   };
 
   return (
-    <div className={`flex flex-col h-screen w-screen overflow-hidden ${isDarkMode ? 'bg-[#0f172a] text-slate-100' : 'bg-white text-gray-800'} font-sans`}>
+    <div className={`flex flex-col h-[100dvh] w-full max-w-full overflow-x-hidden ${isDarkMode ? 'bg-[#0f172a] text-slate-100' : 'bg-white text-gray-800'} font-sans`}>
       {/* Hidden File Input for Excel/CSV Import */}
       <input
         ref={fileInputRef}
@@ -432,12 +453,16 @@ export default function App() {
         />
       )}
 
-      {/* REAL-TIME FEATURE 2: Market Sessions Clock (London, NY, Tokyo, Sydney) */}
-      {showMarketSessions && <MarketSessions />}
+      {/* REAL-TIME FEATURE 2: Market Sessions Clock (Tampil di Desktop) */}
+      {showMarketSessions && (
+        <div className="hidden md:block">
+          <MarketSessions />
+        </div>
+      )}
 
-      {/* Formula Bar & Stats Bar: Hanya muncul saat di Sheet/Tabel Excel */}
+      {/* Formula Bar & Stats Bar: Hanya muncul saat di Desktop & di Sheet/Tabel Excel */}
       {activePageView === 'sheet' && (
-        <>
+        <div className="hidden md:block">
           <FormulaBar
             selectedCell={selectedCell}
             cellValue={cellValue}
@@ -456,7 +481,7 @@ export default function App() {
             availablePairs={availablePairs}
           />
           <StatsBar trades={trades} />
-        </>
+        </div>
       )}
 
       {/* Main Content: 1 Page Penuh (Full Page View) atau Lembar Kerja Excel */}
@@ -518,6 +543,7 @@ export default function App() {
             onEditTrade={handleEdit}
             onDeleteTrade={handleDelete}
             onSelectTrade={handleSelectTrade}
+            onAddNew={handleAddNew}
           />
         )}
 
@@ -526,14 +552,14 @@ export default function App() {
           <button
             onClick={handleAddNew}
             aria-label="Tambah Trade Baru"
-            className="md:hidden fixed bottom-14 right-4 z-30 bg-excel-green hover:bg-excel-darkgreen text-white p-3.5 rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+            className="md:hidden fixed bottom-16 right-4 z-30 bg-excel-green hover:bg-excel-darkgreen text-white p-3.5 rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform"
           >
             <Plus className="w-6 h-6 stroke-[2.5]" />
           </button>
         )}
       </main>
 
-      {/* Excel Sheet Tabs & Status Bar */}
+      {/* Excel Sheet Tabs & Status Bar (Hanya tampil di Layar Desktop) */}
       <ExcelFooter
         activeSheet={activeSheet}
         setActiveSheet={(sheet) => {
@@ -545,6 +571,30 @@ export default function App() {
           }
         }}
         filteredTrades={filteredTrades}
+        totalArchivedMonths={archivedMonthsCount}
+      />
+
+      {/* Persistent Bottom Navigation Bar Ala Myfxbook Mobile (Khusus Tampil di HP) */}
+      <MobileBottomNav
+        activePageView={activePageView}
+        setActivePageView={setActivePageView}
+        activeView={activeView}
+        setActiveView={(v) => {
+          setActiveView(v);
+          try { sessionStorage.setItem('user_view_preference', v); } catch (e) {}
+        }}
+        onOpenNewModal={handleAddNew}
+        onManualSave={handleManualSave}
+        hasUnsavedChanges={hasUnsavedChanges}
+        onExportExcel={handleExportExcel}
+        onExportPdf={handleExportPdf}
+        onExportCsv={handleExportCsv}
+        onExportBackupJson={handleExportBackupJson}
+        onImportClick={handleImportClick}
+        onImportJsonClick={handleImportJsonClick}
+        onClearAll={handleClearAll}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={() => setIsDarkMode((prev) => !prev)}
         totalArchivedMonths={archivedMonthsCount}
       />
 

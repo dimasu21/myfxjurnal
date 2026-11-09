@@ -303,8 +303,8 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
         </div>
       </div>
 
-      {/* Excel Ribbon Quick Action Bar */}
-      <div className={`px-3 py-1.5 flex items-center justify-between gap-2 overflow-x-auto text-xs scrollbar-none ${isDarkMode ? 'bg-[#1e293b]' : 'bg-[#0e6b37]'}`}>
+      {/* Excel Ribbon Quick Action Bar (Visible on Desktop; on Mobile handled by Myfxbook Bottom Nav) */}
+      <div className={`hidden md:flex px-3 py-1.5 items-center justify-between gap-2 overflow-x-auto text-xs scrollbar-none ${isDarkMode ? 'bg-[#1e293b]' : 'bg-[#0e6b37]'}`}>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {/* SECTION 1: ENTRI & SIMPAN */}
           <button

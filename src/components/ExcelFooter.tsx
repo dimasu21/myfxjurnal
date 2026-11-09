@@ -20,7 +20,7 @@ export const ExcelFooter: React.FC<ExcelFooterProps> = ({
   const avgPips = count > 0 ? (sumPips / count).toFixed(1) : 0;
 
   return (
-    <footer className="bg-[#e9ecef] dark:bg-[#1e293b] border-t border-gray-300 dark:border-slate-800 text-xs text-gray-700 dark:text-slate-300 select-none sticky bottom-0 z-20 transition-colors">
+    <footer className="hidden md:block bg-[#e9ecef] dark:bg-[#1e293b] border-t border-gray-300 dark:border-slate-800 text-xs text-gray-700 dark:text-slate-300 select-none sticky bottom-0 z-20 transition-colors">
       {/* Sheet Tabs Bar ala Excel */}
       <div className="flex items-center justify-between px-2 py-1 border-b border-gray-300 dark:border-slate-800 bg-[#f1f3f5] dark:bg-[#0f172a] overflow-x-auto scrollbar-none">
         <div className="flex items-center gap-1 shrink-0">
