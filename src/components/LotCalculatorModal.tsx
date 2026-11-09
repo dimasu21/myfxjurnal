@@ -206,3 +206,4 @@ export const LotCalculatorModal: React.FC<LotCalculatorModalProps> = ({
     </div>
   );
 };
+

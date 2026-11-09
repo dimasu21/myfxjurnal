@@ -43,3 +43,4 @@ export interface LotCalculatorResult {
   units: number;
   pipValue: number;
 }
+

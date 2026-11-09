@@ -51,3 +51,4 @@ export const LiveTicker: React.FC<LiveTickerProps> = ({ tickers, isLive, onSelec
     </div>
   );
 };
+

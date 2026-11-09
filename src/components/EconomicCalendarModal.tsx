@@ -139,3 +139,4 @@ export const EconomicCalendarModal: React.FC<EconomicCalendarModalProps> = ({
     </div>
   );
 };
+

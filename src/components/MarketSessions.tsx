@@ -101,3 +101,4 @@ export const MarketSessions: React.FC = () => {
     </div>
   );
 };
+

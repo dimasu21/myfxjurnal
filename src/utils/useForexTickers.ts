@@ -53,3 +53,4 @@ export function useForexTickers() {
 
   return { tickers, isLive, setIsLive, lastUpdated };
 }
+
