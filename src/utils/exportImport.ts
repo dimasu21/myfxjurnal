@@ -4,23 +4,43 @@ import autoTable from 'jspdf-autotable';
 import { Trade } from '../types/trade';
 
 export function exportToExcel(trades: Trade[], filename = 'Jurnal_Trading_Forex.xlsx') {
-  const formattedData = trades.map((t, idx) => ({
-    No: idx + 1,
-    Tanggal: t.tanggal,
-    Pair: t.pair,
-    Posisi: t.posisi,
-    Entry: t.entry,
-    SL: t.sl,
-    TP: t.tp,
-    Lot: t.lot,
-    Hasil_Pips: t.pips > 0 ? `+${t.pips} Pips` : `${t.pips} Pips`,
-    PnL_USD: t.pnl !== undefined ? t.pnl : '',
-    Status: t.status,
-    Risk_Reward: t.riskReward || '',
-    Alasan_Eksekusi: t.alasan,
-    Emosi: t.emosi,
-    Evaluasi: t.evaluasi,
-  }));
+  const formattedData = trades.length > 0
+    ? trades.map((t, idx) => ({
+        No: idx + 1,
+        Tanggal: t.tanggal,
+        Pair: t.pair,
+        Posisi: t.posisi,
+        Entry: t.entry,
+        SL: t.sl,
+        TP: t.tp,
+        Lot: t.lot,
+        Hasil_Pips: t.pips > 0 ? `+${t.pips} Pips` : `${t.pips} Pips`,
+        PnL_USD: t.pnl !== undefined ? t.pnl : '',
+        Status: t.status,
+        Strategi: t.strategi || '',
+        Risk_Reward: t.riskReward || '',
+        Alasan_Eksekusi: t.alasan,
+        Emosi: t.emosi,
+        Evaluasi: t.evaluasi,
+      }))
+    : [{
+        No: '',
+        Tanggal: '',
+        Pair: '',
+        Posisi: '',
+        Entry: '',
+        SL: '',
+        TP: '',
+        Lot: '',
+        Hasil_Pips: '',
+        PnL_USD: '',
+        Status: '',
+        Strategi: '',
+        Risk_Reward: '',
+        Alasan_Eksekusi: '',
+        Emosi: '',
+        Evaluasi: '',
+      }];
 
   const worksheet = XLSX.utils.json_to_sheet(formattedData);
   const workbook = XLSX.utils.book_new();
@@ -30,23 +50,43 @@ export function exportToExcel(trades: Trade[], filename = 'Jurnal_Trading_Forex.
 }
 
 export function exportToCsv(trades: Trade[], filename = 'Jurnal_Trading_Forex.csv') {
-  const formattedData = trades.map((t, idx) => ({
-    No: idx + 1,
-    Tanggal: t.tanggal,
-    Pair: t.pair,
-    Posisi: t.posisi,
-    Entry: t.entry,
-    SL: t.sl,
-    TP: t.tp,
-    Lot: t.lot,
-    Hasil: t.pips > 0 ? `+${t.pips} Pips` : `${t.pips} Pips`,
-    PnL: t.pnl ?? 0,
-    Status: t.status,
-    RR: t.riskReward || '',
-    Alasan: t.alasan,
-    Emosi: t.emosi,
-    Evaluasi: t.evaluasi,
-  }));
+  const formattedData = trades.length > 0
+    ? trades.map((t, idx) => ({
+        No: idx + 1,
+        Tanggal: t.tanggal,
+        Pair: t.pair,
+        Posisi: t.posisi,
+        Entry: t.entry,
+        SL: t.sl,
+        TP: t.tp,
+        Lot: t.lot,
+        Hasil: t.pips > 0 ? `+${t.pips} Pips` : `${t.pips} Pips`,
+        PnL: t.pnl ?? 0,
+        Status: t.status,
+        Strategi: t.strategi || '',
+        RR: t.riskReward || '',
+        Alasan: t.alasan,
+        Emosi: t.emosi,
+        Evaluasi: t.evaluasi,
+      }))
+    : [{
+        No: '',
+        Tanggal: '',
+        Pair: '',
+        Posisi: '',
+        Entry: '',
+        SL: '',
+        TP: '',
+        Lot: '',
+        Hasil: '',
+        PnL: '',
+        Status: '',
+        Strategi: '',
+        RR: '',
+        Alasan: '',
+        Emosi: '',
+        Evaluasi: '',
+      }];
 
   const worksheet = XLSX.utils.json_to_sheet(formattedData);
   const csvOutput = XLSX.utils.sheet_to_csv(worksheet);

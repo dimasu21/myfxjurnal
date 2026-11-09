@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   FileSpreadsheet, 
   Download, 
@@ -18,7 +19,6 @@ import {
   Globe2,
   Calculator,
   Calendar,
-  Radio,
   CandlestickChart,
   Flame,
   TrendingUp,
@@ -95,8 +95,11 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(documentTitle);
   const [isFileMenuOpen, setIsFileMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const fileMenuRef = useRef<HTMLDivElement>(null);
+  const fileButtonRef = useRef<HTMLButtonElement>(null);
+  const fileDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setTitleInput(documentTitle);
@@ -109,16 +112,41 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
     }
   }, [isEditingTitle]);
 
+  // Posisi menu dropdown dihitung akurat dari tombol
+  const handleToggleFileMenu = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (fileButtonRef.current) {
+      const rect = fileButtonRef.current.getBoundingClientRect();
+      const idealLeft = rect.left;
+      const maxLeft = Math.max(10, window.innerWidth - 275);
+      setMenuPos({
+        top: rect.bottom + 4,
+        left: Math.min(idealLeft, maxLeft),
+      });
+    }
+    setIsFileMenuOpen((prev) => !prev);
+  };
+
   // Close dropdown on outside click
   useEffect(() => {
+    if (!isFileMenuOpen) return;
+
     const handleClickOutside = (e: MouseEvent) => {
-      if (fileMenuRef.current && !fileMenuRef.current.contains(e.target as Node)) {
-        setIsFileMenuOpen(false);
+      const target = e.target as Node;
+      if (
+        fileButtonRef.current?.contains(target) ||
+        fileDropdownRef.current?.contains(target)
+      ) {
+        return;
       }
+      setIsFileMenuOpen(false);
     };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isFileMenuOpen]);
 
   const handleSaveTitle = () => {
     const trimmed = titleInput.trim();
@@ -261,7 +289,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
         </div>
       </div>
 
-      {/* Excel Ribbon Quick Action Bar (RAPI DENGAN DROPDOWN EKSPOR/IMPORT) */}
+      {/* Excel Ribbon Quick Action Bar */}
       <div className={`px-3 py-1.5 flex items-center justify-between gap-2 overflow-x-auto text-xs scrollbar-none ${isDarkMode ? 'bg-[#1e293b]' : 'bg-[#0e6b37]'}`}>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {/* SECTION 1: ENTRI & SIMPAN */}
@@ -356,145 +384,22 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
 
           <div className="w-[1px] h-4 bg-white/20 mx-1" />
 
-          {/* SECTION 3: DROPDOWN FILE & EKSPOR/IMPOR RAPI */}
-          <div className="relative" ref={fileMenuRef}>
+          {/* SECTION 3: DROPDOWN FILE & EKSPOR/IMPOR */}
+          <div className="relative">
             <button
-              onClick={() => setIsFileMenuOpen((prev) => !prev)}
-              className="flex items-center gap-1.5 px-3 py-1 bg-white/15 hover:bg-white/25 rounded text-white font-bold transition-all shadow-xs"
+              ref={fileButtonRef}
+              type="button"
+              onClick={handleToggleFileMenu}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded text-white font-bold transition-all shadow-xs cursor-pointer ${
+                isFileMenuOpen 
+                  ? 'bg-emerald-800 text-yellow-300 ring-2 ring-yellow-400' 
+                  : 'bg-white/15 hover:bg-white/25 active:scale-95'
+              }`}
             >
               <Download className="w-3.5 h-3.5 text-emerald-300" />
               <span>File & Ekspor</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isFileMenuOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isFileMenuOpen ? 'rotate-180' : ''}`} />
             </button>
-
-            {/* Dropdown Menu Popup */}
-            {isFileMenuOpen && (
-              <div className="absolute left-0 mt-1.5 w-60 bg-white text-gray-800 rounded-xl shadow-2xl border border-gray-200 py-1.5 z-50 animate-in fade-in slide-in-from-top-2 text-xs font-sans">
-                <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                  Ekspor Laporan
-                </div>
-
-                <button
-                  onClick={() => {
-                    onExportExcel();
-                    setIsFileMenuOpen(false);
-                  }}
-                  className="w-full px-3 py-2 text-left hover:bg-emerald-50 flex items-center gap-2 text-gray-800 font-medium"
-                >
-                  <FileSpreadsheet className="w-4 h-4 text-excel-green" />
-                  <div>
-                    <strong className="block text-xs">Export ke Microsoft Excel (.xlsx)</strong>
-                    <span className="text-[10px] text-gray-500">Format spreadsheet resmi</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    onExportPdf();
-                    setIsFileMenuOpen(false);
-                  }}
-                  className="w-full px-3 py-2 text-left hover:bg-rose-50 flex items-center gap-2 text-gray-800 font-medium"
-                >
-                  <FileText className="w-4 h-4 text-rose-600" />
-                  <div>
-                    <strong className="block text-xs">Export Dokumen PDF (.pdf)</strong>
-                    <span className="text-[10px] text-gray-500">Laporan cetak Landscape A4</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    onExportCsv();
-                    setIsFileMenuOpen(false);
-                  }}
-                  className="w-full px-3 py-2 text-left hover:bg-blue-50 flex items-center gap-2 text-gray-800 font-medium"
-                >
-                  <Download className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <strong className="block text-xs">Export Data Mentah (.csv)</strong>
-                    <span className="text-[10px] text-gray-500">Kompatibel semua software</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    onOpenStatementCard();
-                    setIsFileMenuOpen(false);
-                  }}
-                  className="w-full px-3 py-2 text-left hover:bg-amber-50 flex items-center gap-2 text-gray-800 font-medium border-t border-gray-100"
-                >
-                  <Award className="w-4 h-4 text-amber-500" />
-                  <div>
-                    <strong className="block text-xs text-amber-900">Cetak Statement Card Rapor</strong>
-                    <span className="text-[10px] text-gray-500">Kartu performa untuk dibagikan</span>
-                  </div>
-                </button>
-
-                <div className="border-t border-gray-200 my-1.5" />
-
-                <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                  Impor & Backup (Fitur #10)
-                </div>
-
-                <button
-                  onClick={() => {
-                    onImportClick();
-                    setIsFileMenuOpen(false);
-                  }}
-                  className="w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-gray-800 font-medium"
-                >
-                  <Upload className="w-4 h-4 text-gray-600" />
-                  <div>
-                    <strong className="block text-xs">Import Excel / CSV</strong>
-                    <span className="text-[10px] text-gray-500">Masukkan catatan dari file luar</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    onExportBackupJson();
-                    setIsFileMenuOpen(false);
-                  }}
-                  className="w-full px-3 py-2 text-left hover:bg-purple-50 flex items-center gap-2 text-gray-800 font-medium"
-                >
-                  <Database className="w-4 h-4 text-purple-600" />
-                  <div>
-                    <strong className="block text-xs">Backup Database (.json)</strong>
-                    <span className="text-[10px] text-gray-500">Simpan backup cadangan aman</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    onImportJsonClick();
-                    setIsFileMenuOpen(false);
-                  }}
-                  className="w-full px-3 py-2 text-left hover:bg-purple-50 flex items-center gap-2 text-gray-800 font-medium"
-                >
-                  <Upload className="w-4 h-4 text-purple-600" />
-                  <div>
-                    <strong className="block text-xs">Restore Database (.json)</strong>
-                    <span className="text-[10px] text-gray-500">Pulihkan data dari file backup</span>
-                  </div>
-                </button>
-
-                <div className="border-t border-gray-200 my-1.5" />
-
-                <button
-                  onClick={() => {
-                    onClearAll();
-                    setIsFileMenuOpen(false);
-                  }}
-                  className="w-full px-3 py-2 text-left hover:bg-rose-100 flex items-center gap-2 text-rose-700 font-medium"
-                >
-                  <Trash2 className="w-4 h-4 text-rose-600" />
-                  <div>
-                    <strong className="block text-xs">Kosongkan Seluruh Sheet</strong>
-                    <span className="text-[10px] text-rose-500">Hapus semua data trade saat ini</span>
-                  </div>
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
@@ -502,6 +407,173 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
           Total Baris: <strong className="text-white">{totalTrades}</strong>
         </div>
       </div>
+
+      {/* REACT PORTAL DROPDOWN MENU — MENEMPEL LANGSUNG KE BODY SEHINGGA TIDAK BISA TERPOTONG */}
+      {isFileMenuOpen && typeof document !== 'undefined' && createPortal(
+        <div
+          ref={fileDropdownRef}
+          style={{
+            position: 'fixed',
+            top: `${menuPos.top}px`,
+            left: `${menuPos.left}px`,
+            zIndex: 99999,
+          }}
+          className={`w-64 rounded-xl shadow-2xl border py-1.5 animate-in fade-in zoom-in-95 duration-100 text-xs font-sans select-none ${
+            isDarkMode
+              ? 'bg-[#1e293b] text-slate-100 border-slate-700 shadow-black/90'
+              : 'bg-white text-gray-800 border-gray-200 shadow-2xl'
+          }`}
+        >
+          <div className="px-3 py-1 text-[10px] font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider">
+            Ekspor Laporan
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsFileMenuOpen(false);
+              onExportExcel();
+            }}
+            className="w-full px-3 py-2 text-left hover:bg-emerald-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors cursor-pointer"
+          >
+            <div className="p-1 rounded bg-emerald-100 dark:bg-emerald-950 text-excel-green dark:text-emerald-400 shrink-0">
+              <FileSpreadsheet className="w-4 h-4" />
+            </div>
+            <div>
+              <strong className="block text-xs text-gray-800 dark:text-slate-100">Export Microsoft Excel (.xlsx)</strong>
+              <span className="text-[10px] text-gray-500 dark:text-slate-400">Format spreadsheet resmi</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsFileMenuOpen(false);
+              onExportPdf();
+            }}
+            className="w-full px-3 py-2 text-left hover:bg-rose-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors cursor-pointer"
+          >
+            <div className="p-1 rounded bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 shrink-0">
+              <FileText className="w-4 h-4" />
+            </div>
+            <div>
+              <strong className="block text-xs text-gray-800 dark:text-slate-100">Export Dokumen PDF (.pdf)</strong>
+              <span className="text-[10px] text-gray-500 dark:text-slate-400">Laporan cetak Landscape A4</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsFileMenuOpen(false);
+              onExportCsv();
+            }}
+            className="w-full px-3 py-2 text-left hover:bg-blue-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors cursor-pointer"
+          >
+            <div className="p-1 rounded bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 shrink-0">
+              <Download className="w-4 h-4" />
+            </div>
+            <div>
+              <strong className="block text-xs text-gray-800 dark:text-slate-100">Export Data Mentah (.csv)</strong>
+              <span className="text-[10px] text-gray-500 dark:text-slate-400">Kompatibel semua software</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsFileMenuOpen(false);
+              onOpenStatementCard();
+            }}
+            className="w-full px-3 py-2 text-left hover:bg-amber-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors border-t border-gray-100 dark:border-slate-700 cursor-pointer"
+          >
+            <div className="p-1 rounded bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 shrink-0">
+              <Award className="w-4 h-4" />
+            </div>
+            <div>
+              <strong className="block text-xs text-amber-700 dark:text-amber-300">Cetak Statement Card Rapor</strong>
+              <span className="text-[10px] text-gray-500 dark:text-slate-400">Kartu performa untuk dibagikan</span>
+            </div>
+          </button>
+
+          <div className="border-t border-gray-200 dark:border-slate-700 my-1" />
+
+          <div className="px-3 py-1 text-[10px] font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider">
+            Impor & Backup (Fitur #10)
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsFileMenuOpen(false);
+              onImportClick();
+            }}
+            className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors cursor-pointer"
+          >
+            <div className="p-1 rounded bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 shrink-0">
+              <Upload className="w-4 h-4" />
+            </div>
+            <div>
+              <strong className="block text-xs text-gray-800 dark:text-slate-100">Import Excel / CSV</strong>
+              <span className="text-[10px] text-gray-500 dark:text-slate-400">Masukkan catatan dari file luar</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsFileMenuOpen(false);
+              onExportBackupJson();
+            }}
+            className="w-full px-3 py-2 text-left hover:bg-purple-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors cursor-pointer"
+          >
+            <div className="p-1 rounded bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 shrink-0">
+              <Database className="w-4 h-4" />
+            </div>
+            <div>
+              <strong className="block text-xs text-purple-700 dark:text-purple-300">Backup Database (.json)</strong>
+              <span className="text-[10px] text-gray-500 dark:text-slate-400">Simpan backup cadangan aman</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsFileMenuOpen(false);
+              onImportJsonClick();
+            }}
+            className="w-full px-3 py-2 text-left hover:bg-purple-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors cursor-pointer"
+          >
+            <div className="p-1 rounded bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 shrink-0">
+              <Upload className="w-4 h-4" />
+            </div>
+            <div>
+              <strong className="block text-xs text-purple-700 dark:text-purple-300">Restore Database (.json)</strong>
+              <span className="text-[10px] text-gray-500 dark:text-slate-400">Pulihkan data dari file backup</span>
+            </div>
+          </button>
+
+          <div className="border-t border-gray-200 dark:border-slate-700 my-1" />
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsFileMenuOpen(false);
+              onClearAll();
+            }}
+            className="w-full px-3 py-2 text-left hover:bg-rose-100 dark:hover:bg-rose-950/50 flex items-center gap-2.5 text-rose-700 dark:text-rose-400 transition-colors cursor-pointer"
+          >
+            <div className="p-1 rounded bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-300 shrink-0">
+              <Trash2 className="w-4 h-4" />
+            </div>
+            <div>
+              <strong className="block text-xs">Kosongkan Seluruh Sheet</strong>
+              <span className="text-[10px] text-rose-500 dark:text-rose-400">Hapus semua data trade saat ini</span>
+            </div>
+          </button>
+        </div>,
+        document.body
+      )}
     </header>
   );
 };

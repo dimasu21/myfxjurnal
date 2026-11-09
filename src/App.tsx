@@ -278,35 +278,19 @@ export default function App() {
   const cleanBaseName = documentTitle.replace(/\.[^/.]+$/, '');
 
   const handleExportExcel = () => {
-    if (trades.length === 0) {
-      alert('Belum ada data trade untuk diekspor!');
-      return;
-    }
     const filename = documentTitle.endsWith('.xlsx') ? documentTitle : `${documentTitle}.xlsx`;
     exportToExcel(trades, filename);
   };
 
   const handleExportCsv = () => {
-    if (trades.length === 0) {
-      alert('Belum ada data trade untuk diekspor!');
-      return;
-    }
     exportToCsv(trades, `${cleanBaseName}.csv`);
   };
 
   const handleExportPdf = () => {
-    if (trades.length === 0) {
-      alert('Belum ada data trade untuk diekspor ke PDF!');
-      return;
-    }
     exportToPdf(trades, `${cleanBaseName}.pdf`);
   };
 
   const handleExportBackupJson = () => {
-    if (trades.length === 0) {
-      alert('Belum ada data trade untuk di-backup ke JSON!');
-      return;
-    }
     exportToJson(trades, `${cleanBaseName}_backup.json`);
   };
 
