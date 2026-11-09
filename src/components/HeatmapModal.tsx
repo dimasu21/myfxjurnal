@@ -63,126 +63,141 @@ export const HeatmapModal: React.FC<HeatmapModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg border border-gray-200 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150 text-xs">
+      <div className="bg-white dark:bg-[#111827] rounded-xl shadow-2xl w-full max-w-lg border border-gray-200 dark:border-slate-800 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150 text-xs text-gray-800 dark:text-slate-100 transition-colors">
         {/* Header */}
         <div className="bg-excel-green px-4 py-3 text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Flame className="w-4 h-4 text-amber-300" />
             <div>
-              <h3 className="font-bold text-sm sm:text-base">Heatmap Hari & Jam Trading Terbaik</h3>
-              <p className="text-[11px] text-emerald-100">
-                Temukan hari yang paling menguntungkan bagi gaya trading Anda
-              </p>
+              <h3 className="font-bold text-sm">Heatmap Hari & Jam Trading Terbaik</h3>
+              <p className="text-[10px] text-emerald-100">Temukan golden time dan hari dengan win rate tertinggi Anda</p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="text-white/80 hover:text-white p-1 rounded hover:bg-white/10"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-4 space-y-4">
-          {/* Best Day Highlight */}
-          {bestDay && bestDay[1].count > 0 && (
-            <div className="bg-emerald-50 border border-emerald-300 rounded-xl p-3 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block">
-                  Hari Paling Menghasilkan (Golden Day):
-                </span>
-                <span className="text-lg font-extrabold text-emerald-950 font-mono">
-                  {bestDay[0]} ({bestDay[1].pips > 0 ? `+${bestDay[1].pips}` : bestDay[1].pips} Pips)
-                </span>
+          {/* Highlight Hari Terbaik */}
+          <div className="bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-transparent p-3 rounded-xl border border-emerald-500/30 dark:border-emerald-500/20 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-amber-400 text-gray-900 rounded-lg font-extrabold shadow-sm">
+                <Sparkles className="w-4 h-4" />
               </div>
-              <div className="text-right">
-                <span className="text-xs font-bold text-emerald-800">
-                  WR: {((bestDay[1].wins / bestDay[1].count) * 100).toFixed(0)}%
+              <div>
+                <span className="text-[10px] uppercase font-bold text-gray-500 dark:text-slate-400 tracking-wider block">
+                  Hari Paling Menguntungkan
                 </span>
-                <span className="text-[10px] text-gray-500 block">
-                  {bestDay[1].count} kali trade
-                </span>
+                <strong className="text-sm font-extrabold text-emerald-800 dark:text-emerald-300">
+                  {bestDay && bestDay[1].pips > 0 ? `${bestDay[0]} (+${bestDay[1].pips} Pips)` : 'Data belum cukup'}
+                </strong>
               </div>
             </div>
-          )}
-
-          {/* Table Matriks Hari */}
-          <div className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-gray-100 text-gray-600 border-b border-gray-200 font-semibold">
-                <tr>
-                  <th className="p-2.5">Hari</th>
-                  <th className="p-2.5 text-center">Jumlah Trade</th>
-                  <th className="p-2.5 text-center">Win Rate</th>
-                  <th className="p-2.5 text-right">Net Pips</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {DAYS.map((day) => {
-                  const data = dayStats[day];
-                  const winrate = data.count > 0 ? ((data.wins / data.count) * 100).toFixed(0) : '0';
-                  const isPositive = data.pips > 0;
-                  const isNegative = data.pips < 0;
-
-                  return (
-                    <tr key={day} className="hover:bg-white transition-colors">
-                      <td className="p-2.5 font-bold text-gray-800 flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                        <span>{day}</span>
-                      </td>
-                      <td className="p-2.5 text-center font-mono text-gray-600">
-                        {data.count}
-                      </td>
-                      <td className="p-2.5 text-center">
-                        {data.count === 0 ? (
-                          <span className="text-gray-400">-</span>
-                        ) : (
-                          <span
-                            className={`font-mono font-bold ${
-                              Number(winrate) >= 50 ? 'text-emerald-700' : 'text-rose-700'
-                            }`}
-                          >
-                            {winrate}%
-                          </span>
-                        )}
-                      </td>
-                      <td
-                        className={`p-2.5 text-right font-mono font-bold ${
-                          isPositive
-                            ? 'text-emerald-700'
-                            : isNegative
-                            ? 'text-rose-700'
-                            : 'text-gray-500'
-                        }`}
-                      >
-                        {data.pips > 0 ? `+${data.pips}` : data.pips} Pips
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            {bestDay && bestDay[1].count > 0 && (
+              <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 font-bold bg-white dark:bg-slate-800 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800">
+                Win Rate: {Math.round((bestDay[1].wins / bestDay[1].count) * 100)}%
+              </span>
+            )}
           </div>
 
-          {/* Sesi Guide */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 space-y-1.5">
-            <span className="font-bold text-blue-900 flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-blue-600" /> Karakteristik Jam Pasar Forex (WIB):
-            </span>
-            <ul className="list-disc list-inside space-y-1 text-blue-800 text-[11px]">
-              <li><strong>06:00 - 13:00 (Asia)</strong>: Volatilitas cenderung rendah, cocok untuk scalping range bound / pair JPY & AUD.</li>
-              <li><strong>13:00 - 19:00 (London)</strong>: Awal tren besar harian untuk EUR/USD & GBP/USD.</li>
-              <li><strong>19:00 - 23:00 (Overlap London & New York)</strong>: Jam tersibuk di dunia dengan volume transaksi tertinggi (Gold XAU/USD sangat aktif).</li>
-            </ul>
+          {/* Grid Hari dalam Seminggu */}
+          <div>
+            <h4 className="text-xs font-bold text-gray-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-excel-green dark:text-emerald-400" />
+              <span>Performa Berdasarkan Hari Eksekusi</span>
+            </h4>
+
+            <div className="grid grid-cols-5 gap-2">
+              {DAYS.map((day) => {
+                const stat = dayStats[day];
+                const wr = stat.count > 0 ? Math.round((stat.wins / stat.count) * 100) : 0;
+                const isPositive = stat.pips > 0;
+                const isNegative = stat.pips < 0;
+
+                // Hitung warna heatmap
+                let bgStyle = 'bg-gray-50 dark:bg-slate-800/80 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400';
+                if (stat.count > 0) {
+                  if (wr >= 60) {
+                    bgStyle = 'bg-emerald-100 dark:bg-emerald-950/80 border-emerald-400 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200';
+                  } else if (wr >= 40) {
+                    bgStyle = 'bg-amber-50 dark:bg-amber-950/60 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200';
+                  } else {
+                    bgStyle = 'bg-rose-100 dark:bg-rose-950/80 border-rose-300 dark:border-rose-700 text-rose-900 dark:text-rose-200';
+                  }
+                }
+
+                return (
+                  <div
+                    key={day}
+                    className={`p-2.5 rounded-lg border text-center transition-all ${bgStyle}`}
+                  >
+                    <span className="font-bold block text-xs">{day}</span>
+                    <span className="text-[10px] opacity-75 font-mono block mt-0.5">
+                      {stat.count} trade
+                    </span>
+
+                    <div className="my-1.5">
+                      <span className="text-sm font-extrabold font-mono block">
+                        {stat.count > 0 ? `${wr}%` : '-'}
+                      </span>
+                      <span className="text-[9px] uppercase tracking-wider block opacity-75">
+                        Win Rate
+                      </span>
+                    </div>
+
+                    <div
+                      className={`text-[10px] font-mono font-bold pt-1 border-t border-black/10 dark:border-white/10 ${
+                        isPositive ? 'text-emerald-700 dark:text-emerald-300' : isNegative ? 'text-rose-700 dark:text-rose-300' : 'text-gray-500'
+                      }`}
+                    >
+                      {stat.count > 0 ? (isPositive ? `+${stat.pips}p` : `${stat.pips}p`) : '0p'}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Matrix Jam / Sesi Trading */}
+          <div>
+            <h4 className="text-xs font-bold text-gray-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <span>Pedoman Waktu Volatilitas & Likuiditas Pasar</span>
+            </h4>
+
+            <div className="space-y-2">
+              {SESSIONS.map((sess, idx) => (
+                <div
+                  key={sess.key}
+                  className="p-2.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/60 flex items-center justify-between"
+                >
+                  <div>
+                    <strong className="block text-xs font-bold text-gray-800 dark:text-slate-100">{sess.name}</strong>
+                    <span className="text-[10px] text-gray-500 dark:text-slate-400">
+                      {idx === 0 && 'Karakter: Sideways, cocok untuk scalping range sempit (Asia)'}
+                      {idx === 1 && 'Karakter: Breakout dan awal tren harian besar (Eropa / London)'}
+                      {idx === 2 && 'Karakter: Volatilitas tertinggi saat overlap London-NY + Berita US'}
+                    </span>
+                  </div>
+
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded uppercase font-mono bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                    A+ Prime
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+        <div className="p-3 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-200 dark:border-slate-800 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-excel-green text-white font-bold rounded text-xs hover:bg-excel-darkgreen transition-colors"
+            className="px-4 py-1.5 bg-excel-green hover:bg-excel-darkgreen text-white font-bold rounded text-xs"
           >
             Tutup
           </button>
@@ -191,4 +206,3 @@ export const HeatmapModal: React.FC<HeatmapModalProps> = ({
     </div>
   );
 };
-

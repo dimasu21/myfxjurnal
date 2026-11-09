@@ -184,7 +184,7 @@ export function calculateLotSize(
 
   if (isSmallAccount) {
     // Pada modal kecil seperti $10:
-    recommendedLot = '0.01 Lot (Min Broker)';
+    recommendedLot = '0.01 Lot';
     brokerMinNote = `Untuk modal $${accountBalance}, lot matematis adalah ${rawStandard.toFixed(4)} Lot. Pada broker standar MT4/MT5, minimum order adalah 0.01 Lot ($0.10/pip). Jika menggunakan Akun Cent (USC), gunakan ${centLots > 0 ? centLots : '0.10'} Cent Lot agar risiko tetap presisi ${riskPercent}% ($${riskAmount.toFixed(2)})!`;
   } else {
     recommendedLot = `${standardLots} Lot`;
