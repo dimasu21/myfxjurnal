@@ -222,7 +222,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                       return (
                         <tr key={strat} className="hover:bg-white dark:hover:bg-slate-800/80">
                           <td className="p-2 font-bold text-gray-800 dark:text-slate-200">
-                            🎯 {strat}
+                            {strat}
                           </td>
                           <td className="p-2 text-center text-gray-600 dark:text-slate-400">{data.count}</td>
                           <td className="p-2 text-center">

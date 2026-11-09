@@ -13,15 +13,15 @@ import { TradeTable } from './components/TradeTable';
 import { MobileCardView } from './components/MobileCardView';
 import { TradeModal } from './components/TradeModal';
 import { ExcelFooter } from './components/ExcelFooter';
-import { AnalyticsModal } from './components/AnalyticsModal';
-import { LotCalculatorModal } from './components/LotCalculatorModal';
-import { EconomicCalendarModal } from './components/EconomicCalendarModal';
-import { LiveChartModal } from './components/LiveChartModal';
 import { DisciplineAlertBanner } from './components/DisciplineAlertBanner';
-import { HeatmapModal } from './components/HeatmapModal';
-import { CompoundingModal } from './components/CompoundingModal';
-import { TraderStatementCardModal } from './components/TraderStatementCardModal';
 import { MonthlyHistoryView } from './components/MonthlyHistoryView';
+import { LotCalculatorView } from './components/LotCalculatorView';
+import { EconomicCalendarView } from './components/EconomicCalendarView';
+import { HeatmapView } from './components/HeatmapView';
+import { CompoundingView } from './components/CompoundingView';
+import { AnalyticsView } from './components/AnalyticsView';
+import { LiveChartView } from './components/LiveChartView';
+import { TraderStatementCardView } from './components/TraderStatementCardView';
 import { checkAndAutoArchiveMonth, getMonthlyArchives } from './utils/monthlyArchive';
 import { Plus } from 'lucide-react';
 
@@ -70,15 +70,11 @@ export default function App() {
   const { tickers, isLive } = useForexTickers();
   const [showLiveTicker, setShowLiveTicker] = useState(true);
   const [showMarketSessions, setShowMarketSessions] = useState(true);
-  const [isLotCalcOpen, setIsLotCalcOpen] = useState(false);
-  const [isEcoCalendarOpen, setIsEcoCalendarOpen] = useState(false);
-  const [isLiveChartOpen, setIsLiveChartOpen] = useState(false);
   const [chartPair, setChartPair] = useState('EUR/USD');
 
-  // Modals for Features 4, 5, 7, 8
-  const [isHeatmapOpen, setIsHeatmapOpen] = useState(false);
-  const [isCompoundingOpen, setIsCompoundingOpen] = useState(false);
-  const [isStatementCardOpen, setIsStatementCardOpen] = useState(false);
+  // Full-Page Views: 1 page penuh tanpa modal pop-up (Best Practice)
+  type PageView = 'sheet' | 'lot-calc' | 'calendar' | 'heatmap' | 'compounding' | 'analytics' | 'chart' | 'statement';
+  const [activePageView, setActivePageView] = useState<PageView>('sheet');
 
   // Active view: 'table' (Excel spreadsheet) or 'cards' (Touch-friendly card list)
   const [activeView, setActiveView] = useState<'table' | 'cards'>('table');
@@ -109,7 +105,6 @@ export default function App() {
   // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTrade, setEditingTrade] = useState<Trade | null>(null);
-  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
 
   // Search & Filter
   const [filter, setFilter] = useState<TradeFilter>({
@@ -176,10 +171,10 @@ export default function App() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
-  // When sheet changes to summary, open analytics modal
+  // When sheet changes to summary, switch to analytics full-page view
   useEffect(() => {
     if (activeSheet === 'summary') {
-      setIsAnalyticsOpen(true);
+      setActivePageView('analytics');
     }
   }, [activeSheet]);
 
@@ -363,7 +358,7 @@ export default function App() {
 
   const handleOpenLiveChart = (pair: string = 'EUR/USD') => {
     setChartPair(pair);
-    setIsLiveChartOpen(true);
+    setActivePageView('chart');
   };
 
   const handleSelectTickerPair = (pair: string) => {
@@ -396,12 +391,14 @@ export default function App() {
         onUpdateTitle={handleUpdateTitle}
         onOpenNewModal={handleAddNew}
         onOpenLiveChart={() => handleOpenLiveChart('EUR/USD')}
-        onOpenAnalytics={() => setIsAnalyticsOpen(true)}
-        onOpenLotCalc={() => setIsLotCalcOpen(true)}
-        onOpenEcoCalendar={() => setIsEcoCalendarOpen(true)}
-        onOpenHeatmap={() => setIsHeatmapOpen(true)}
-        onOpenCompounding={() => setIsCompoundingOpen(true)}
-        onOpenStatementCard={() => setIsStatementCardOpen(true)}
+        onOpenAnalytics={() => setActivePageView('analytics')}
+        onOpenLotCalc={() => setActivePageView('lot-calc')}
+        onOpenEcoCalendar={() => setActivePageView('calendar')}
+        onOpenHeatmap={() => setActivePageView('heatmap')}
+        onOpenCompounding={() => setActivePageView('compounding')}
+        onOpenStatementCard={() => setActivePageView('statement')}
+        activePageView={activePageView}
+        onSwitchToSheet={() => setActivePageView('sheet')}
         showMarketSessions={showMarketSessions}
         onToggleMarketSessions={() => setShowMarketSessions((prev) => !prev)}
         showLiveTicker={showLiveTicker}
@@ -438,31 +435,66 @@ export default function App() {
       {/* REAL-TIME FEATURE 2: Market Sessions Clock (London, NY, Tokyo, Sydney) */}
       {showMarketSessions && <MarketSessions />}
 
-      {/* Formula Bar dengan Cell Coordinates, Search, & Quick Row Actions */}
-      <FormulaBar
-        selectedCell={selectedCell}
-        cellValue={cellValue}
-        selectedTrade={selectedTrade}
-        onEditSelectedTrade={() => selectedTrade && handleEdit(selectedTrade)}
-        onDeleteSelectedTrade={() => {
-          if (
-            selectedTrade &&
-            confirm(`Hapus baris trade ${selectedTrade.pair} (${selectedTrade.tanggal})?`)
-          ) {
-            handleDelete(selectedTrade.id);
-          }
-        }}
-        filter={filter}
-        setFilter={setFilter}
-        availablePairs={availablePairs}
-      />
+      {/* Formula Bar & Stats Bar: Hanya muncul saat di Sheet/Tabel Excel */}
+      {activePageView === 'sheet' && (
+        <>
+          <FormulaBar
+            selectedCell={selectedCell}
+            cellValue={cellValue}
+            selectedTrade={selectedTrade}
+            onEditSelectedTrade={() => selectedTrade && handleEdit(selectedTrade)}
+            onDeleteSelectedTrade={() => {
+              if (
+                selectedTrade &&
+                confirm(`Hapus baris trade ${selectedTrade.pair} (${selectedTrade.tanggal})?`)
+              ) {
+                handleDelete(selectedTrade.id);
+              }
+            }}
+            filter={filter}
+            setFilter={setFilter}
+            availablePairs={availablePairs}
+          />
+          <StatsBar trades={trades} />
+        </>
+      )}
 
-      {/* Mini Stats Bar Summary */}
-      <StatsBar trades={trades} />
-
-      {/* Main Content: Monthly History View, Table View (Excel Sheet), or Card View (Mobile) */}
+      {/* Main Content: 1 Page Penuh (Full Page View) atau Lembar Kerja Excel */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        {activeSheet === 'history' ? (
+        {activePageView === 'lot-calc' ? (
+          <LotCalculatorView
+            onBack={() => setActivePageView('sheet')}
+          />
+        ) : activePageView === 'calendar' ? (
+          <EconomicCalendarView
+            onBack={() => setActivePageView('sheet')}
+          />
+        ) : activePageView === 'heatmap' ? (
+          <HeatmapView
+            trades={trades}
+            onBack={() => setActivePageView('sheet')}
+          />
+        ) : activePageView === 'compounding' ? (
+          <CompoundingView
+            onBack={() => setActivePageView('sheet')}
+          />
+        ) : activePageView === 'analytics' ? (
+          <AnalyticsView
+            trades={trades}
+            onBack={() => setActivePageView('sheet')}
+          />
+        ) : activePageView === 'chart' ? (
+          <LiveChartView
+            initialPair={chartPair}
+            onBack={() => setActivePageView('sheet')}
+          />
+        ) : activePageView === 'statement' ? (
+          <TraderStatementCardView
+            trades={trades}
+            documentTitle={documentTitle}
+            onBack={() => setActivePageView('sheet')}
+          />
+        ) : activeSheet === 'history' ? (
           <MonthlyHistoryView
             currentTrades={trades}
             onLoadTradesToSheet={(loadedTrades) => {
@@ -490,7 +522,7 @@ export default function App() {
         )}
 
         {/* Floating Action Button (FAB) for Mobile Quick Add */}
-        {activeSheet !== 'history' && (
+        {activePageView === 'sheet' && activeSheet !== 'history' && (
           <button
             onClick={handleAddNew}
             aria-label="Tambah Trade Baru"
@@ -504,7 +536,14 @@ export default function App() {
       {/* Excel Sheet Tabs & Status Bar */}
       <ExcelFooter
         activeSheet={activeSheet}
-        setActiveSheet={setActiveSheet}
+        setActiveSheet={(sheet) => {
+          if (sheet === 'summary') {
+            setActivePageView('analytics');
+          } else {
+            setActivePageView('sheet');
+            setActiveSheet(sheet);
+          }
+        }}
         filteredTrades={filteredTrades}
         totalArchivedMonths={archivedMonthsCount}
       />
@@ -515,56 +554,6 @@ export default function App() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveTrade}
         editingTrade={editingTrade}
-      />
-
-      {/* REAL-TIME FEATURE 3: Lot Size & Risk Calculator Modal (Support $10 & Cent Account) */}
-      <LotCalculatorModal
-        isOpen={isLotCalcOpen}
-        onClose={() => setIsLotCalcOpen(false)}
-      />
-
-      {/* REAL-TIME FEATURE 4: Economic Calendar News Modal */}
-      <EconomicCalendarModal
-        isOpen={isEcoCalendarOpen}
-        onClose={() => setIsEcoCalendarOpen(false)}
-      />
-
-      {/* REAL-TIME FEATURE 5: Live TradingView Real-Time Chart (Includes Login Account Link) */}
-      <LiveChartModal
-        isOpen={isLiveChartOpen}
-        onClose={() => setIsLiveChartOpen(false)}
-        initialPair={chartPair}
-      />
-
-      {/* FITUR 4: Heatmap Jam & Hari Trading Terbaik */}
-      <HeatmapModal
-        isOpen={isHeatmapOpen}
-        onClose={() => setIsHeatmapOpen(false)}
-        trades={trades}
-      />
-
-      {/* FITUR 5: Simulator Target Compounding Modal */}
-      <CompoundingModal
-        isOpen={isCompoundingOpen}
-        onClose={() => setIsCompoundingOpen(false)}
-      />
-
-      {/* FITUR 7: Trader Statement Performance Card */}
-      <TraderStatementCardModal
-        isOpen={isStatementCardOpen}
-        onClose={() => setIsStatementCardOpen(false)}
-        trades={trades}
-        documentTitle={documentTitle}
-      />
-
-      {/* Deep Analytics & Fitur 8 Strategy Breakdown Modal */}
-      <AnalyticsModal
-        isOpen={isAnalyticsOpen}
-        onClose={() => {
-          setIsAnalyticsOpen(false);
-          if (activeSheet === 'summary') setActiveSheet('all');
-        }}
-        trades={trades}
       />
     </div>
   );

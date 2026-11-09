@@ -59,6 +59,8 @@ interface ExcelHeaderProps {
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
   totalTrades: number;
+  activePageView?: string;
+  onSwitchToSheet?: () => void;
 }
 
 export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
@@ -90,7 +92,9 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   setActiveView,
   isDarkMode,
   onToggleDarkMode,
-  totalTrades
+  totalTrades,
+  activePageView = 'sheet',
+  onSwitchToSheet
 }) => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(documentTitle);
@@ -257,9 +261,14 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
           {/* View Toggle on Mobile */}
           <div className="flex bg-black/25 p-0.5 rounded text-xs">
             <button
-              onClick={() => setActiveView('table')}
+              onClick={() => {
+                if (onSwitchToSheet) onSwitchToSheet();
+                setActiveView('table');
+              }}
               className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                activeView === 'table' ? 'bg-white text-emerald-800 font-bold shadow-xs' : 'text-emerald-100 hover:text-white'
+                activePageView === 'sheet' && activeView === 'table' 
+                  ? 'bg-white text-emerald-800 font-bold shadow-xs' 
+                  : 'text-emerald-100 hover:text-white'
               }`}
               title="Tampilan Tabel Excel"
             >
@@ -267,9 +276,14 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
               <span className="hidden md:inline">Sheet Excel</span>
             </button>
             <button
-              onClick={() => setActiveView('cards')}
+              onClick={() => {
+                if (onSwitchToSheet) onSwitchToSheet();
+                setActiveView('cards');
+              }}
               className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                activeView === 'cards' ? 'bg-white text-emerald-800 font-bold shadow-xs' : 'text-emerald-100 hover:text-white'
+                activePageView === 'sheet' && activeView === 'cards' 
+                  ? 'bg-white text-emerald-800 font-bold shadow-xs' 
+                  : 'text-emerald-100 hover:text-white'
               }`}
               title="Tampilan Kartu Ringkas (Cocok di HP)"
             >
@@ -319,11 +333,15 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
           {/* SECTION 2: FITUR REALTIME & ANALISA TRADING */}
           <button
             onClick={onOpenLiveChart}
-            className="flex items-center gap-1 px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded text-white font-bold transition-all shadow-xs ring-1 ring-white/30 active:scale-95"
+            className={`flex items-center gap-1 px-2.5 py-1 rounded font-bold transition-all shadow-xs active:scale-95 ${
+              activePageView === 'chart'
+                ? 'bg-white text-emerald-900 shadow-md ring-2 ring-yellow-400'
+                : 'bg-white/20 hover:bg-white/30 text-white ring-1 ring-white/30'
+            }`}
             title="Buka Chart Candlestick TradingView Real-Time"
           >
-            <CandlestickChart className="w-3.5 h-3.5 text-yellow-300" />
-            <span className="text-yellow-200">Live Chart</span>
+            <CandlestickChart className={`w-3.5 h-3.5 ${activePageView === 'chart' ? 'text-emerald-700' : 'text-yellow-300'}`} />
+            <span className={activePageView === 'chart' ? 'text-emerald-950' : 'text-yellow-200'}>Live Chart</span>
           </button>
 
           <button
@@ -339,7 +357,11 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
 
           <button
             onClick={onOpenLotCalc}
-            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-emerald-100 hover:text-white transition-colors"
+            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+              activePageView === 'lot-calc'
+                ? 'bg-white/30 text-white font-bold ring-1 ring-white/50 shadow-xs'
+                : 'hover:bg-white/15 text-emerald-100 hover:text-white'
+            }`}
             title="Kalkulator Ukuran Lot & Manajemen Risiko Akun (Support $10 hingga $100k)"
           >
             <Calculator className="w-3.5 h-3.5 text-amber-300" />
@@ -348,7 +370,11 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
 
           <button
             onClick={onOpenEcoCalendar}
-            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-emerald-100 hover:text-white transition-colors"
+            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+              activePageView === 'calendar'
+                ? 'bg-white/30 text-white font-bold ring-1 ring-white/50 shadow-xs'
+                : 'hover:bg-white/15 text-emerald-100 hover:text-white'
+            }`}
             title="Kalender Berita Ekonomi Forex (CPI, NFP, FOMC)"
           >
             <Calendar className="w-3.5 h-3.5 text-blue-300" />
@@ -357,16 +383,24 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
 
           <button
             onClick={onOpenHeatmap}
-            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-emerald-100 hover:text-white transition-colors"
+            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+              activePageView === 'heatmap'
+                ? 'bg-white/30 text-white font-bold ring-1 ring-white/50 shadow-xs'
+                : 'hover:bg-white/15 text-emerald-100 hover:text-white'
+            }`}
             title="Fitur #4: Heatmap Hari & Jam Trading Terbaik"
           >
-            <Flame className="w-3.5 h-3.5 text-orange-300" />
+            <LayoutGrid className="w-3.5 h-3.5 text-orange-300" />
             <span>Heatmap</span>
           </button>
 
           <button
             onClick={onOpenCompounding}
-            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-emerald-100 hover:text-white transition-colors"
+            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+              activePageView === 'compounding'
+                ? 'bg-white/30 text-white font-bold ring-1 ring-white/50 shadow-xs'
+                : 'hover:bg-white/15 text-emerald-100 hover:text-white'
+            }`}
             title="Fitur #5: Simulator Pertumbuhan Modal (Compounding)"
           >
             <TrendingUp className="w-3.5 h-3.5 text-cyan-300" />
@@ -375,7 +409,11 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
 
           <button
             onClick={onOpenAnalytics}
-            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-white transition-colors"
+            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+              activePageView === 'analytics'
+                ? 'bg-white/30 text-white font-bold ring-1 ring-white/50 shadow-xs'
+                : 'hover:bg-white/15 text-white'
+            }`}
             title="Fitur #8: Statistik, Analisis Strategi & Equity Curve"
           >
             <BarChart3 className="w-3.5 h-3.5 text-emerald-300" />

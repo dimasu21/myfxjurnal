@@ -172,9 +172,9 @@ export const EconomicCalendarModal: React.FC<EconomicCalendarModalProps> = ({
               <span className="text-[11px] text-gray-500 dark:text-slate-400 font-medium mr-1">Dampak:</span>
               {[
                 { key: 'ALL', label: 'Semua' },
-                { key: 'HIGH', label: '🔴 High' },
-                { key: 'MEDIUM', label: '🟠 Med' },
-                { key: 'LOW', label: '🟡 Low' },
+                { key: 'HIGH', label: 'High' },
+                { key: 'MEDIUM', label: 'Med' },
+                { key: 'LOW', label: 'Low' },
               ].map((lvl) => (
                 <button
                   key={lvl.key}

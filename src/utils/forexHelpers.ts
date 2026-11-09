@@ -6,10 +6,10 @@ export function getTradingSessions(now: Date = new Date()): TradingSession[] {
   const utcTime = utcHours + utcMinutes / 60;
 
   const rawSessions = [
-    { name: 'Sydney', city: 'Australia', flag: '🇦🇺', openUtc: 21, closeUtc: 6, tzName: 'AEST (UTC+10)' },
-    { name: 'Tokyo', city: 'Asia', flag: '🇯🇵', openUtc: 0, closeUtc: 9, tzName: 'JST (UTC+9)' },
-    { name: 'London', city: 'Eropa', flag: '🇬🇧', openUtc: 8, closeUtc: 16, tzName: 'BST/GMT (UTC+1)' },
-    { name: 'New York', city: 'Amerika', flag: '🇺🇸', openUtc: 13, closeUtc: 22, tzName: 'EST/EDT (UTC-4)' },
+    { name: 'Sydney', city: 'Australia', flag: 'AUD', openUtc: 21, closeUtc: 6, tzName: 'AEST (UTC+10)' },
+    { name: 'Tokyo', city: 'Asia', flag: 'JPY', openUtc: 0, closeUtc: 9, tzName: 'JST (UTC+9)' },
+    { name: 'London', city: 'Eropa', flag: 'GBP', openUtc: 8, closeUtc: 16, tzName: 'BST/GMT (UTC+1)' },
+    { name: 'New York', city: 'Amerika', flag: 'USD', openUtc: 13, closeUtc: 22, tzName: 'EST/EDT (UTC-4)' },
   ];
 
   return rawSessions.map((s) => {
@@ -96,7 +96,7 @@ export function generateMultiDayEconomicCalendar(now: Date = new Date()): Econom
     } else if (diffMinutes < 0) {
       return { status: 'RELEASED' as const, countdown: `Rilis ${Math.abs(diffMinutes)}m lalu` };
     } else if (diffMinutes <= 30 && diffMinutes >= 0) {
-      return { status: 'IMMINENT' as const, countdown: `⚡ Rilis < ${Math.max(1, diffMinutes)} mnt!` };
+      return { status: 'IMMINENT' as const, countdown: `Rilis < ${Math.max(1, diffMinutes)} mnt` };
     } else if (diffMinutes < 1440 && offset === 0) {
       const h = Math.floor(diffMinutes / 60);
       const m = diffMinutes % 60;

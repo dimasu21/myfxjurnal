@@ -43,43 +43,45 @@ export const ExcelFooter: React.FC<ExcelFooterProps> = ({
                 : 'text-gray-600 dark:text-slate-400 border-t-transparent hover:bg-gray-200 dark:hover:bg-slate-800'
             }`}
           >
-            📊 Sheet1 - Semua ({count})
+            Sheet1 - Semua ({count})
           </button>
 
           {/* Sheet 2: Win Trades */}
           <button
             onClick={() => setActiveSheet('win')}
-            className={`px-3 py-1 font-semibold text-xs rounded-t transition-all border-t-2 ${
+            className={`px-3 py-1 font-semibold text-xs rounded-t transition-all border-t-2 flex items-center gap-1.5 ${
               activeSheet === 'win'
                 ? 'bg-white dark:bg-[#1e293b] text-emerald-700 dark:text-emerald-400 border-t-emerald-600 shadow-xs'
                 : 'text-gray-600 dark:text-slate-400 border-t-transparent hover:bg-gray-200 dark:hover:bg-slate-800'
             }`}
           >
-            🟢 Win Only
+            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block shrink-0" />
+            <span>Win Only</span>
           </button>
 
           {/* Sheet 3: Loss Trades */}
           <button
             onClick={() => setActiveSheet('loss')}
-            className={`px-3 py-1 font-semibold text-xs rounded-t transition-all border-t-2 ${
+            className={`px-3 py-1 font-semibold text-xs rounded-t transition-all border-t-2 flex items-center gap-1.5 ${
               activeSheet === 'loss'
                 ? 'bg-white dark:bg-[#1e293b] text-rose-700 dark:text-rose-400 border-t-rose-600 shadow-xs'
                 : 'text-gray-600 dark:text-slate-400 border-t-transparent hover:bg-gray-200 dark:hover:bg-slate-800'
             }`}
           >
-            🔴 Loss Only
+            <span className="w-2 h-2 rounded-full bg-rose-500 inline-block shrink-0" />
+            <span>Loss Only</span>
           </button>
 
           {/* Sheet 4: Summary & Analytics */}
           <button
             onClick={() => setActiveSheet('summary')}
-            className={`px-3 py-1 font-semibold text-xs rounded-t transition-all border-t-2 ${
+            className={`px-3 py-1 font-semibold text-xs rounded-t transition-all border-t-2 flex items-center gap-1.5 ${
               activeSheet === 'summary'
                 ? 'bg-white dark:bg-[#1e293b] text-blue-700 dark:text-blue-400 border-t-blue-600 shadow-xs'
                 : 'text-gray-600 dark:text-slate-400 border-t-transparent hover:bg-gray-200 dark:hover:bg-slate-800'
             }`}
           >
-            📈 Analisis Psikologi
+            <span>Analisis Psikologi</span>
           </button>
 
           {/* Sheet 5: History Jurnal Bulanan */}

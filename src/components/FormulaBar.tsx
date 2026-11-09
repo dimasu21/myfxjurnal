@@ -120,9 +120,9 @@ export const FormulaBar: React.FC<FormulaBarProps> = ({
           className="bg-white dark:bg-[#0f172a] text-gray-800 dark:text-slate-200 border border-gray-300 dark:border-slate-700 rounded px-2 py-1 text-xs focus:outline-none focus:border-excel-green font-medium"
         >
           <option value="">Semua Hasil</option>
-          <option value="WIN">🟢 WIN</option>
-          <option value="LOSS">🔴 LOSS</option>
-          <option value="BE">⚪ Break Even</option>
+          <option value="WIN">WIN</option>
+          <option value="LOSS">LOSS</option>
+          <option value="BE">Break Even</option>
         </select>
 
         {/* Filter Strategi (Fitur #8) */}

@@ -289,7 +289,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                       : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-emerald-50'
                   }`}
                 >
-                  🟢 BUY (Long)
+                  BUY (Long)
                 </button>
                 <button
                   type="button"
@@ -300,7 +300,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                       : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-rose-50'
                   }`}
                 >
-                  🔴 SELL (Short)
+                  SELL (Short)
                 </button>
               </div>
             </div>
@@ -453,7 +453,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
             >
               {COMMON_STRATEGIES.map((st) => (
                 <option key={st} value={st}>
-                  🎯 {st}
+                  {st}
                 </option>
               ))}
             </select>
