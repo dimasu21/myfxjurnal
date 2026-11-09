@@ -91,14 +91,11 @@ export const MonthlyHistoryView: React.FC<MonthlyHistoryViewProps> = ({
               <Archive className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
-                <span>History Jurnal & Arsip Bulanan</span>
-                <span className="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-[10px] px-2 py-0.5 rounded-full font-bold border border-emerald-300 dark:border-emerald-700">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" /> Auto-Upload Aktif
-                </span>
+              <h2 className="text-base font-extrabold text-gray-900 dark:text-white">
+                History Jurnal & Arsip Bulanan
               </h2>
               <p className="text-xs text-gray-500 dark:text-slate-400">
-                Penyimpanan riwayat performa per bulan. Setiap pergantian bulan, data otomatis diarsipkan ke halaman ini.
+                Penyimpanan riwayat performa per bulan yang otomatis diarsipkan setiap pergantian bulan.
               </p>
             </div>
           </div>

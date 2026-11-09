@@ -82,7 +82,7 @@ export const ExcelFooter: React.FC<ExcelFooterProps> = ({
             📈 Analisis Psikologi
           </button>
 
-          {/* Sheet 5: History Jurnal Bulanan (Auto-Upload Pergantian Bulan) */}
+          {/* Sheet 5: History Jurnal Bulanan */}
           <button
             onClick={() => setActiveSheet('history')}
             className={`px-3 py-1 font-semibold text-xs rounded-t transition-all border-t-2 flex items-center gap-1.5 ${
@@ -92,7 +92,7 @@ export const ExcelFooter: React.FC<ExcelFooterProps> = ({
             }`}
           >
             <Archive className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-            <span>📁 History Bulanan {totalArchivedMonths > 0 ? `(${totalArchivedMonths})` : ''}</span>
+            <span>History Bulanan {totalArchivedMonths > 0 ? `(${totalArchivedMonths})` : ''}</span>
           </button>
 
           {/* Add Sheet Button */}
