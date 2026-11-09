@@ -72,12 +72,7 @@ export function generateMultiDayEconomicCalendar(now: Date = new Date()): Econom
     const year = d.getFullYear();
     const dateFormatted = `${String(dateNum).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${year}`;
     
-    let label = '';
-    if (offset === 0) label = `Hari Ini (${dayName}, ${dateNum} ${monthName})`;
-    else if (offset === 1) label = `Besok (${dayName}, ${dateNum} ${monthName})`;
-    else if (offset === 2) label = `Lusa (${dayName}, ${dateNum} ${monthName})`;
-    else label = `${dayName} (${dateNum} ${monthName})`;
-
+    const label = `${dayName} (${dateNum} ${monthName})`;
     return { offset, d, dayName, dateNum, monthName, year, dateFormatted, label };
   };
 
@@ -100,16 +95,14 @@ export function generateMultiDayEconomicCalendar(now: Date = new Date()): Econom
       return { status: 'RELEASED' as const, countdown: 'Sudah Rilis' };
     } else if (diffMinutes < 0) {
       return { status: 'RELEASED' as const, countdown: `Rilis ${Math.abs(diffMinutes)}m lalu` };
-    } else if (diffMinutes <= 30) {
-      return { status: 'IMMINENT' as const, countdown: `⚡ Rilis dalam ${diffMinutes} mnt!` };
+    } else if (diffMinutes <= 30 && diffMinutes >= 0) {
+      return { status: 'IMMINENT' as const, countdown: `⚡ Rilis < ${Math.max(1, diffMinutes)} mnt!` };
     } else if (diffMinutes < 1440 && offset === 0) {
       const h = Math.floor(diffMinutes / 60);
       const m = diffMinutes % 60;
-      return { status: 'UPCOMING' as const, countdown: `Rilis dalam ${h}j ${m}m` };
-    } else if (offset === 1) {
-      return { status: 'UPCOMING' as const, countdown: `Besok jam ${timeStr}` };
+      return { status: 'UPCOMING' as const, countdown: `${h}j ${m}m lagi` };
     } else {
-      return { status: 'UPCOMING' as const, countdown: `${dayNames[eventDate.getDay()]} ${timeStr}` };
+      return { status: 'UPCOMING' as const, countdown: `Pukul ${timeStr}` };
     }
   };
 

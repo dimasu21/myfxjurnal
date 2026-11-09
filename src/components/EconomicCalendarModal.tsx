@@ -57,12 +57,12 @@ export const EconomicCalendarModal: React.FC<EconomicCalendarModalProps> = ({
 
   // Unique days info for tabs
   const daysTab = [
-    { offset: 'ALL' as const, label: 'Semua Hari (4 Hari)' },
-    { offset: 0, label: events.find((e) => e.dayOffset === 0)?.dateLabel || 'Hari Ini' },
-    { offset: 1, label: events.find((e) => e.dayOffset === 1)?.dateLabel || 'Besok' },
-    { offset: 2, label: events.find((e) => e.dayOffset === 2)?.dateLabel || 'Lusa' },
-    { offset: 3, label: events.find((e) => e.dayOffset === 3)?.dateLabel || 'Hari ke-3' },
-    { offset: 'TRADINGVIEW' as const, label: '📡 TradingView Live Feed' },
+    { offset: 'ALL' as const, label: 'Semua' },
+    { offset: 0, label: events.find((e) => e.dayOffset === 0)?.dateLabel || 'Hari 1' },
+    { offset: 1, label: events.find((e) => e.dayOffset === 1)?.dateLabel || 'Hari 2' },
+    { offset: 2, label: events.find((e) => e.dayOffset === 2)?.dateLabel || 'Hari 3' },
+    { offset: 3, label: events.find((e) => e.dayOffset === 3)?.dateLabel || 'Hari 4' },
+    { offset: 'TRADINGVIEW' as const, label: 'TradingView Live' },
   ];
 
   const filteredEvents = events.filter((ev) => {
@@ -102,12 +102,12 @@ export const EconomicCalendarModal: React.FC<EconomicCalendarModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-sm sm:text-base">Kalender Berita Ekonomi Forex Real-Time</h3>
-                <span className="hidden sm:inline-flex items-center gap-1 bg-red-500/80 text-white text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">
-                  <Radio className="w-2.5 h-2.5" /> LIVE
+                <span className="hidden sm:inline-flex items-center gap-1 bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-xs">
+                  <Radio className="w-2.5 h-2.5 text-white animate-pulse" /> Real Time
                 </span>
               </div>
               <p className="text-[11px] text-emerald-100 dark:text-slate-400">
-                Jadwal rilis berita global (CPI, NFP, Suku Bunga) untuk Hari Ini, Besok, & Seterusnya
+                Jadwal rilis berita global (CPI, NFP, Suku Bunga) dengan waktu rilis akurat
               </p>
             </div>
           </div>
@@ -128,13 +128,13 @@ export const EconomicCalendarModal: React.FC<EconomicCalendarModalProps> = ({
           </div>
         </div>
 
-        {/* Date Tabs (Hari Ini, Besok, Lusa, TradingView Live) */}
-        <div className="bg-gray-100 dark:bg-slate-800/90 border-b border-gray-200 dark:border-slate-700 px-3 py-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+        {/* Date Tabs (Flex-wrap agar semua pill muat rapi tanpa terpotong) */}
+        <div className="bg-gray-100 dark:bg-slate-800/90 border-b border-gray-200 dark:border-slate-700 px-3 py-2 flex flex-wrap items-center gap-1.5">
           {daysTab.map((tab) => (
             <button
               key={String(tab.offset)}
               onClick={() => setSelectedDayOffset(tab.offset)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
                 selectedDayOffset === tab.offset
                   ? 'bg-excel-green text-white shadow-sm font-bold'
                   : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-800 border border-gray-200 dark:border-slate-700'
