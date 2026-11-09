@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📊 Jurnal Trading Forex (Excel Edition)
 
-## Getting Started
+Aplikasi Jurnal Trading Forex modern dengan tampilan spreadsheet khas **Microsoft Excel**, super ringan (Vite + React, bukan Next.js), cepat, responsif di HP/Mobile mau pun Desktop, dan siap dideploy langsung ke **Vercel**.
 
-First, run the development server:
+---
+
+## ✨ Fitur Utama
+
+1. **Tampilan Antarmuka Khas Excel**:
+   - Header Ribbon hijau khas Excel lengkap dengan formula bar `fx` (menampilkan alamat cell seperti `A1`, `B2`).
+   - Penomoran baris 1, 2, 3... dan kolom A, B, C...
+   - Kolom identik dengan contoh: **Tanggal**, **Pair**, **Posisi (Buy/Sell)**, **Entry**, **SL**, **TP**, **Lot**, **Hasil (Pips)**, **Alasan Eksekusi**, **Emosi/Psikologi**, **Evaluasi Akhir**.
+   - Tab Sheet di bawah: `Sheet1 - Semua`, `Win Only`, `Loss Only`, `Analisis Psikologi`.
+   - Status bar Excel: `COUNT`, `AVERAGE Pips`, `SUM Pips`.
+
+2. **Responsif & Nyaman di Akses lewat HP (Mobile)**:
+   - **Mode Sheet Excel**: Dilengkapi sticky freeze column (nomor baris tetap terkunci saat scroll horizontal di layar kecil).
+   - **Mode Kartu HP (Card View)**: Tampilan ringkas kartu trade yang dibuat khusus agar sangat nyaman dibaca dengan satu tangan di layar smartphone tanpa perlu geser kiri-kanan.
+   - Tombol **Floating Action Button (FAB) `+`** di pojok kanan bawah layar HP untuk mencatat trade dengan cepat.
+
+3. **Kalkulator & Analisis Psikologis**:
+   - Auto kalkulasi pips untuk Pair Mata Uang, Emas (XAU/USD), dan Crypto.
+   - Auto kalkulasi rasio **Risk : Reward (R:R)** dari Entry, SL, dan TP.
+   - Evaluasi aspek psikologis & pendeteksian trade akibat **FOMO** atau **Revenge Trading**.
+   - Modal Statistik lengkap (Win Rate %, Profit Factor, Trade Terbaik, Rekap Performa per Pair dan Emosi).
+
+4. **Simpan Data & Ekspor/Impor**:
+   - Data otomatis tersimpan di `localStorage` HP/Laptop (aman dan tidak hilang saat refresh).
+   - **Export ke File Excel Asli (.xlsx)** dan **CSV**.
+   - **Import dari file Excel (.xlsx / .csv)**.
+
+---
+
+## 🚀 Cara Menjalankan di Lokal (Laptop/PC)
 
 ```bash
+# 1. Masuk ke direktori
+cd d:\portofolio_2026\jurnal
+
+# 2. Jalankan mode pengembangan
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka URL yang muncul di browser (biasanya `http://localhost:5173`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🌐 Cara Deploy ke Vercel (Biar Bisa Diakses Lewat HP)
 
-## Learn More
+### Opsi A: Lewat GitHub (Paling Direkomendasikan & Otomatis)
+1. Buat repository baru di akun **[GitHub](https://github.com/new)** (misal namanya: `jurnal-trading-forex`).
+2. Push kode project ini ke GitHub:
+   ```bash
+   git add .
+   git commit -m "feat: forex excel trading journal ready for vercel"
+   git branch -M main
+   git remote add origin https://github.com/USERNAME-ANDA/jurnal-trading-forex.git
+   git push -u origin main
+   ```
+3. Buka **[Vercel](https://vercel.com)** dan klik tombol **"Add New Project"**.
+4. Pilih repository `jurnal-trading-forex`.
+5. Vercel akan otomatis mengenali Vite:
+   - **Framework Preset**: `Vite`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+6. Klik **"Deploy"**! Dalam 30 detik website Anda akan aktif dengan domain publik seperti `https://jurnal-trading-forex.vercel.app` dan bisa dibuka langsung dari browser HP Anda.
 
-To learn more about Next.js, take a look at the following resources:
+### Opsi B: Lewat Vercel CLI (Langsung dari Terminal)
+```bash
+# Install vercel cli
+npm i -g vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Deploy langsung
+vercel
+```
+Ikuti instruksi singkat di terminal, website langsung live!
