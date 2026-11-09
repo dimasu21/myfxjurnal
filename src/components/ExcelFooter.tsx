@@ -1,17 +1,19 @@
 import React from 'react';
-import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, Archive } from 'lucide-react';
 import { Trade } from '../types/trade';
 
 interface ExcelFooterProps {
-  activeSheet: 'all' | 'win' | 'loss' | 'summary';
-  setActiveSheet: (sheet: 'all' | 'win' | 'loss' | 'summary') => void;
+  activeSheet: 'all' | 'win' | 'loss' | 'summary' | 'history';
+  setActiveSheet: (sheet: 'all' | 'win' | 'loss' | 'summary' | 'history') => void;
   filteredTrades: Trade[];
+  totalArchivedMonths?: number;
 }
 
 export const ExcelFooter: React.FC<ExcelFooterProps> = ({
   activeSheet,
   setActiveSheet,
   filteredTrades,
+  totalArchivedMonths = 0,
 }) => {
   const count = filteredTrades.length;
   const sumPips = filteredTrades.reduce((acc, t) => acc + (Number(t.pips) || 0), 0);
@@ -80,11 +82,24 @@ export const ExcelFooter: React.FC<ExcelFooterProps> = ({
             📈 Analisis Psikologi
           </button>
 
+          {/* Sheet 5: History Jurnal Bulanan (Auto-Upload Pergantian Bulan) */}
+          <button
+            onClick={() => setActiveSheet('history')}
+            className={`px-3 py-1 font-semibold text-xs rounded-t transition-all border-t-2 flex items-center gap-1.5 ${
+              activeSheet === 'history'
+                ? 'bg-white dark:bg-[#1e293b] text-purple-700 dark:text-purple-400 border-t-purple-600 shadow-xs font-bold'
+                : 'text-gray-600 dark:text-slate-400 border-t-transparent hover:bg-gray-200 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Archive className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+            <span>📁 History Bulanan {totalArchivedMonths > 0 ? `(${totalArchivedMonths})` : ''}</span>
+          </button>
+
           {/* Add Sheet Button */}
           <button
-            onClick={() => alert('Mode Sheet baru: Anda bisa memfilter dengan tombol sheet di atas!')}
-            className="p-1 hover:bg-gray-300 dark:hover:bg-slate-800 rounded text-gray-500 dark:text-slate-400 ml-1"
-            title="Tambah Lembar Baru"
+            onClick={() => setActiveSheet('history')}
+            className="p-1 hover:bg-gray-300 dark:hover:bg-slate-800 rounded text-gray-500 dark:text-slate-400 ml-1 transition-colors"
+            title="Tambah atau buka Arsip History Bulanan"
           >
             <Plus className="w-3.5 h-3.5" />
           </button>

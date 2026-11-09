@@ -21,6 +21,8 @@ import { DisciplineAlertBanner } from './components/DisciplineAlertBanner';
 import { HeatmapModal } from './components/HeatmapModal';
 import { CompoundingModal } from './components/CompoundingModal';
 import { TraderStatementCardModal } from './components/TraderStatementCardModal';
+import { MonthlyHistoryView } from './components/MonthlyHistoryView';
+import { checkAndAutoArchiveMonth, getMonthlyArchives } from './utils/monthlyArchive';
 import { Plus } from 'lucide-react';
 
 export default function App() {
@@ -81,8 +83,23 @@ export default function App() {
   // Active view: 'table' (Excel spreadsheet) or 'cards' (Touch-friendly card list)
   const [activeView, setActiveView] = useState<'table' | 'cards'>('table');
 
-  // Sheet Tabs: 'all' | 'win' | 'loss' | 'summary'
-  const [activeSheet, setActiveSheet] = useState<'all' | 'win' | 'loss' | 'summary'>('all');
+  // Sheet Tabs: 'all' | 'win' | 'loss' | 'summary' | 'history'
+  const [activeSheet, setActiveSheet] = useState<'all' | 'win' | 'loss' | 'summary' | 'history'>('all');
+  const [archivedMonthsCount, setArchivedMonthsCount] = useState<number>(0);
+
+  // Auto-Archive Detection & Count update
+  useEffect(() => {
+    setArchivedMonthsCount(getMonthlyArchives().length);
+  }, [activeSheet]);
+
+  useEffect(() => {
+    if (trades.length > 0) {
+      const res = checkAndAutoArchiveMonth(trades);
+      if (res.archived) {
+        setArchivedMonthsCount(getMonthlyArchives().length);
+      }
+    }
+  }, [trades]);
 
   // Formula bar state
   const [selectedCell, setSelectedCell] = useState('A1');
@@ -443,9 +460,18 @@ export default function App() {
       {/* Mini Stats Bar Summary */}
       <StatsBar trades={trades} />
 
-      {/* Main Content: Table View (Excel Sheet) or Card View (Mobile) */}
+      {/* Main Content: Monthly History View, Table View (Excel Sheet), or Card View (Mobile) */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        {activeView === 'table' ? (
+        {activeSheet === 'history' ? (
+          <MonthlyHistoryView
+            currentTrades={trades}
+            onLoadTradesToSheet={(loadedTrades) => {
+              setTrades(loadedTrades);
+              setHasUnsavedChanges(true);
+            }}
+            onBackToMainSheet={() => setActiveSheet('all')}
+          />
+        ) : activeView === 'table' ? (
           <TradeTable
             trades={filteredTrades}
             selectedTradeId={selectedTradeId}
@@ -464,13 +490,15 @@ export default function App() {
         )}
 
         {/* Floating Action Button (FAB) for Mobile Quick Add */}
-        <button
-          onClick={handleAddNew}
-          aria-label="Tambah Trade Baru"
-          className="md:hidden fixed bottom-14 right-4 z-30 bg-excel-green hover:bg-excel-darkgreen text-white p-3.5 rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform"
-        >
-          <Plus className="w-6 h-6 stroke-[2.5]" />
-        </button>
+        {activeSheet !== 'history' && (
+          <button
+            onClick={handleAddNew}
+            aria-label="Tambah Trade Baru"
+            className="md:hidden fixed bottom-14 right-4 z-30 bg-excel-green hover:bg-excel-darkgreen text-white p-3.5 rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+          >
+            <Plus className="w-6 h-6 stroke-[2.5]" />
+          </button>
+        )}
       </main>
 
       {/* Excel Sheet Tabs & Status Bar */}
@@ -478,6 +506,7 @@ export default function App() {
         activeSheet={activeSheet}
         setActiveSheet={setActiveSheet}
         filteredTrades={filteredTrades}
+        totalArchivedMonths={archivedMonthsCount}
       />
 
       {/* Add / Edit Trade Modal Form */}
