@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Trade, TradeFilter } from './types/trade';
 import { getSavedTrades, saveTrades, clearSavedTrades } from './utils/storage';
 import { exportToExcel, exportToCsv, exportToPdf, importFromSpreadsheet } from './utils/exportImport';
+import { useForexTickers } from './utils/useForexTickers';
 import { ExcelHeader } from './components/ExcelHeader';
+import { LiveTicker } from './components/LiveTicker';
+import { MarketSessions } from './components/MarketSessions';
 import { FormulaBar } from './components/FormulaBar';
 import { StatsBar } from './components/StatsBar';
 import { TradeTable } from './components/TradeTable';
@@ -10,6 +13,8 @@ import { MobileCardView } from './components/MobileCardView';
 import { TradeModal } from './components/TradeModal';
 import { ExcelFooter } from './components/ExcelFooter';
 import { AnalyticsModal } from './components/AnalyticsModal';
+import { LotCalculatorModal } from './components/LotCalculatorModal';
+import { EconomicCalendarModal } from './components/EconomicCalendarModal';
 import { Plus } from 'lucide-react';
 
 export default function App() {
@@ -24,6 +29,13 @@ export default function App() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaveSuccess, setIsSaveSuccess] = useState(false);
+
+  // Real-time Forex Features State
+  const { tickers, isLive } = useForexTickers();
+  const [showLiveTicker, setShowLiveTicker] = useState(true);
+  const [showMarketSessions, setShowMarketSessions] = useState(true);
+  const [isLotCalcOpen, setIsLotCalcOpen] = useState(false);
+  const [isEcoCalendarOpen, setIsEcoCalendarOpen] = useState(false);
 
   // Active view: 'table' (Excel spreadsheet) or 'cards' (Touch-friendly card list)
   const [activeView, setActiveView] = useState<'table' | 'cards'>('table');
@@ -55,7 +67,6 @@ export default function App() {
 
   // Load from localStorage on mount (hanya sekali saat pertama buka)
   useEffect(() => {
-    // Bersihkan data lama v1 jika pernah tersimpan
     localStorage.removeItem('forex_trading_journal_data_v1');
 
     const loaded = getSavedTrades();
@@ -266,6 +277,10 @@ export default function App() {
     }
   };
 
+  const handleSelectTickerPair = (pair: string, price: number) => {
+    setFilter((prev) => ({ ...prev, search: pair }));
+  };
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-white text-gray-800 font-sans">
       {/* Hidden File Input for Excel Import */}
@@ -277,12 +292,18 @@ export default function App() {
         onChange={handleFileChange}
       />
 
-      {/* Excel Ribbon Top Header dengan CRUD Judul Dokumen */}
+      {/* Excel Ribbon Top Header */}
       <ExcelHeader
         documentTitle={documentTitle}
         onUpdateTitle={handleUpdateTitle}
         onOpenNewModal={handleAddNew}
         onOpenAnalytics={() => setIsAnalyticsOpen(true)}
+        onOpenLotCalc={() => setIsLotCalcOpen(true)}
+        onOpenEcoCalendar={() => setIsEcoCalendarOpen(true)}
+        showMarketSessions={showMarketSessions}
+        onToggleMarketSessions={() => setShowMarketSessions((prev) => !prev)}
+        showLiveTicker={showLiveTicker}
+        onToggleLiveTicker={() => setShowLiveTicker((prev) => !prev)}
         onExportExcel={handleExportExcel}
         onExportCsv={handleExportCsv}
         onExportPdf={handleExportPdf}
@@ -295,6 +316,18 @@ export default function App() {
         setActiveView={setActiveView}
         totalTrades={trades.length}
       />
+
+      {/* REAL-TIME FEATURE 1: Running Forex & Gold Price Ticker */}
+      {showLiveTicker && (
+        <LiveTicker
+          tickers={tickers}
+          isLive={isLive}
+          onSelectPair={handleSelectTickerPair}
+        />
+      )}
+
+      {/* REAL-TIME FEATURE 2: Market Sessions Clock (London, NY, Tokyo, Sydney) */}
+      {showMarketSessions && <MarketSessions />}
 
       {/* Formula Bar dengan Cell Coordinates, Search, & Quick Row Actions */}
       <FormulaBar
@@ -361,6 +394,18 @@ export default function App() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveTrade}
         editingTrade={editingTrade}
+      />
+
+      {/* REAL-TIME FEATURE 3: Lot Size & Risk Calculator Modal */}
+      <LotCalculatorModal
+        isOpen={isLotCalcOpen}
+        onClose={() => setIsLotCalcOpen(false)}
+      />
+
+      {/* REAL-TIME FEATURE 4: Economic Calendar News Modal */}
+      <EconomicCalendarModal
+        isOpen={isEcoCalendarOpen}
+        onClose={() => setIsEcoCalendarOpen(false)}
       />
 
       {/* Deep Analytics & Trading Psychology Modal */}

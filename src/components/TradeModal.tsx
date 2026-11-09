@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trade, PositionType, EmotionType } from '../types/trade';
 import { calculatePips, calculateRR } from '../utils/calculations';
+import { LotCalculatorModal } from './LotCalculatorModal';
 import { X, Calculator, Sparkles, Check, AlertCircle } from 'lucide-react';
 
 interface TradeModalProps {
@@ -69,6 +70,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
 
   // Auto-calculated RR
   const [calculatedRR, setCalculatedRR] = useState('-');
+  const [isLotCalcOpen, setIsLotCalcOpen] = useState(false);
 
   useEffect(() => {
     if (editingTrade) {
@@ -289,9 +291,18 @@ export const TradeModal: React.FC<TradeModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Ukuran Lot / Resiko
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-gray-700">
+                  Ukuran Lot / Resiko
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsLotCalcOpen(true)}
+                  className="text-[11px] text-excel-green hover:underline flex items-center gap-0.5 font-bold"
+                >
+                  <Calculator className="w-3 h-3" /> Hitung Lot
+                </button>
+              </div>
               <input
                 type="text"
                 value={lot}
@@ -490,6 +501,24 @@ export const TradeModal: React.FC<TradeModalProps> = ({
             </button>
           </div>
         </form>
+
+        {/* Modal Kalkulator Lot & Risiko */}
+        <LotCalculatorModal
+          isOpen={isLotCalcOpen}
+          onClose={() => setIsLotCalcOpen(false)}
+          onApplyLot={(calculatedLot) => setLot(calculatedLot)}
+          initialPair={pair === 'OTHER' ? customPair : pair}
+          initialSlPips={
+            Math.abs(
+              calculatePips(
+                pair === 'OTHER' ? customPair : pair,
+                posisi,
+                parseFloat(entry) || 0,
+                parseFloat(sl) || 0
+              )
+            ) || 20
+          }
+        />
       </div>
     </div>
   );

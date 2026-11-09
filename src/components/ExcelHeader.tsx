@@ -15,7 +15,10 @@ import {
   Edit2,
   Check,
   X,
-  RotateCcw
+  Globe2,
+  Calculator,
+  Calendar,
+  Radio
 } from 'lucide-react';
 
 interface ExcelHeaderProps {
@@ -23,6 +26,12 @@ interface ExcelHeaderProps {
   onUpdateTitle: (newTitle: string) => void;
   onOpenNewModal: () => void;
   onOpenAnalytics: () => void;
+  onOpenLotCalc: () => void;
+  onOpenEcoCalendar: () => void;
+  showMarketSessions: boolean;
+  onToggleMarketSessions: () => void;
+  showLiveTicker: boolean;
+  onToggleLiveTicker: () => void;
   onExportExcel: () => void;
   onExportCsv: () => void;
   onExportPdf: () => void;
@@ -41,6 +50,12 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   onUpdateTitle,
   onOpenNewModal,
   onOpenAnalytics,
+  onOpenLotCalc,
+  onOpenEcoCalendar,
+  showMarketSessions,
+  onToggleMarketSessions,
+  showLiveTicker,
+  onToggleLiveTicker,
   onExportExcel,
   onExportCsv,
   onExportPdf,
@@ -140,7 +155,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
             </div>
           )}
 
-          {/* Indikator Status Save: Hanya tampil jika ada perubahan atau baru saja disimpan */}
+          {/* Indikator Status Save */}
           {hasUnsavedChanges && (
             <span className="inline-flex items-center gap-1 text-[11px] bg-amber-400 text-gray-900 font-bold px-2 py-0.5 rounded shadow-xs shrink-0 animate-pulse">
               <AlertCircle className="w-3 h-3 text-amber-900" /> Belum Disimpan
@@ -153,7 +168,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
           )}
         </div>
 
-        {/* Action Buttons Top Right (Tanpa tombol save ganda, hanya view toggle & single Entry Baru) */}
+        {/* Action Buttons Top Right */}
         <div className="flex items-center gap-2">
           {/* View Toggle on Mobile */}
           <div className="flex bg-emerald-900/70 p-0.5 rounded text-xs">
@@ -179,7 +194,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
             </button>
           </div>
 
-          {/* Tombol Tambah Entry Baru (Hanya 1 icon plus) */}
+          {/* Tombol Tambah Entry Baru */}
           <button
             onClick={onOpenNewModal}
             className="flex items-center gap-1.5 bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold px-3 py-1.5 rounded text-xs sm:text-sm transition-all shadow-sm active:scale-95"
@@ -190,7 +205,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
         </div>
       </div>
 
-      {/* Excel Ribbon Quick Action Bar (Tombol Simpan utama hanya ada di sini) */}
+      {/* Excel Ribbon Quick Action Bar */}
       <div className="bg-[#0e6b37] px-3 py-1.5 flex items-center justify-between gap-2 overflow-x-auto text-xs scrollbar-none">
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <button
@@ -215,6 +230,47 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
           </button>
 
           <div className="w-[1px] h-4 bg-emerald-700 mx-1" />
+
+          {/* REALTIME FEATURES: Ticker, Market Sessions, Lot Calculator, Economic News */}
+          <button
+            onClick={onToggleLiveTicker}
+            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+              showLiveTicker ? 'bg-white/25 text-white font-bold' : 'hover:bg-white/15 text-emerald-100'
+            }`}
+            title="Tampilkan / Sembunyikan Running Price Ticker Real-Time"
+          >
+            <Radio className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+            <span>Live Price</span>
+          </button>
+
+          <button
+            onClick={onToggleMarketSessions}
+            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+              showMarketSessions ? 'bg-white/25 text-white font-bold' : 'hover:bg-white/15 text-emerald-100'
+            }`}
+            title="Tampilkan Jam Pasar Forex (London, NY, Tokyo, Sydney)"
+          >
+            <Globe2 className="w-3.5 h-3.5 text-emerald-300" />
+            <span>Sesi Pasar</span>
+          </button>
+
+          <button
+            onClick={onOpenLotCalc}
+            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-emerald-100 hover:text-white transition-colors"
+            title="Kalkulator Ukuran Lot & Manajemen Risiko Akun"
+          >
+            <Calculator className="w-3.5 h-3.5 text-amber-300" />
+            <span>Hitung Lot</span>
+          </button>
+
+          <button
+            onClick={onOpenEcoCalendar}
+            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-emerald-100 hover:text-white transition-colors"
+            title="Kalender Berita Ekonomi Forex (CPI, NFP, FOMC)"
+          >
+            <Calendar className="w-3.5 h-3.5 text-blue-300" />
+            <span>Kalender News</span>
+          </button>
 
           <button
             onClick={onOpenAnalytics}
