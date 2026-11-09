@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Trade, TradeFilter } from './types/trade';
-import { getSavedTrades, saveTrades, INITIAL_TRADES } from './utils/storage';
+import { getSavedTrades, saveTrades, clearSavedTrades } from './utils/storage';
 import { exportToExcel, exportToCsv, importFromSpreadsheet } from './utils/exportImport';
 import { ExcelHeader } from './components/ExcelHeader';
 import { FormulaBar } from './components/FormulaBar';
@@ -10,11 +10,13 @@ import { MobileCardView } from './components/MobileCardView';
 import { TradeModal } from './components/TradeModal';
 import { ExcelFooter } from './components/ExcelFooter';
 import { AnalyticsModal } from './components/AnalyticsModal';
-import { Plus, BarChart2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 export default function App() {
+  // Data trades default kosong (tanpa dummy data awal)
   const [trades, setTrades] = useState<Trade[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSaveSuccess, setIsSaveSuccess] = useState(false);
 
   // Active view: 'table' (Excel spreadsheet) or 'cards' (Touch-friendly card list)
   const [activeView, setActiveView] = useState<'table' | 'cards'>('table');
@@ -44,24 +46,44 @@ export default function App() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount (hanya sekali saat pertama buka)
   useEffect(() => {
+    // Bersihkan data lama v1 jika pernah tersimpan
+    localStorage.removeItem('forex_trading_journal_data_v1');
+
     const loaded = getSavedTrades();
     setTrades(loaded);
-    setIsLoaded(true);
+    setHasUnsavedChanges(false);
 
-    // Auto switch to card view on smaller screens initially if desired
+    // Auto switch ke card view di HP
     if (window.innerWidth < 768) {
       setActiveView('cards');
     }
   }, []);
 
-  // Save to localStorage whenever trades change
+  // Keyboard shortcut: Ctrl + S / Cmd + S untuk Simpan Manual
   useEffect(() => {
-    if (isLoaded) {
-      saveTrades(trades);
-    }
-  }, [trades, isLoaded]);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleManualSave();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [trades]);
+
+  // Peringatan saat menutup tab jika ada data belum disimpan
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   // When sheet changes to summary, open analytics modal
   useEffect(() => {
@@ -125,6 +147,7 @@ export default function App() {
 
   const handleDelete = (id: string) => {
     setTrades((prev) => prev.filter((t) => t.id !== id));
+    setHasUnsavedChanges(true);
     if (selectedTradeId === id) {
       setSelectedTradeId(null);
       setCellValue('');
@@ -140,20 +163,48 @@ export default function App() {
         return [savedTrade, ...prev];
       }
     });
+    setHasUnsavedChanges(true);
   };
 
-  const handleResetSample = () => {
-    if (confirm('Kembalikan data ke contoh awal tabel jurnal forex?')) {
-      setTrades(INITIAL_TRADES);
-      saveTrades(INITIAL_TRADES);
+  // Simpan Manual (Bukan Auto-Save)
+  const handleManualSave = () => {
+    saveTrades(trades);
+    setHasUnsavedChanges(false);
+    setIsSaveSuccess(true);
+    setTimeout(() => {
+      setIsSaveSuccess(false);
+    }, 2500);
+  };
+
+  // Kosongkan Semua Data Sheet
+  const handleClearAll = () => {
+    if (trades.length === 0) {
+      alert('Sheet sudah dalam keadaan kosong.');
+      return;
+    }
+
+    if (confirm('Yakin ingin mengosongkan seluruh catatan trade di sheet ini?')) {
+      setTrades([]);
+      clearSavedTrades();
+      setHasUnsavedChanges(false);
+      setSelectedTradeId(null);
+      setCellValue('');
     }
   };
 
   const handleExportExcel = () => {
+    if (trades.length === 0) {
+      alert('Belum ada data trade untuk diekspor!');
+      return;
+    }
     exportToExcel(trades);
   };
 
   const handleExportCsv = () => {
+    if (trades.length === 0) {
+      alert('Belum ada data trade untuk diekspor!');
+      return;
+    }
     exportToCsv(trades);
   };
 
@@ -169,13 +220,14 @@ export default function App() {
       const imported = await importFromSpreadsheet(file);
       if (imported.length > 0) {
         setTrades((prev) => [...imported, ...prev]);
-        alert(`Berhasil mengimpor ${imported.length} catatan trade!`);
+        setHasUnsavedChanges(true);
+        alert(`Berhasil mengimpor ${imported.length} baris trade! Jangan lupa klik "Simpan" jika ingin menyimpannya.`);
       } else {
-        alert('Tidak ada data valid yang ditemukan dalam file.');
+        alert('Tidak ada baris data valid dalam file tersebut.');
       }
     } catch (err) {
       console.error(err);
-      alert('Gagal mengimpor file. Pastikan format file Excel/CSV sesuai.');
+      alert('Gagal membaca file. Pastikan format Excel (.xlsx) atau CSV sesuai.');
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
@@ -192,20 +244,23 @@ export default function App() {
         onChange={handleFileChange}
       />
 
-      {/* Excel Ribbon Top Header */}
+      {/* Excel Ribbon Top Header dengan Tombol Simpan Manual */}
       <ExcelHeader
         onOpenNewModal={handleAddNew}
         onOpenAnalytics={() => setIsAnalyticsOpen(true)}
         onExportExcel={handleExportExcel}
         onExportCsv={handleExportCsv}
         onImportClick={handleImportClick}
-        onResetSample={handleResetSample}
+        onClearAll={handleClearAll}
+        onManualSave={handleManualSave}
+        hasUnsavedChanges={hasUnsavedChanges}
+        isSaveSuccess={isSaveSuccess}
         activeView={activeView}
         setActiveView={setActiveView}
         totalTrades={trades.length}
       />
 
-      {/* Formula Bar with Cell Coordinates & Search */}
+      {/* Formula Bar dengan Cell Coordinates & Search */}
       <FormulaBar
         selectedCell={selectedCell}
         cellValue={cellValue}
@@ -226,6 +281,7 @@ export default function App() {
             onSelectTrade={handleSelectTrade}
             onEditTrade={handleEdit}
             onDeleteTrade={handleDelete}
+            onAddNew={handleAddNew}
           />
         ) : (
           <MobileCardView
@@ -273,4 +329,3 @@ export default function App() {
     </div>
   );
 }
-

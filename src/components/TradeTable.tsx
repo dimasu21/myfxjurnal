@@ -1,6 +1,6 @@
 import React from 'react';
 import { Trade } from '../types/trade';
-import { Trash2, Edit3, ArrowUpRight, ArrowDownRight, Sparkles } from 'lucide-react';
+import { Trash2, Edit3, ArrowUpRight, ArrowDownRight, Plus } from 'lucide-react';
 
 interface TradeTableProps {
   trades: Trade[];
@@ -8,6 +8,7 @@ interface TradeTableProps {
   onSelectTrade: (trade: Trade, cellRef: string, value: string) => void;
   onEditTrade: (trade: Trade) => void;
   onDeleteTrade: (id: string) => void;
+  onAddNew: () => void;
 }
 
 const COLUMN_HEADERS = [
@@ -32,6 +33,7 @@ export const TradeTable: React.FC<TradeTableProps> = ({
   onSelectTrade,
   onEditTrade,
   onDeleteTrade,
+  onAddNew,
 }) => {
   const getEmotionBadge = (emosi: string) => {
     switch (emosi) {
@@ -53,11 +55,15 @@ export const TradeTable: React.FC<TradeTableProps> = ({
     }
   };
 
+  // Jumlah baris minimal untuk menampilkan grid Excel yang realistis
+  const minRows = Math.max(15, trades.length + 3);
+  const emptyRowsCount = Math.max(0, minRows - trades.length);
+
   return (
     <div className="flex-1 overflow-auto bg-gray-50 border border-gray-300 select-none relative scrollbar-thin">
       <table className="w-full border-collapse text-xs font-sans text-left">
         {/* Header Baris Kolom Huruf Excel (A, B, C...) */}
-        <thead className="bg-[#f3f4f6] sticky top-0 z-20 shadow-sm border-b border-gray-300">
+        <thead className="bg-[#f3f4f6] sticky top-0 z-20 shadow-xs border-b border-gray-300">
           {/* Row 1: Excel Column Letters */}
           <tr className="border-b border-gray-200 text-gray-500 font-mono text-[11px] leading-tight">
             <th className="w-12 min-w-[48px] p-1 text-center bg-[#eaecee] border-r border-gray-300 sticky left-0 z-20">
@@ -93,254 +99,277 @@ export const TradeTable: React.FC<TradeTableProps> = ({
 
         {/* Isi Data Tabel */}
         <tbody className="divide-y divide-gray-200 bg-white">
-          {trades.length === 0 ? (
-            <tr>
-              <td
-                colSpan={COLUMN_HEADERS.length + 1}
-                className="py-12 text-center text-gray-400 bg-white"
-              >
-                <div className="flex flex-col items-center justify-center gap-2">
-                  <Sparkles className="w-8 h-8 text-gray-300" />
-                  <p className="text-sm font-medium">Belum ada trade yang dicatat.</p>
-                  <p className="text-xs text-gray-400">
-                    Klik tombol <strong>+ Entry Baru</strong> di pojok kanan atas untuk menambah.
-                  </p>
-                </div>
-              </td>
-            </tr>
-          ) : (
-            trades.map((trade, idx) => {
-              const rowIndex = idx + 1;
-              const isSelected = selectedTradeId === trade.id;
-              const isProfit = trade.pips > 0;
-              const isLoss = trade.pips < 0;
+          {/* Baris data trade yang sudah ada */}
+          {trades.map((trade, idx) => {
+            const rowIndex = idx + 1;
+            const isSelected = selectedTradeId === trade.id;
+            const isProfit = trade.pips > 0;
+            const isLoss = trade.pips < 0;
 
-              return (
-                <tr
-                  key={trade.id}
-                  onClick={() => onSelectTrade(trade, `A${rowIndex}`, trade.tanggal)}
-                  className={`transition-colors cursor-pointer group ${
+            return (
+              <tr
+                key={trade.id}
+                onClick={() => onSelectTrade(trade, `A${rowIndex}`, trade.tanggal)}
+                onDoubleClick={() => onEditTrade(trade)}
+                className={`transition-colors cursor-pointer group ${
+                  isSelected
+                    ? 'bg-emerald-50/80 ring-2 ring-excel-green ring-inset'
+                    : 'hover:bg-blue-50/40'
+                }`}
+                title="Klik untuk memilih sel, Double-click untuk Edit"
+              >
+                {/* Sticky Row Number Index */}
+                <td
+                  className={`p-2 text-center font-mono font-semibold border-r border-gray-300 sticky left-0 z-10 transition-colors ${
                     isSelected
-                      ? 'bg-emerald-50/80 ring-2 ring-excel-green ring-inset'
-                      : 'hover:bg-blue-50/40'
+                      ? 'bg-excel-green text-white'
+                      : 'bg-[#f8f9fa] text-gray-600 group-hover:bg-gray-200'
                   }`}
                 >
-                  {/* Sticky Row Number Index */}
-                  <td
-                    className={`p-2 text-center font-mono font-semibold border-r border-gray-300 sticky left-0 z-10 transition-colors ${
-                      isSelected
-                        ? 'bg-excel-green text-white'
-                        : 'bg-[#f8f9fa] text-gray-600 group-hover:bg-gray-200'
+                  {rowIndex}
+                </td>
+
+                {/* Col A: Tanggal */}
+                <td
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTrade(trade, `A${rowIndex}`, trade.tanggal);
+                  }}
+                  className="p-2 border-r border-gray-200 whitespace-nowrap font-mono text-gray-700"
+                >
+                  {trade.tanggal}
+                </td>
+
+                {/* Col B: Pair */}
+                <td
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTrade(trade, `B${rowIndex}`, trade.pair);
+                  }}
+                  className="p-2 border-r border-gray-200 whitespace-nowrap font-bold text-gray-900"
+                >
+                  <span className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-300">
+                    {trade.pair}
+                  </span>
+                </td>
+
+                {/* Col C: Posisi (BUY / SELL) */}
+                <td
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTrade(trade, `C${rowIndex}`, trade.posisi);
+                  }}
+                  className="p-2 border-r border-gray-200 whitespace-nowrap text-center"
+                >
+                  <span
+                    className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full font-bold text-[11px] border ${
+                      trade.posisi === 'BUY'
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-rose-100 text-rose-800 border-rose-300'
                     }`}
                   >
-                    {rowIndex}
-                  </td>
+                    {trade.posisi === 'BUY' ? (
+                      <ArrowUpRight className="w-3 h-3" />
+                    ) : (
+                      <ArrowDownRight className="w-3 h-3" />
+                    )}
+                    {trade.posisi}
+                  </span>
+                </td>
 
-                  {/* Col A: Tanggal */}
-                  <td
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTrade(trade, `A${rowIndex}`, trade.tanggal);
-                    }}
-                    className="p-2 border-r border-gray-200 whitespace-nowrap font-mono text-gray-700"
-                  >
-                    {trade.tanggal}
-                  </td>
+                {/* Col D: Entry */}
+                <td
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTrade(trade, `D${rowIndex}`, String(trade.entry));
+                  }}
+                  className="p-2 border-r border-gray-200 whitespace-nowrap font-mono text-right text-gray-800"
+                >
+                  {trade.entry}
+                </td>
 
-                  {/* Col B: Pair */}
-                  <td
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTrade(trade, `B${rowIndex}`, trade.pair);
-                    }}
-                    className="p-2 border-r border-gray-200 whitespace-nowrap font-bold text-gray-900"
-                  >
-                    <span className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-300">
-                      {trade.pair}
-                    </span>
-                  </td>
+                {/* Col E: SL */}
+                <td
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTrade(trade, `E${rowIndex}`, String(trade.sl));
+                  }}
+                  className="p-2 border-r border-gray-200 whitespace-nowrap font-mono text-right text-rose-700 bg-rose-50/20"
+                >
+                  {trade.sl}
+                </td>
 
-                  {/* Col C: Posisi (BUY / SELL) */}
-                  <td
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTrade(trade, `C${rowIndex}`, trade.posisi);
-                    }}
-                    className="p-2 border-r border-gray-200 whitespace-nowrap text-center"
+                {/* Col F: TP */}
+                <td
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTrade(trade, `F${rowIndex}`, String(trade.tp));
+                  }}
+                  className="p-2 border-r border-gray-200 whitespace-nowrap font-mono text-right text-emerald-700 bg-emerald-50/20"
+                >
+                  {trade.tp}
+                </td>
+
+                {/* Col G: Lot */}
+                <td
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTrade(trade, `G${rowIndex}`, trade.lot);
+                  }}
+                  className="p-2 border-r border-gray-200 whitespace-nowrap text-center font-medium text-gray-700"
+                >
+                  {trade.lot}
+                </td>
+
+                {/* Col H: Hasil (Pips) */}
+                <td
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTrade(
+                      trade,
+                      `H${rowIndex}`,
+                      `${trade.pips > 0 ? '+' : ''}${trade.pips} Pips`
+                    );
+                  }}
+                  className={`p-2 border-r border-gray-200 whitespace-nowrap font-bold text-center ${
+                    isProfit
+                      ? 'text-emerald-700 bg-emerald-50/50'
+                      : isLoss
+                      ? 'text-rose-700 bg-rose-50/50'
+                      : 'text-gray-600 bg-gray-50'
+                  }`}
+                >
+                  <span className="inline-block px-1.5 py-0.5 rounded">
+                    {trade.pips > 0 ? `+${trade.pips}` : trade.pips} Pips
+                  </span>
+                </td>
+
+                {/* Col I: R:R */}
+                <td
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTrade(trade, `I${rowIndex}`, trade.riskReward || '-');
+                  }}
+                  className="p-2 border-r border-gray-200 whitespace-nowrap text-center font-mono text-gray-700"
+                >
+                  {trade.riskReward || '-'}
+                </td>
+
+                {/* Col J: Alasan Eksekusi */}
+                <td
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTrade(trade, `J${rowIndex}`, trade.alasan);
+                  }}
+                  className="p-2 border-r border-gray-200 max-w-xs truncate text-gray-800"
+                  title={trade.alasan}
+                >
+                  {trade.alasan}
+                </td>
+
+                {/* Col K: Emosi / Psikologi */}
+                <td
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTrade(trade, `K${rowIndex}`, trade.emosi);
+                  }}
+                  className="p-2 border-r border-gray-200 whitespace-nowrap"
+                >
+                  <span
+                    className={`inline-block px-2 py-0.5 rounded text-[11px] border font-medium ${getEmotionBadge(
+                      trade.emosi
+                    )}`}
                   >
-                    <span
-                      className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full font-bold text-[11px] border ${
-                        trade.posisi === 'BUY'
-                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                          : 'bg-rose-100 text-rose-800 border-rose-300'
-                      }`}
+                    {trade.emosi}
+                  </span>
+                </td>
+
+                {/* Col L: Evaluasi Akhir */}
+                <td
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTrade(trade, `L${rowIndex}`, trade.evaluasi);
+                  }}
+                  className="p-2 border-r border-gray-200 max-w-sm truncate text-gray-600"
+                  title={trade.evaluasi}
+                >
+                  {trade.evaluasi || '-'}
+                </td>
+
+                {/* Col M: Aksi (Edit & Hapus) */}
+                <td className="p-2 text-center whitespace-nowrap bg-white">
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditTrade(trade);
+                      }}
+                      className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded transition-colors"
+                      title="Edit / Update trade ini"
                     >
-                      {trade.posisi === 'BUY' ? (
-                        <ArrowUpRight className="w-3 h-3" />
-                      ) : (
-                        <ArrowDownRight className="w-3 h-3" />
-                      )}
-                      {trade.posisi}
-                    </span>
-                  </td>
-
-                  {/* Col D: Entry */}
-                  <td
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTrade(trade, `D${rowIndex}`, String(trade.entry));
-                    }}
-                    className="p-2 border-r border-gray-200 whitespace-nowrap font-mono text-right text-gray-800"
-                  >
-                    {trade.entry}
-                  </td>
-
-                  {/* Col E: SL */}
-                  <td
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTrade(trade, `E${rowIndex}`, String(trade.sl));
-                    }}
-                    className="p-2 border-r border-gray-200 whitespace-nowrap font-mono text-right text-rose-700 bg-rose-50/20"
-                  >
-                    {trade.sl}
-                  </td>
-
-                  {/* Col F: TP */}
-                  <td
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTrade(trade, `F${rowIndex}`, String(trade.tp));
-                    }}
-                    className="p-2 border-r border-gray-200 whitespace-nowrap font-mono text-right text-emerald-700 bg-emerald-50/20"
-                  >
-                    {trade.tp}
-                  </td>
-
-                  {/* Col G: Lot */}
-                  <td
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTrade(trade, `G${rowIndex}`, trade.lot);
-                    }}
-                    className="p-2 border-r border-gray-200 whitespace-nowrap text-center font-medium text-gray-700"
-                  >
-                    {trade.lot}
-                  </td>
-
-                  {/* Col H: Hasil (Pips) */}
-                  <td
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTrade(
-                        trade,
-                        `H${rowIndex}`,
-                        `${trade.pips > 0 ? '+' : ''}${trade.pips} Pips`
-                      );
-                    }}
-                    className={`p-2 border-r border-gray-200 whitespace-nowrap font-bold text-center ${
-                      isProfit
-                        ? 'text-emerald-700 bg-emerald-50/50'
-                        : isLoss
-                        ? 'text-rose-700 bg-rose-50/50'
-                        : 'text-gray-600 bg-gray-50'
-                    }`}
-                  >
-                    <span className="inline-block px-1.5 py-0.5 rounded">
-                      {trade.pips > 0 ? `+${trade.pips}` : trade.pips} Pips
-                    </span>
-                  </td>
-
-                  {/* Col I: R:R */}
-                  <td
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTrade(trade, `I${rowIndex}`, trade.riskReward || '-');
-                    }}
-                    className="p-2 border-r border-gray-200 whitespace-nowrap text-center font-mono text-gray-700"
-                  >
-                    {trade.riskReward || '-'}
-                  </td>
-
-                  {/* Col J: Alasan Eksekusi */}
-                  <td
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTrade(trade, `J${rowIndex}`, trade.alasan);
-                    }}
-                    className="p-2 border-r border-gray-200 max-w-xs truncate text-gray-800"
-                    title={trade.alasan}
-                  >
-                    {trade.alasan}
-                  </td>
-
-                  {/* Col K: Emosi / Psikologi */}
-                  <td
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTrade(trade, `K${rowIndex}`, trade.emosi);
-                    }}
-                    className="p-2 border-r border-gray-200 whitespace-nowrap"
-                  >
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded text-[11px] border font-medium ${getEmotionBadge(
-                        trade.emosi
-                      )}`}
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (
+                          confirm(
+                            `Hapus baris trade ${trade.pair} tanggal ${trade.tanggal}?`
+                          )
+                        ) {
+                          onDeleteTrade(trade.id);
+                        }
+                      }}
+                      className="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-100 rounded transition-colors"
+                      title="Hapus baris ini"
                     >
-                      {trade.emosi}
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+
+          {/* Baris Kosong Realistis Khas Lembar Kerja Excel */}
+          {Array.from({ length: emptyRowsCount }).map((_, i) => {
+            const rowIndex = trades.length + i + 1;
+            const isFirstBlank = i === 0;
+
+            return (
+              <tr
+                key={`empty-row-${rowIndex}`}
+                onClick={onAddNew}
+                className="hover:bg-emerald-50/30 cursor-pointer text-gray-300"
+                title="Klik untuk mengisi data pada baris ini"
+              >
+                <td className="p-2 text-center font-mono font-medium text-gray-400 bg-[#f8f9fa] border-r border-gray-300 sticky left-0 z-10">
+                  {rowIndex}
+                </td>
+                {isFirstBlank && trades.length === 0 ? (
+                  <td
+                    colSpan={COLUMN_HEADERS.length}
+                    className="p-2 text-gray-400 italic text-left bg-emerald-50/20 border-r border-gray-200"
+                  >
+                    <span className="flex items-center gap-1 text-emerald-700 font-medium text-xs">
+                      <Plus className="w-3.5 h-3.5" /> Lembar sheet masih kosong. Klik di sini untuk mencatat trade pertama Anda...
                     </span>
                   </td>
-
-                  {/* Col L: Evaluasi Akhir */}
-                  <td
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTrade(trade, `L${rowIndex}`, trade.evaluasi);
-                    }}
-                    className="p-2 border-r border-gray-200 max-w-sm truncate text-gray-600"
-                    title={trade.evaluasi}
-                  >
-                    {trade.evaluasi || '-'}
-                  </td>
-
-                  {/* Col M: Aksi */}
-                  <td className="p-2 text-center whitespace-nowrap bg-white">
-                    <div className="flex items-center justify-center gap-1">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEditTrade(trade);
-                        }}
-                        className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded transition-colors"
-                        title="Edit data ini"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (
-                            confirm(
-                              `Hapus catatan trade ${trade.pair} tanggal ${trade.tanggal}?`
-                            )
-                          ) {
-                            onDeleteTrade(trade.id);
-                          }
-                        }}
-                        className="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-100 rounded transition-colors"
-                        title="Hapus baris ini"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })
-          )}
+                ) : (
+                  COLUMN_HEADERS.map((h) => (
+                    <td
+                      key={h.col}
+                      className="p-2 border-r border-gray-200 h-8"
+                    >
+                      &nbsp;
+                    </td>
+                  ))
+                )}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
   );
 };
-
