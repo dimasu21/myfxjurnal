@@ -19,7 +19,7 @@ const COLUMN_HEADERS = [
   { col: 'E', name: 'SL', key: 'sl', width: 'w-24 min-w-[90px]' },
   { col: 'F', name: 'TP', key: 'tp', width: 'w-24 min-w-[90px]' },
   { col: 'G', name: 'Lot', key: 'lot', width: 'w-20 min-w-[80px]' },
-  { col: 'H', name: 'Hasil (Pips)', key: 'pips', width: 'w-32 min-w-[120px]' },
+  { col: 'H', name: 'Pips', key: 'pips', width: 'w-28 min-w-[100px]' },
   { col: 'I', name: 'R:R', key: 'riskReward', width: 'w-20 min-w-[75px]' },
   { col: 'J', name: 'Alasan Eksekusi', key: 'alasan', width: 'w-64 min-w-[220px]' },
   { col: 'K', name: 'Emosi / Psikologi', key: 'emosi', width: 'w-40 min-w-[140px]' },

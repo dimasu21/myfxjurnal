@@ -390,7 +390,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Hasil Akhir (Pips) *
+                Pips *
               </label>
               <div className="relative">
                 <input

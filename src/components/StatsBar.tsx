@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, Target, Zap, Activity } from 'lucide-react';
+import { TrendingUp, TrendingDown, Trophy, Zap, Activity } from 'lucide-react';
 import { Trade } from '../types/trade';
 import { calculateStats } from '../utils/calculations';
 
@@ -28,11 +28,11 @@ export const StatsBar: React.FC<StatsBarProps> = ({ trades }) => {
           </div>
         </div>
 
-        {/* Win Rate */}
+        {/* Win Rate dengan Icon Piala (Trophy) */}
         <div className="bg-emerald-50/60 border border-emerald-200 rounded p-2 flex flex-col justify-between">
           <div className="text-emerald-700 flex items-center justify-between font-medium">
             <span>Win Rate</span>
-            <Target className="w-3.5 h-3.5 text-emerald-600" />
+            <Trophy className="w-4 h-4 text-amber-500" />
           </div>
           <div className="flex items-baseline gap-1 mt-1">
             <span className="text-base font-extrabold text-emerald-700">
@@ -103,4 +103,3 @@ export const StatsBar: React.FC<StatsBarProps> = ({ trades }) => {
     </div>
   );
 };
-

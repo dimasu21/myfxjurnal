@@ -13,6 +13,13 @@ import { AnalyticsModal } from './components/AnalyticsModal';
 import { Plus } from 'lucide-react';
 
 export default function App() {
+  // Document title dengan dukungan CRUD / rename
+  const [documentTitle, setDocumentTitle] = useState<string>(() => {
+    return typeof window !== 'undefined' 
+      ? localStorage.getItem('forex_journal_doc_title') || 'Jurnal_Trading_Forex.xlsx'
+      : 'Jurnal_Trading_Forex.xlsx';
+  });
+
   // Data trades default kosong (tanpa dummy data awal)
   const [trades, setTrades] = useState<Trade[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -60,6 +67,16 @@ export default function App() {
       setActiveView('cards');
     }
   }, []);
+
+  // Update Judul Dokumen (CRUD Judul)
+  const handleUpdateTitle = (newTitle: string) => {
+    setDocumentTitle(newTitle);
+    try {
+      localStorage.setItem('forex_journal_doc_title', newTitle);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   // Keyboard shortcut: Ctrl + S / Cmd + S untuk Simpan Manual
   useEffect(() => {
@@ -197,12 +214,15 @@ export default function App() {
     }
   };
 
+  const cleanBaseName = documentTitle.replace(/\.[^/.]+$/, '');
+
   const handleExportExcel = () => {
     if (trades.length === 0) {
       alert('Belum ada data trade untuk diekspor!');
       return;
     }
-    exportToExcel(trades);
+    const filename = documentTitle.endsWith('.xlsx') ? documentTitle : `${documentTitle}.xlsx`;
+    exportToExcel(trades, filename);
   };
 
   const handleExportCsv = () => {
@@ -210,7 +230,7 @@ export default function App() {
       alert('Belum ada data trade untuk diekspor!');
       return;
     }
-    exportToCsv(trades);
+    exportToCsv(trades, `${cleanBaseName}.csv`);
   };
 
   const handleExportPdf = () => {
@@ -218,7 +238,7 @@ export default function App() {
       alert('Belum ada data trade untuk diekspor ke PDF!');
       return;
     }
-    exportToPdf(trades);
+    exportToPdf(trades, `${cleanBaseName}.pdf`);
   };
 
   const handleImportClick = () => {
@@ -257,8 +277,10 @@ export default function App() {
         onChange={handleFileChange}
       />
 
-      {/* Excel Ribbon Top Header dengan Tombol Simpan Manual & Export PDF */}
+      {/* Excel Ribbon Top Header dengan CRUD Judul Dokumen */}
       <ExcelHeader
+        documentTitle={documentTitle}
+        onUpdateTitle={handleUpdateTitle}
         onOpenNewModal={handleAddNew}
         onOpenAnalytics={() => setIsAnalyticsOpen(true)}
         onExportExcel={handleExportExcel}
