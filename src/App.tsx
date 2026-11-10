@@ -494,8 +494,11 @@ export default function App() {
         onOpenHome={() => setActivePageView('home')}
         onOpenProfile={() => setActivePageView('profile')}
         currentUsername={currentUser?.username}
+        userAvatar={currentUser?.avatarUrl}
         activePageView={activePageView}
-        onSwitchToSheet={() => setActivePageView('home')}
+        onSwitchToSheet={() => setActivePageView('sheet')}
+        onOpenSheet={() => setActivePageView('sheet')}
+        onLogout={handleLogout}
         showMarketSessions={showMarketSessions}
         onToggleMarketSessions={() => setShowMarketSessions((prev) => !prev)}
         showLiveTicker={showLiveTicker}

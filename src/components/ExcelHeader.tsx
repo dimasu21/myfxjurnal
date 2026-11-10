@@ -1,32 +1,33 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { 
+  Plus, 
+  Save, 
+  CheckCircle2, 
+  AlertCircle, 
   FileSpreadsheet, 
   Download, 
   Upload, 
-  Plus, 
   Trash2, 
-  BarChart3, 
-  LayoutGrid, 
-  Table as TableIcon,
-  Save,
-  CheckCircle2,
-  AlertCircle,
-  FileText,
-  Edit2,
-  Check,
-  X,
+  Moon, 
+  Sun,
+  Bell,
+  MessageSquare,
+  Award,
+  ChevronDown,
+  User,
+  Settings,
+  LogOut,
+  LayoutGrid,
+  TrendingUp,
+  BarChart3,
   Globe2,
   Calculator,
   Calendar,
   CandlestickChart,
-  Flame,
-  TrendingUp,
-  Award,
-  ChevronDown,
-  Database,
-  Moon,
-  Sun
+  Shield,
+  CreditCard,
+  Tv
 } from 'lucide-react';
 
 interface ExcelHeaderProps {
@@ -43,7 +44,10 @@ interface ExcelHeaderProps {
   onOpenNews?: () => void;
   onOpenHome?: () => void;
   onOpenProfile?: () => void;
+  onOpenSheet?: () => void;
+  onLogout?: () => void;
   currentUsername?: string;
+  userAvatar?: string;
   showMarketSessions: boolean;
   onToggleMarketSessions: () => void;
   showLiveTicker: boolean;
@@ -69,7 +73,6 @@ interface ExcelHeaderProps {
 
 export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   documentTitle,
-  onUpdateTitle,
   onOpenNewModal,
   onOpenLiveChart,
   onOpenAnalytics,
@@ -78,10 +81,15 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   onOpenHeatmap,
   onOpenCompounding,
   onOpenStatementCard,
+  onOpenNews,
+  onOpenHome,
+  onOpenProfile,
+  onOpenSheet,
+  onLogout,
+  currentUsername,
+  userAvatar,
   showMarketSessions,
   onToggleMarketSessions,
-  showLiveTicker,
-  onToggleLiveTicker,
   onExportExcel,
   onExportCsv,
   onExportPdf,
@@ -92,349 +100,470 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   onManualSave,
   hasUnsavedChanges,
   isSaveSuccess,
-  activeView,
-  setActiveView,
   isDarkMode,
   onToggleDarkMode,
   totalTrades,
-  activePageView = 'sheet',
+  activePageView = 'home',
   onSwitchToSheet,
-  onOpenNews,
-  onOpenHome,
-  onOpenProfile,
-  currentUsername,
 }) => {
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [titleInput, setTitleInput] = useState(documentTitle);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isFileMenuOpen, setIsFileMenuOpen] = useState(false);
-  const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [fileMenuPos, setFileMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
-  const titleInputRef = useRef<HTMLInputElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const fileButtonRef = useRef<HTMLButtonElement>(null);
   const fileDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Close user dropdown on outside click
   useEffect(() => {
-    setTitleInput(documentTitle);
-  }, [documentTitle]);
+    if (!isUserMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isUserMenuOpen]);
 
+  // Close file menu on outside click
   useEffect(() => {
-    if (isEditingTitle) {
-      titleInputRef.current?.focus();
-      titleInputRef.current?.select();
-    }
-  }, [isEditingTitle]);
+    if (!isFileMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (fileButtonRef.current?.contains(target) || fileDropdownRef.current?.contains(target)) {
+        return;
+      }
+      setIsFileMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isFileMenuOpen]);
 
-  // Posisi menu dropdown dihitung akurat dari tombol
   const handleToggleFileMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (fileButtonRef.current) {
       const rect = fileButtonRef.current.getBoundingClientRect();
-      const idealLeft = rect.left;
-      const maxLeft = Math.max(10, window.innerWidth - 275);
-      setMenuPos({
+      setFileMenuPos({
         top: rect.bottom + 4,
-        left: Math.min(idealLeft, maxLeft),
+        left: Math.max(10, Math.min(rect.left, window.innerWidth - 270)),
       });
     }
     setIsFileMenuOpen((prev) => !prev);
   };
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    if (!isFileMenuOpen) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (
-        fileButtonRef.current?.contains(target) ||
-        fileDropdownRef.current?.contains(target)
-      ) {
-        return;
-      }
-      setIsFileMenuOpen(false);
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isFileMenuOpen]);
-
-  const handleSaveTitle = () => {
-    const trimmed = titleInput.trim();
-    if (trimmed) {
-      onUpdateTitle(trimmed);
-    } else {
-      setTitleInput(documentTitle);
-    }
-    setIsEditingTitle(false);
-  };
-
-  const handleCancelTitle = () => {
-    setTitleInput(documentTitle);
-    setIsEditingTitle(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSaveTitle();
-    } else if (e.key === 'Escape') {
-      handleCancelTitle();
-    }
-  };
+  const usernameDisplay = currentUsername || 'DimasTriM';
 
   return (
-    <header className={`${isDarkMode ? 'bg-[#0f172a] border-b border-slate-700' : 'bg-excel-green'} text-white shadow-md select-none sticky top-0 z-30 transition-colors`}>
-      {/* Top Title Bar */}
-      <div className="px-3 py-1.5 flex items-center justify-between border-b border-white/10 text-xs sm:text-sm">
-        {/* Logo Area (FX Logo ala Myfxbook) */}
-        <div className="flex items-center gap-2.5">
-          <img
-            src="/fx-logo.png"
-            alt="Fx"
-            className="h-8 w-auto object-contain cursor-pointer transition-transform active:scale-95"
-            onClick={onSwitchToSheet}
-            title="MyFX Journal"
-          />
-
-          {/* Indikator Status Save */}
-          {hasUnsavedChanges && (
-            <span className="inline-flex items-center gap-1 text-[10px] bg-amber-400 text-gray-900 font-bold px-2 py-0.5 rounded shadow-xs shrink-0 animate-pulse">
-              <AlertCircle className="w-3 h-3 text-amber-900" />
-              <span className="hidden sm:inline">Belum Disimpan</span>
-            </span>
-          )}
-          {isSaveSuccess && !hasUnsavedChanges && (
-            <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-800 text-emerald-200 px-2 py-0.5 rounded font-medium shrink-0">
-              <CheckCircle2 className="w-3 h-3 text-emerald-300" />
-              <span className="hidden sm:inline">Tersimpan</span>
-            </span>
-          )}
-        </div>
-
-        {/* Action Buttons Top Right: Home, Profile, & Dark Mode Toggle */}
-        <div className="flex items-center gap-2">
-          {onOpenHome && (
-            <button
+    <header className="w-full select-none sticky top-0 z-40 shadow-sm">
+      {/* ============================================================ */}
+      {/* 1. TOP BLACK TIER (Logo, Points, Notifications, User Profile) */}
+      {/* ============================================================ */}
+      <div className="bg-[#181b1f] text-white border-b border-[#292d33]">
+        <div className="max-w-[1240px] mx-auto px-4 h-12 flex items-center justify-between">
+          
+          {/* Logo Area */}
+          <div className="flex items-center gap-3">
+            <div 
               onClick={onOpenHome}
-              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                activePageView === 'home'
-                  ? 'bg-white text-emerald-800 font-bold shadow-xs'
-                  : 'bg-white/10 hover:bg-white/20 text-white'
-              }`}
+              className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95"
+              title="Kembali ke Beranda"
             >
-              <span>Beranda</span>
-            </button>
-          )}
-
-          {onOpenNews && (
-            <button
-              onClick={onOpenNews}
-              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                activePageView === 'news'
-                  ? 'bg-white text-emerald-800 font-bold shadow-xs'
-                  : 'bg-white/10 hover:bg-white/20 text-white'
-              }`}
-            >
-              <span>Berita Real-Time</span>
-            </button>
-          )}
-
-          {onOpenProfile && (
-            <button
-              onClick={onOpenProfile}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors"
-              title="Profil Pengguna & Akun Myfxbook"
-            >
-              <div className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">
-                {currentUsername ? currentUsername.charAt(0).toUpperCase() : 'U'}
+              <img 
+                src="/fx-logo.png" 
+                alt="Fx" 
+                className="h-8 w-auto object-contain" 
+              />
+              <div className="flex items-baseline tracking-tight">
+                <span className="text-lg font-black text-white">my</span>
+                <span className="text-lg font-black text-[#e66a00]">fx</span>
+                <span className="text-lg font-black text-white">book</span>
               </div>
-              <span className="hidden sm:inline">{currentUsername || 'Profil'}</span>
-            </button>
-          )}
+            </div>
 
-          <button
-            onClick={onToggleDarkMode}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white transition-colors text-xs font-semibold"
-            title={isDarkMode ? 'Beralih ke Tema Excel Terang' : 'Beralih ke Tema TradingView Dark'}
-          >
-            {isDarkMode ? (
-              <>
-                <Sun className="w-3.5 h-3.5 text-yellow-300" />
-                <span className="text-[11px]">Light</span>
-              </>
-            ) : (
-              <>
-                <Moon className="w-3.5 h-3.5 text-slate-200" />
-                <span className="text-[11px]">Dark</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+            <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-gray-400 pl-2 border-l border-gray-700">
+              <span className="text-[10px] text-gray-500">Sponsored by</span>
+              <span className="font-semibold text-sky-400">pepperstone</span>
+            </div>
+          </div>
 
-      {/* Excel Ribbon Quick Action Bar (Hanya tampil saat membuka sheet Jurnal / Alat Analisa) */}
-      {activePageView !== 'home' && activePageView !== 'profile' && activePageView !== 'news' && (
-      <div className={`hidden md:flex px-3 py-1.5 items-center justify-between gap-2 overflow-x-auto text-xs scrollbar-none ${isDarkMode ? 'bg-[#1e293b]' : 'bg-[#0e6b37]'}`}>
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          {/* SECTION 1: ENTRI & SIMPAN */}
-          <button
-            onClick={onOpenNewModal}
-            className="flex items-center gap-1 px-2 py-1 hover:bg-white/15 rounded text-white transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5 text-yellow-300" />
-            <span>Tambah Baris</span>
-          </button>
+          {/* Right Header Items (Points, Notifications, Profile) */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            
+            {/* Poin Badge */}
+            <div className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#272b32] border border-[#363b44] text-[11px] font-bold text-amber-400 shadow-xs">
+              <Award className="w-3.5 h-3.5 text-amber-400" />
+              <span>0 poin</span>
+            </div>
 
-          <button
-            onClick={onManualSave}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded text-white transition-all font-semibold ${
-              hasUnsavedChanges 
-                ? 'bg-amber-400 hover:bg-amber-300 text-gray-900 shadow-xs ring-1 ring-white'
-                : 'hover:bg-white/15'
-            }`}
-            title="Simpan data ke perangkat (Ctrl+S)"
-          >
-            <Save className={`w-3.5 h-3.5 ${hasUnsavedChanges ? 'text-gray-900' : 'text-amber-300'}`} />
-            <span>Simpan (Ctrl+S)</span>
-          </button>
-
-          <div className="w-[1px] h-4 bg-white/20 mx-1" />
-
-          {/* SECTION 2: FITUR REALTIME & ANALISA TRADING */}
-          <button
-            onClick={onOpenLiveChart}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded font-bold transition-all shadow-xs active:scale-95 ${
-              activePageView === 'chart'
-                ? 'bg-white text-emerald-900 shadow-md ring-2 ring-yellow-400'
-                : 'bg-white/20 hover:bg-white/30 text-white ring-1 ring-white/30'
-            }`}
-            title="Buka Chart Candlestick TradingView Real-Time"
-          >
-            <CandlestickChart className={`w-3.5 h-3.5 ${activePageView === 'chart' ? 'text-emerald-700' : 'text-yellow-300'}`} />
-            <span className={activePageView === 'chart' ? 'text-emerald-950' : 'text-yellow-200'}>Live Chart</span>
-          </button>
-
-          <button
-            onClick={onToggleMarketSessions}
-            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-              showMarketSessions ? 'bg-white/25 text-white font-bold' : 'hover:bg-white/15 text-emerald-100'
-            }`}
-            title="Tampilkan Jam Pasar Forex (London, NY, Tokyo, Sydney)"
-          >
-            <Globe2 className="w-3.5 h-3.5 text-emerald-300" />
-            <span>Sesi Pasar</span>
-          </button>
-
-          <button
-            onClick={onOpenLotCalc}
-            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-              activePageView === 'lot-calc'
-                ? 'bg-white/30 text-white font-bold ring-1 ring-white/50 shadow-xs'
-                : 'hover:bg-white/15 text-emerald-100 hover:text-white'
-            }`}
-            title="Kalkulator Ukuran Lot & Manajemen Risiko Akun (Support $10 hingga $100k)"
-          >
-            <Calculator className="w-3.5 h-3.5 text-amber-300" />
-            <span>Hitung Lot</span>
-          </button>
-
-          <button
-            onClick={onOpenEcoCalendar}
-            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-              activePageView === 'calendar'
-                ? 'bg-white/30 text-white font-bold ring-1 ring-white/50 shadow-xs'
-                : 'hover:bg-white/15 text-emerald-100 hover:text-white'
-            }`}
-            title="Kalender Berita Ekonomi Forex (CPI, NFP, FOMC)"
-          >
-            <Calendar className="w-3.5 h-3.5 text-blue-300" />
-            <span>Kalender News</span>
-          </button>
-
-          <button
-            onClick={onOpenHeatmap}
-            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-              activePageView === 'heatmap'
-                ? 'bg-white/30 text-white font-bold ring-1 ring-white/50 shadow-xs'
-                : 'hover:bg-white/15 text-emerald-100 hover:text-white'
-            }`}
-            title="Fitur #4: Heatmap Hari & Jam Trading Terbaik"
-          >
-            <LayoutGrid className="w-3.5 h-3.5 text-orange-300" />
-            <span>Heatmap</span>
-          </button>
-
-          <button
-            onClick={onOpenCompounding}
-            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-              activePageView === 'compounding'
-                ? 'bg-white/30 text-white font-bold ring-1 ring-white/50 shadow-xs'
-                : 'hover:bg-white/15 text-emerald-100 hover:text-white'
-            }`}
-            title="Fitur #5: Simulator Pertumbuhan Modal (Compounding)"
-          >
-            <TrendingUp className="w-3.5 h-3.5 text-cyan-300" />
-            <span>Target Modal</span>
-          </button>
-
-          <button
-            onClick={onOpenAnalytics}
-            className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-              activePageView === 'analytics'
-                ? 'bg-white/30 text-white font-bold ring-1 ring-white/50 shadow-xs'
-                : 'hover:bg-white/15 text-white'
-            }`}
-            title="Fitur #8: Statistik, Analisis Strategi & Equity Curve"
-          >
-            <BarChart3 className="w-3.5 h-3.5 text-emerald-300" />
-            <span>Statistik</span>
-          </button>
-
-          <div className="w-[1px] h-4 bg-white/20 mx-1" />
-
-          {/* SECTION 3: DROPDOWN FILE & EKSPOR/IMPOR */}
-          <div className="relative">
-            <button
-              ref={fileButtonRef}
+            {/* Notification Bell with Badge */}
+            <button 
               type="button"
-              onClick={handleToggleFileMenu}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded text-white font-bold transition-all shadow-xs cursor-pointer ${
-                isFileMenuOpen 
-                  ? 'bg-emerald-800 text-yellow-300 ring-2 ring-yellow-400' 
-                  : 'bg-white/15 hover:bg-white/25 active:scale-95'
-              }`}
+              className="relative p-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-[#272b32] transition-colors"
+              title="Notifikasi"
             >
-              <Download className="w-3.5 h-3.5 text-emerald-300" />
-              <span>File & Ekspor</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isFileMenuOpen ? 'rotate-180' : ''}`} />
+              <Bell className="w-4 h-4" />
+              <span className="absolute -top-0.5 -right-0.5 bg-rose-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                3
+              </span>
             </button>
+
+            {/* Message Bubble with Badge */}
+            <button 
+              type="button"
+              className="relative p-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-[#272b32] transition-colors"
+              title="Pesan Masuk"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span className="absolute -top-0.5 -right-0.5 bg-rose-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                1
+              </span>
+            </button>
+
+            {/* User Profile Button with Dropdown */}
+            <div className="relative" ref={userMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-2 pl-2 pr-1.5 py-1 rounded-lg hover:bg-[#272b32] transition-colors cursor-pointer"
+              >
+                <span className="text-xs font-bold text-white hidden sm:inline">
+                  {usernameDisplay}
+                </span>
+                <div className="w-7 h-7 rounded-sm overflow-hidden bg-slate-700 border border-slate-600 flex items-center justify-center text-white font-bold text-xs">
+                  {userAvatar ? (
+                    <img src={userAvatar} alt="User" className="w-full h-full object-cover" />
+                  ) : (
+                    <span>{usernameDisplay.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <ChevronDown className="w-3 h-3 text-gray-400" />
+              </button>
+
+              {/* User Dropdown Menu Ala Myfxbook Screenshot */}
+              {isUserMenuOpen && (
+                <div className="absolute right-0 top-full mt-1.5 w-60 bg-[#1c2026] text-gray-200 border border-[#2e343d] rounded-sm shadow-2xl py-2 z-50 text-xs font-sans animate-in fade-in zoom-in-95 duration-100">
+                  {/* User Header */}
+                  <div className="px-3.5 py-2.5 border-b border-[#2e343d] flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-sm bg-slate-700 border border-slate-600 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+                      {userAvatar ? (
+                        <img src={userAvatar} alt="User" className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{usernameDisplay.charAt(0).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-bold text-white">{usernameDisplay}</p>
+                      <p className="text-[10px] text-gray-400">Trader Terverifikasi</p>
+                    </div>
+                  </div>
+
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        onOpenProfile?.();
+                      }}
+                      className="w-full px-3.5 py-2 hover:bg-[#272b32] flex items-center gap-2.5 text-left transition-colors"
+                    >
+                      <User className="w-4 h-4 text-gray-400" />
+                      <span>Profil Saya</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        if (onOpenSheet) onOpenSheet();
+                        else if (onSwitchToSheet) onSwitchToSheet();
+                      }}
+                      className="w-full px-3.5 py-2 hover:bg-[#272b32] flex items-center gap-2.5 text-left transition-colors"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                      <span>Portofolio Jurnal</span>
+                    </button>
+
+                    <div className="w-full px-3.5 py-2 hover:bg-[#272b32] flex items-center gap-2.5 text-left transition-colors text-gray-400 cursor-default">
+                      <Bell className="w-4 h-4" />
+                      <span>Pengelola Peringatan</span>
+                    </div>
+
+                    <div className="w-full px-3.5 py-2 hover:bg-[#272b32] flex items-center gap-2.5 text-left transition-colors text-gray-400 cursor-default">
+                      <LayoutGrid className="w-4 h-4" />
+                      <span>Widget</span>
+                    </div>
+
+                    <div className="w-full px-3.5 py-2 hover:bg-[#272b32] flex items-center gap-2.5 text-left transition-colors text-gray-400 cursor-default">
+                      <Shield className="w-4 h-4" />
+                      <span>Persona Trading 2026</span>
+                    </div>
+
+                    <div className="w-full px-3.5 py-2 hover:bg-[#272b32] flex items-center gap-2.5 text-left transition-colors text-gray-400 cursor-default">
+                      <Settings className="w-4 h-4" />
+                      <span>Pengaturan</span>
+                    </div>
+
+                    <div className="w-full px-3.5 py-2 hover:bg-[#272b32] flex items-center gap-2.5 text-left transition-colors text-gray-400 cursor-default">
+                      <CreditCard className="w-4 h-4" />
+                      <span>Penagihan</span>
+                    </div>
+
+                    <div className="w-full px-3.5 py-2 hover:bg-[#272b32] flex items-center gap-2.5 text-left transition-colors text-gray-400 cursor-default">
+                      <Tv className="w-4 h-4" />
+                      <span>Versi Bebas Iklan</span>
+                    </div>
+                  </div>
+
+                  {/* Dark Mode Toggle Switch Ala Screenshot Myfxbook */}
+                  <div className="px-3.5 py-2.5 border-t border-[#2e343d] flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-gray-200">
+                      {isDarkMode ? <Moon className="w-4 h-4 text-amber-300" /> : <Sun className="w-4 h-4 text-yellow-400" />}
+                      <span>Mode gelap</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={onToggleDarkMode}
+                      className={`w-9 h-5 flex items-center rounded-full p-0.5 transition-colors cursor-pointer ${
+                        isDarkMode ? 'bg-[#e66a00]' : 'bg-slate-600'
+                      }`}
+                    >
+                      <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                        isDarkMode ? 'translate-x-4' : 'translate-x-0'
+                      }`} />
+                    </button>
+                  </div>
+
+                  {/* Logout Button */}
+                  <div className="pt-1 border-t border-[#2e343d]">
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        onLogout?.();
+                      }}
+                      className="w-full px-3.5 py-2 hover:bg-rose-950/40 text-rose-400 hover:text-rose-300 flex items-center gap-2.5 text-left transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Keluar</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
+      </div>
 
-        <div className="text-[11px] text-emerald-200 shrink-0 font-mono">
-          Total Baris: <strong className="text-white">{totalTrades}</strong>
+      {/* ============================================================ */}
+      {/* 2. PRIMARY NAVIGATION BAR (Beranda [Orange], Portofolio, dll) */}
+      {/* ============================================================ */}
+      <div className="bg-[#24272d] text-gray-200 border-b border-[#181b1f] text-xs sm:text-sm font-semibold select-none">
+        <div className="max-w-[1240px] mx-auto px-4 flex items-center gap-0 overflow-x-auto scrollbar-none">
+          
+          {/* Beranda (Active Orange Tab ala Myfxbook) */}
+          <button
+            onClick={onOpenHome}
+            className={`px-4 py-2.5 transition-colors shrink-0 ${
+              activePageView === 'home'
+                ? 'bg-[#e66a00] text-white font-bold'
+                : 'hover:bg-white/10 text-gray-300'
+            }`}
+          >
+            Beranda
+          </button>
+
+          {/* Portofolio (Buka Jurnal) */}
+          <button
+            onClick={() => (onOpenSheet ? onOpenSheet() : onSwitchToSheet ? onSwitchToSheet() : onOpenHome?.())}
+            className={`px-4 py-2.5 transition-colors shrink-0 ${
+              activePageView === 'sheet'
+                ? 'bg-[#e66a00] text-white font-bold'
+                : 'hover:bg-white/10 text-gray-300'
+            }`}
+          >
+            Portofolio
+          </button>
+
+          {/* Backtest dengan badge Baru */}
+          <button
+            onClick={onOpenAnalytics}
+            className={`px-3.5 py-2.5 transition-colors shrink-0 flex items-center gap-1.5 ${
+              activePageView === 'analytics'
+                ? 'bg-[#e66a00] text-white font-bold'
+                : 'hover:bg-white/10 text-gray-300'
+            }`}
+          >
+            <span>Backtest</span>
+            <span className="bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-xs">
+              Baru
+            </span>
+          </button>
+
+          {/* Strategi AI */}
+          <button
+            onClick={onOpenLiveChart}
+            className={`px-3.5 py-2.5 transition-colors shrink-0 ${
+              activePageView === 'chart'
+                ? 'bg-[#e66a00] text-white font-bold'
+                : 'hover:bg-white/10 text-gray-300'
+            }`}
+          >
+            Live Chart
+          </button>
+
+          {/* Berita Realtime */}
+          <button
+            onClick={onOpenNews}
+            className={`px-3.5 py-2.5 transition-colors shrink-0 ${
+              activePageView === 'news'
+                ? 'bg-[#e66a00] text-white font-bold'
+                : 'hover:bg-white/10 text-gray-300'
+            }`}
+          >
+            Berita
+          </button>
+
+          <span className="px-3 py-2.5 text-gray-400 hover:bg-white/5 cursor-pointer shrink-0">Pasar</span>
+          <span className="px-3 py-2.5 text-gray-400 hover:bg-white/5 cursor-pointer shrink-0">Sistems</span>
+          <span className="px-3 py-2.5 text-gray-400 hover:bg-white/5 cursor-pointer shrink-0">Komunitas</span>
+          <span className="px-3 py-2.5 text-gray-400 hover:bg-white/5 cursor-pointer shrink-0">Reviu</span>
+          <span className="px-3 py-2.5 text-gray-400 hover:bg-white/5 cursor-pointer shrink-0">Pialang</span>
+          <span className="px-3 py-2.5 text-gray-400 hover:bg-white/5 cursor-pointer shrink-0">Perusahaan</span>
         </div>
       </div>
-      )}
 
-      {/* REACT PORTAL DROPDOWN MENU — MENEMPEL LANGSUNG KE BODY SEHINGGA TIDAK BISA TERPOTONG */}
+      {/* ============================================================ */}
+      {/* 3. SUB-RIBBON SECONDARY BAR (Kalender, Kalkulator, Jam Pasar) */}
+      {/* ============================================================ */}
+      <div className="bg-[#ebedf0] dark:bg-[#1a212d] text-gray-700 dark:text-slate-300 border-b border-gray-300 dark:border-slate-800 text-xs select-none">
+        <div className="max-w-[1240px] mx-auto px-4 py-1.5 flex items-center justify-between gap-3 overflow-x-auto scrollbar-none">
+          
+          {/* Sub Navigation Items */}
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            <button
+              onClick={onOpenEcoCalendar}
+              className={`px-2 py-1 rounded transition-colors ${
+                activePageView === 'calendar' ? 'font-bold text-[#e66a00]' : 'hover:text-black dark:hover:text-white'
+              }`}
+            >
+              Kalender
+            </button>
+
+            <button
+              onClick={onOpenLotCalc}
+              className={`px-2 py-1 rounded transition-colors ${
+                activePageView === 'lot-calc' ? 'font-bold text-[#e66a00]' : 'hover:text-black dark:hover:text-white'
+              }`}
+            >
+              Kalkulator
+            </button>
+
+            <button
+              onClick={onOpenAnalytics}
+              className="px-2 py-1 rounded hover:text-black dark:hover:text-white transition-colors"
+            >
+              Sentimen
+            </button>
+
+            <button
+              onClick={onOpenHeatmap}
+              className={`px-2 py-1 rounded transition-colors ${
+                activePageView === 'heatmap' ? 'font-bold text-[#e66a00]' : 'hover:text-black dark:hover:text-white'
+              }`}
+            >
+              Peta Panas
+            </button>
+
+            <button
+              onClick={onToggleMarketSessions}
+              className={`px-2 py-1 rounded transition-colors flex items-center gap-1 ${
+                showMarketSessions ? 'font-bold text-[#e66a00]' : 'hover:text-black dark:hover:text-white'
+              }`}
+            >
+              <Globe2 className="w-3.5 h-3.5" />
+              <span>Jam Pasar</span>
+            </button>
+
+            <button
+              onClick={onOpenCompounding}
+              className={`px-2 py-1 rounded transition-colors ${
+                activePageView === 'compounding' ? 'font-bold text-[#e66a00]' : 'hover:text-black dark:hover:text-white'
+              }`}
+            >
+              Target Modal
+            </button>
+
+            <button
+              onClick={onOpenStatementCard}
+              className={`px-2 py-1 rounded transition-colors ${
+                activePageView === 'statement' ? 'font-bold text-[#e66a00]' : 'hover:text-black dark:hover:text-white'
+              }`}
+            >
+              Statemen
+            </button>
+
+            <div className="flex items-center gap-1 px-2 py-0.5 text-gray-500">
+              <span>Kontes</span>
+              <span className="bg-rose-600 text-white text-[9px] font-bold px-1 rounded-full">1</span>
+            </div>
+          </div>
+
+          {/* Sisi Kanan: Action Buttons jika sedang di Jurnal/Sheet */}
+          {activePageView === 'sheet' && (
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={onOpenNewModal}
+                className="flex items-center gap-1 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Tambah Baris</span>
+              </button>
+
+              <button
+                onClick={onManualSave}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded font-bold transition-all ${
+                  hasUnsavedChanges 
+                    ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-xs animate-pulse'
+                    : 'bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600'
+                }`}
+                title="Simpan data ke perangkat (Ctrl+S)"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>{hasUnsavedChanges ? 'Simpan *' : 'Tersimpan'}</span>
+              </button>
+
+              <button
+                ref={fileButtonRef}
+                onClick={handleToggleFileMenu}
+                className="flex items-center gap-1 px-2.5 py-1 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 rounded font-semibold transition-colors"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Ekspor / Impor</span>
+                <ChevronDown className="w-3 h-3 text-gray-500" />
+              </button>
+
+              <span className="text-[11px] text-gray-500 font-mono hidden sm:inline">
+                {totalTrades} Trades
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* PORTAL DROPDOWN EKSPOR / IMPOR FILE */}
       {isFileMenuOpen && typeof document !== 'undefined' && createPortal(
         <div
           ref={fileDropdownRef}
           style={{
             position: 'fixed',
-            top: `${menuPos.top}px`,
-            left: `${menuPos.left}px`,
+            top: `${fileMenuPos.top}px`,
+            left: `${fileMenuPos.left}px`,
             zIndex: 99999,
           }}
-          className={`w-64 rounded-xl shadow-2xl border py-1.5 animate-in fade-in zoom-in-95 duration-100 text-xs font-sans select-none ${
-            isDarkMode
-              ? 'bg-[#1e293b] text-slate-100 border-slate-700 shadow-black/90'
-              : 'bg-white text-gray-800 border-gray-200 shadow-2xl'
+          className={`w-64 rounded shadow-2xl border py-1.5 animate-in fade-in zoom-in-95 duration-100 text-xs select-none ${
+            isDarkMode ? 'bg-[#1c2026] text-slate-100 border-slate-700' : 'bg-white text-gray-800 border-gray-200'
           }`}
         >
-          <div className="px-3 py-1 text-[10px] font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider">
+          <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
             Ekspor Laporan
           </div>
 
@@ -444,32 +573,10 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
               setIsFileMenuOpen(false);
               onExportExcel();
             }}
-            className="w-full px-3 py-2 text-left hover:bg-emerald-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors cursor-pointer"
+            className="w-full px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center gap-2.5 text-left text-emerald-700 dark:text-emerald-400 font-semibold"
           >
-            <div className="p-1 rounded bg-emerald-100 dark:bg-emerald-950 text-excel-green dark:text-emerald-400 shrink-0">
-              <FileSpreadsheet className="w-4 h-4" />
-            </div>
-            <div>
-              <strong className="block text-xs text-gray-800 dark:text-slate-100">Export Microsoft Excel (.xlsx)</strong>
-              <span className="text-[10px] text-gray-500 dark:text-slate-400">Format spreadsheet resmi</span>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setIsFileMenuOpen(false);
-              onExportPdf();
-            }}
-            className="w-full px-3 py-2 text-left hover:bg-rose-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors cursor-pointer"
-          >
-            <div className="p-1 rounded bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 shrink-0">
-              <FileText className="w-4 h-4" />
-            </div>
-            <div>
-              <strong className="block text-xs text-gray-800 dark:text-slate-100">Export Dokumen PDF (.pdf)</strong>
-              <span className="text-[10px] text-gray-500 dark:text-slate-400">Laporan cetak Landscape A4</span>
-            </div>
+            <Download className="w-4 h-4 text-emerald-600" />
+            <span>Ekspor ke Excel (.xlsx)</span>
           </button>
 
           <button
@@ -478,38 +585,28 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
               setIsFileMenuOpen(false);
               onExportCsv();
             }}
-            className="w-full px-3 py-2 text-left hover:bg-blue-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors cursor-pointer"
+            className="w-full px-3 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2.5 text-left"
           >
-            <div className="p-1 rounded bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 shrink-0">
-              <Download className="w-4 h-4" />
-            </div>
-            <div>
-              <strong className="block text-xs text-gray-800 dark:text-slate-100">Export Data Mentah (.csv)</strong>
-              <span className="text-[10px] text-gray-500 dark:text-slate-400">Kompatibel semua software</span>
-            </div>
+            <Download className="w-4 h-4 text-gray-500" />
+            <span>Ekspor ke CSV (.csv)</span>
           </button>
 
           <button
             type="button"
             onClick={() => {
               setIsFileMenuOpen(false);
-              onOpenStatementCard();
+              onExportPdf();
             }}
-            className="w-full px-3 py-2 text-left hover:bg-amber-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors border-t border-gray-100 dark:border-slate-700 cursor-pointer"
+            className="w-full px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 text-left text-rose-700 dark:text-rose-400 font-semibold"
           >
-            <div className="p-1 rounded bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 shrink-0">
-              <Award className="w-4 h-4" />
-            </div>
-            <div>
-              <strong className="block text-xs text-amber-700 dark:text-amber-300">Cetak Statement Card Rapor</strong>
-              <span className="text-[10px] text-gray-500 dark:text-slate-400">Kartu performa untuk dibagikan</span>
-            </div>
+            <Download className="w-4 h-4 text-rose-600" />
+            <span>Cetak Rekap PDF (.pdf)</span>
           </button>
 
-          <div className="border-t border-gray-200 dark:border-slate-700 my-1" />
+          <div className="my-1 border-t border-gray-200 dark:border-slate-700" />
 
-          <div className="px-3 py-1 text-[10px] font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider">
-            Impor & Backup (Fitur #10)
+          <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+            Impor & Restore
           </div>
 
           <button
@@ -518,32 +615,10 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
               setIsFileMenuOpen(false);
               onImportClick();
             }}
-            className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors cursor-pointer"
+            className="w-full px-3 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2.5 text-left"
           >
-            <div className="p-1 rounded bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 shrink-0">
-              <Upload className="w-4 h-4" />
-            </div>
-            <div>
-              <strong className="block text-xs text-gray-800 dark:text-slate-100">Import Excel / CSV</strong>
-              <span className="text-[10px] text-gray-500 dark:text-slate-400">Masukkan catatan dari file luar</span>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setIsFileMenuOpen(false);
-              onExportBackupJson();
-            }}
-            className="w-full px-3 py-2 text-left hover:bg-purple-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors cursor-pointer"
-          >
-            <div className="p-1 rounded bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 shrink-0">
-              <Database className="w-4 h-4" />
-            </div>
-            <div>
-              <strong className="block text-xs text-purple-700 dark:text-purple-300">Backup Database (.json)</strong>
-              <span className="text-[10px] text-gray-500 dark:text-slate-400">Simpan backup cadangan aman</span>
-            </div>
+            <Upload className="w-4 h-4 text-emerald-500" />
+            <span>Impor Spreadsheet (.xlsx, .csv)</span>
           </button>
 
           <button
@@ -552,18 +627,13 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
               setIsFileMenuOpen(false);
               onImportJsonClick();
             }}
-            className="w-full px-3 py-2 text-left hover:bg-purple-50 dark:hover:bg-slate-700/70 flex items-center gap-2.5 transition-colors cursor-pointer"
+            className="w-full px-3 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2.5 text-left"
           >
-            <div className="p-1 rounded bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 shrink-0">
-              <Upload className="w-4 h-4" />
-            </div>
-            <div>
-              <strong className="block text-xs text-purple-700 dark:text-purple-300">Restore Database (.json)</strong>
-              <span className="text-[10px] text-gray-500 dark:text-slate-400">Pulihkan data dari file backup</span>
-            </div>
+            <Upload className="w-4 h-4 text-cyan-500" />
+            <span>Pulihkan Backup (.json)</span>
           </button>
 
-          <div className="border-t border-gray-200 dark:border-slate-700 my-1" />
+          <div className="my-1 border-t border-gray-200 dark:border-slate-700" />
 
           <button
             type="button"
@@ -571,15 +641,10 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
               setIsFileMenuOpen(false);
               onClearAll();
             }}
-            className="w-full px-3 py-2 text-left hover:bg-rose-100 dark:hover:bg-rose-950/50 flex items-center gap-2.5 text-rose-700 dark:text-rose-400 transition-colors cursor-pointer"
+            className="w-full px-3 py-2 hover:bg-rose-100 dark:hover:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center gap-2.5 text-left font-semibold"
           >
-            <div className="p-1 rounded bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-300 shrink-0">
-              <Trash2 className="w-4 h-4" />
-            </div>
-            <div>
-              <strong className="block text-xs">Kosongkan Seluruh Sheet</strong>
-              <span className="text-[10px] text-rose-500 dark:text-rose-400">Hapus semua data trade saat ini</span>
-            </div>
+            <Trash2 className="w-4 h-4" />
+            <span>Kosongkan Semua Baris</span>
           </button>
         </div>,
         document.body
