@@ -523,8 +523,8 @@ export default function App() {
       {/* Discipline Alert Banner: Hanya di Sheet */}
       {activePageView === 'sheet' && <DisciplineAlertBanner warnings={disciplineWarnings} />}
 
-      {/* Running Forex & Gold Price Ticker: Hanya di Sheet */}
-      {showLiveTicker && activePageView === 'sheet' && (
+      {/* Running Forex & Gold Price Ticker: Muncul di Semua Halaman */}
+      {showLiveTicker && (
         <LiveTicker
           tickers={tickers}
           isLive={isLive}
