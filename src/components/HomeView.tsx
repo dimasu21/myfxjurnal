@@ -7,14 +7,15 @@ import {
   BookOpen, 
   TrendingUp, 
   Clock, 
-  ArrowRight,
-  Radio,
-  SlidersHorizontal,
-  Info,
-  Sun,
-  Moon,
-  ChevronRight,
-  Plus
+  ArrowRight, 
+  Radio, 
+  SlidersHorizontal, 
+  Info, 
+  Sun, 
+  Moon, 
+  ChevronRight, 
+  Plus,
+  FileSpreadsheet
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { SiteFooter } from './SiteFooter';
@@ -30,13 +31,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
   user,
   trades,
   onNavigate,
+  onOpenNewTrade,
 }) => {
   const [activeTab, setActiveTab] = useState<'my-account' | 'watchlist'>('my-account');
 
   // Perhitungan statistik portofolio
   const stats = useMemo(() => calculateStats(trades), [trades]);
 
-  // Data kumulatif Pips untuk grafik Equity Myfxbook
+  // Data kumulatif Pips untuk grafik Equity
   const equityData = useMemo(() => {
     let cumulative = 0;
     if (trades.length === 0) {
@@ -68,55 +70,21 @@ export const HomeView: React.FC<HomeViewProps> = ({
     { name: 'Sydney', status: 'Tutup', time: '22:00 - 07:00 UTC', isOpen: false, icon: Moon, flag: '🇦🇺' },
   ];
 
-  // Sistem Trading Populer untuk tabel 'Sistem terbaru' ala screenshot Myfxbook
-  const sampleSystems = [
-    {
-      name: 'Zenex SG1 1000',
-      author: 'wmbot',
-      gain: '+70.62%',
-      drawdown: '70.68%',
-      monthly: '+5.83%',
-      isPositive: true,
-      sparkline: 'M0,15 Q20,18 40,8 T80,3 T100,2',
-      color: '#10b981',
-    },
-    {
-      name: 'Algorix AI',
-      author: 'trademaster1789',
-      gain: '+24.87%',
-      drawdown: '6.06%',
-      monthly: '+1.14%',
-      isPositive: true,
-      sparkline: 'M0,18 Q30,17 60,10 T100,4',
-      color: '#10b981',
-    },
-    {
-      name: 'Titan Gold Scalper',
-      author: 'fxpro_id',
-      gain: '+41.20%',
-      drawdown: '11.45%',
-      monthly: '+8.32%',
-      isPositive: true,
-      sparkline: 'M0,17 Q25,10 50,14 T100,5',
-      color: '#10b981',
-    },
-  ];
-
   return (
-    <div className="flex-1 flex flex-col bg-[#f0f3f6] dark:bg-[#0d121c] text-gray-900 dark:text-slate-100 overflow-y-auto">
+    <div className="flex-1 flex flex-col bg-[#f4f7f9] dark:bg-[#0f172a] text-gray-900 dark:text-slate-100 overflow-y-auto">
       {/* Centered Main Container */}
       <div className="flex-1 max-w-[1240px] w-full mx-auto p-4 sm:p-6 pb-24 md:pb-10 space-y-6">
 
-        {/* 2-Column Grid Layout Ala Myfxbook Desktop */}
+        {/* 2-Column Grid Layout Terpusat */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
           {/* ============================================================ */}
-          {/* KOLOM KIRI (LEBAR ~70%): Akun Saya & Sistem Terbaru */}
+          {/* KOLOM KIRI (LEBAR ~70%): Akun Saya & Riwayat Entri Jurnal */}
           {/* ============================================================ */}
           <div className="lg:col-span-8 space-y-6">
             
-            {/* 1. KOTAK 'AKUN SAYA' & 'DIPANTAU (0)' */}
-            <div className="bg-white dark:bg-[#181f2b] border border-gray-200 dark:border-slate-800 rounded shadow-xs overflow-hidden">
+            {/* 1. KOTAK 'AKUN SAYA' & PORTOFOLIO */}
+            <div className="bg-white dark:bg-[#1a2232] border border-gray-200 dark:border-slate-800 rounded shadow-xs overflow-hidden">
               
               {/* Tabs Bar Header */}
               <div className="bg-[#f8fafc] dark:bg-[#141a24] border-b border-gray-200 dark:border-slate-800 px-4 pt-3 flex items-center justify-between">
@@ -125,21 +93,21 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     onClick={() => setActiveTab('my-account')}
                     className={`px-4 py-2 text-xs font-bold transition-all rounded-t border-t-2 ${
                       activeTab === 'my-account'
-                        ? 'bg-white dark:bg-[#181f2b] text-gray-900 dark:text-white border-t-[#e66a00] border-x border-gray-200 dark:border-slate-800 -mb-[1px]'
+                        ? 'bg-white dark:bg-[#1a2232] text-gray-900 dark:text-white border-t-[#107c41] border-x border-gray-200 dark:border-slate-800 -mb-[1px]'
                         : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 border-t-transparent'
                     }`}
                   >
-                    Akun saya
+                    Akun Saya
                   </button>
                   <button
                     onClick={() => setActiveTab('watchlist')}
                     className={`px-4 py-2 text-xs font-bold transition-all rounded-t border-t-2 ${
                       activeTab === 'watchlist'
-                        ? 'bg-white dark:bg-[#181f2b] text-gray-900 dark:text-white border-t-[#e66a00] border-x border-gray-200 dark:border-slate-800 -mb-[1px]'
+                        ? 'bg-white dark:bg-[#1a2232] text-gray-900 dark:text-white border-t-[#107c41] border-x border-gray-200 dark:border-slate-800 -mb-[1px]'
                         : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 border-t-transparent'
                     }`}
                   >
-                    Dipantau (0)
+                    Ringkasan Jurnal
                   </button>
                 </div>
 
@@ -148,7 +116,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     onClick={() => onNavigate('analytics')}
                     className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 transition-colors shadow-2xs"
                   >
-                    <span>Bandingkan</span>
+                    <span>Analisis Performa</span>
                     <SlidersHorizontal className="w-3.5 h-3.5 text-gray-500" />
                   </button>
                 </div>
@@ -156,44 +124,49 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
               {/* Tab Content */}
               <div className="p-5">
-                {activeTab === 'watchlist' ? (
-                  <div className="py-12 text-center text-gray-500 dark:text-gray-400 text-xs flex items-center justify-center gap-2">
-                    <Info className="w-4 h-4 text-gray-400" />
-                    <span>Saat ini belum ada sistem yang Anda pantau.</span>
-                  </div>
-                ) : trades.length === 0 ? (
+                {trades.length === 0 ? (
                   // Tampilan jika belum ada transaksi di jurnal
                   <div className="py-10 text-center space-y-4">
                     <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
-                      <Info className="w-4 h-4 text-[#e66a00]" />
-                      <span>Saat ini Anda belum memiliki akun apa pun atau entri transaksi aktif.</span>
+                      <Info className="w-4 h-4 text-[#107c41]" />
+                      <span>Belum ada catatan transaksi pada akun ini. Mulai dengan mencatat entri pertama Anda.</span>
                     </div>
 
                     <div className="p-4 max-w-md mx-auto bg-gray-50 dark:bg-slate-800/40 rounded border border-gray-100 dark:border-slate-800 text-left space-y-2">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-500">Saldo Awal Akun:</span>
-                        <strong className="font-mono">${initialBal.toLocaleString()}</strong>
+                        <span className="text-gray-500">Saldo Awal:</span>
+                        <strong className="font-mono text-gray-900 dark:text-white">${initialBal.toLocaleString()}</strong>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-500">Broker:</span>
-                        <span>{user.broker || 'MetaTrader 5'}</span>
+                        <span className="text-gray-500">Platform Broker:</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{user.broker || 'MetaTrader 5'}</span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-500">Leverage:</span>
-                        <span>{user.leverage || '1:500'}</span>
+                        <span className="text-gray-500">Leverage Akun:</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{user.leverage || '1:500'}</span>
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => onNavigate('sheet')}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#e66a00] hover:bg-[#cf5f00] text-white font-bold rounded text-xs transition-colors shadow-xs"
-                    >
-                      <BookOpen className="w-4 h-4" />
-                      <span>Buka Portofolio & Mulai Catat Jurnal</span>
-                    </button>
+                    <div className="flex items-center justify-center gap-3 pt-2">
+                      <button
+                        onClick={() => onNavigate('sheet')}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#107c41] hover:bg-[#0e6b37] text-white font-bold rounded text-xs transition-colors shadow-xs"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        <span>Buka Jurnal Spreadsheet</span>
+                      </button>
+
+                      <button
+                        onClick={onOpenNewTrade}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 text-gray-800 dark:text-white font-semibold rounded text-xs transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>+ Tambah Trade Baru</span>
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  // Tampilan jika sudah ada transaksi (Portofolio Ringkas Myfxbook)
+                  // Tampilan jika sudah ada transaksi (Portofolio Ringkas)
                   <div className="space-y-5">
                     {/* Top Row: Balance & Action Button */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-slate-800 pb-4">
@@ -217,13 +190,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => onNavigate('sheet')}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#e66a00] hover:bg-[#cf5f00] text-white font-bold text-xs rounded transition-colors shadow-xs"
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        <span>Buka Jurnal Trading</span>
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={onOpenNewTrade}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-800 dark:text-white font-semibold text-xs rounded transition-colors"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>Entri Baru</span>
+                        </button>
+
+                        <button
+                          onClick={() => onNavigate('sheet')}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-[#107c41] hover:bg-[#0e6b37] text-white font-bold text-xs rounded transition-colors shadow-xs"
+                        >
+                          <BookOpen className="w-4 h-4" />
+                          <span>Buka Spreadsheet</span>
+                        </button>
+                      </div>
                     </div>
 
                     {/* 6 Metrik KPI Finansial */}
@@ -277,18 +260,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         <span className="text-gray-700 dark:text-gray-300">Kurva Pertumbuhan Akumulasi Pips</span>
                         <button 
                           onClick={() => onNavigate('analytics')}
-                          className="text-[#e66a00] hover:underline"
+                          className="text-[#107c41] dark:text-emerald-400 hover:underline"
                         >
-                          Analisis Lengkap &rarr;
+                          Lihat Detail Grafik &rarr;
                         </button>
                       </div>
                       <div className="h-44 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={equityData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
                             <defs>
-                              <linearGradient id="eqPipsGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
-                                <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                              <linearGradient id="eqPipsGradExcel" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#107c41" stopOpacity={0.25} />
+                                <stop offset="95%" stopColor="#107c41" stopOpacity={0.0} />
                               </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
@@ -301,9 +284,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
                             <Area
                               type="monotone"
                               dataKey="pips"
-                              stroke="#10b981"
+                              stroke="#107c41"
                               strokeWidth={2}
-                              fill="url(#eqPipsGrad)"
+                              fill="url(#eqPipsGradExcel)"
                             />
                           </AreaChart>
                         </ResponsiveContainer>
@@ -314,106 +297,87 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
             </div>
 
-            {/* 2. TABEL 'SISTEM TERBARU >' ALA MYFXBOOK SCREENSHOT */}
-            <div className="bg-white dark:bg-[#181f2b] border border-gray-200 dark:border-slate-800 rounded shadow-xs overflow-hidden">
+            {/* 2. TABEL 'RIWAYAT ENTRI JURNAL TERBARU' */}
+            <div className="bg-white dark:bg-[#1a2232] border border-gray-200 dark:border-slate-800 rounded shadow-xs overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-1.5 cursor-pointer">
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white hover:text-[#e66a00] transition-colors">
-                    Sistem terbaru
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white hover:text-[#107c41] transition-colors">
+                    Entri Jurnal Terbaru
                   </h3>
                   <ChevronRight className="w-4 h-4 text-gray-500" />
                 </div>
 
                 <button
                   onClick={() => onNavigate('sheet')}
-                  className="px-3 py-1 border border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 rounded text-xs font-semibold text-gray-700 dark:text-gray-300 transition-colors"
+                  className="px-3 py-1 border border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 rounded text-xs font-semibold text-gray-700 dark:text-gray-300 transition-colors flex items-center gap-1.5"
                 >
-                  Tambahkan akun Anda
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-[#107c41]" />
+                  <span>Buka Semua di Sheet</span>
                 </button>
               </div>
 
-              {/* Table Header & Rows */}
+              {/* Table Rows */}
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-[#f8fafc] dark:bg-[#141a24] text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-slate-800 font-semibold">
                     <tr>
-                      <th className="py-2.5 px-4">Sistem</th>
-                      <th className="py-2.5 px-3 text-right">Keuntungan</th>
-                      <th className="py-2.5 px-3 text-right">Drawdown</th>
-                      <th className="py-2.5 px-3 text-right">Bulanan</th>
-                      <th className="py-2.5 px-4 text-center">Performa</th>
+                      <th className="py-2.5 px-4">Tanggal & Pair</th>
+                      <th className="py-2.5 px-3">Tipe & Lot</th>
+                      <th className="py-2.5 px-3 text-right">Pips</th>
+                      <th className="py-2.5 px-3 text-right">Profit / Rugi ($)</th>
+                      <th className="py-2.5 px-4 text-center">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-slate-800/60 font-sans">
-                    {/* Baris Akun Pengguna Sendiri jika sudah ada transaksi */}
-                    {trades.length > 0 && (
-                      <tr className="hover:bg-amber-50/50 dark:hover:bg-amber-950/20 transition-colors bg-amber-50/20">
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded bg-[#e66a00] text-white flex items-center justify-center font-bold text-xs shrink-0">
-                              FX
-                            </div>
-                            <div>
-                              <strong className="block text-gray-900 dark:text-white">{user.username} (Portofolio)</strong>
-                              <span className="text-[10px] text-gray-500">{user.broker || 'MetaTrader 5'}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className={`py-3 px-3 text-right font-bold font-mono ${Number(totalGainPercent) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                          {Number(totalGainPercent) >= 0 ? `+${totalGainPercent}%` : `${totalGainPercent}%`}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-gray-600 dark:text-gray-400">
-                          {stats.profitFactor} PF
-                        </td>
-                        <td className="py-3 px-3 text-right font-bold font-mono text-emerald-600">
-                          +{stats.winRate}% WR
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <div className="w-20 h-6 mx-auto">
-                            <svg viewBox="0 0 100 20" className="w-full h-full stroke-emerald-500 fill-none stroke-2">
-                              <path d="M0,16 Q25,8 50,14 T100,4" />
-                            </svg>
-                          </div>
+                    {trades.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-gray-500 text-xs">
+                          Belum ada transaksi tercatat. Klik "Buka Semua di Sheet" untuk mencatat.
                         </td>
                       </tr>
-                    )}
-
-                    {/* Sample Systems matching the screenshot */}
-                    {sampleSystems.map((sys, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors">
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded flex items-center justify-center font-bold text-xs text-white shrink-0 ${
-                              idx === 0 ? 'bg-slate-400' : idx === 1 ? 'bg-orange-600' : 'bg-blue-600'
+                    ) : (
+                      trades.slice(-5).reverse().map((t) => {
+                        const isWin = t.status === 'WIN' || Number(t.pips) > 0;
+                        const isLoss = t.status === 'LOSS' || Number(t.pips) < 0;
+                        return (
+                          <tr key={t.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors">
+                            <td className="py-3 px-4">
+                              <strong className="block text-gray-900 dark:text-white font-mono">{t.pair}</strong>
+                              <span className="text-[10px] text-gray-500">{t.tanggal} {t.strategi ? `• ${t.strategi}` : ''}</span>
+                            </td>
+                            <td className="py-3 px-3">
+                              <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                t.posisi === 'BUY' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                              }`}>
+                                {t.posisi}
+                              </span>
+                              <span className="ml-1.5 font-mono text-gray-600 dark:text-gray-300">{t.lot}</span>
+                            </td>
+                            <td className={`py-3 px-3 text-right font-bold font-mono ${
+                              isWin ? 'text-emerald-600' : isLoss ? 'text-rose-600' : 'text-gray-500'
                             }`}>
-                              {sys.name.charAt(0)}
-                            </div>
-                            <div>
-                              <strong className="block text-gray-900 dark:text-white hover:text-[#e66a00] cursor-pointer">
-                                {sys.name}
-                              </strong>
-                              <span className="text-[10px] text-gray-500">{sys.author}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3 px-3 text-right font-bold font-mono text-emerald-600">
-                          {sys.gain}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-gray-600 dark:text-gray-400">
-                          {sys.drawdown}
-                        </td>
-                        <td className="py-3 px-3 text-right font-bold font-mono text-emerald-600">
-                          {sys.monthly}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <div className="w-20 h-6 mx-auto">
-                            <svg viewBox="0 0 100 20" className="w-full h-full stroke-emerald-500 fill-none stroke-2">
-                              <path d={sys.sparkline} />
-                            </svg>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                              {Number(t.pips) > 0 ? `+${t.pips}` : t.pips}
+                            </td>
+                            <td className={`py-3 px-3 text-right font-bold font-mono ${
+                              isWin ? 'text-emerald-600' : isLoss ? 'text-rose-600' : 'text-gray-500'
+                            }`}>
+                              {t.pnl !== undefined ? (
+                                Number(t.pnl) >= 0 ? `+$${t.pnl}` : `-$${Math.abs(Number(t.pnl))}`
+                              ) : '-'}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                                isWin ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' :
+                                isLoss ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' :
+                                'bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-gray-300'
+                              }`}>
+                                {t.status || (isWin ? 'WIN' : isLoss ? 'LOSS' : 'BE')}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -426,23 +390,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
           {/* ============================================================ */}
           <div className="lg:col-span-4 space-y-6">
             
-            {/* 1. KOTAK 'JAM PASAR >' ALA MYFXBOOK SCREENSHOT */}
-            <div className="bg-white dark:bg-[#181f2b] border border-gray-200 dark:border-slate-800 rounded shadow-xs overflow-hidden">
+            {/* 1. KOTAK 'JAM PASAR' */}
+            <div className="bg-white dark:bg-[#1a2232] border border-gray-200 dark:border-slate-800 rounded shadow-xs overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
                 <div 
                   onClick={() => onNavigate('sheet')}
                   className="flex items-center gap-1.5 cursor-pointer"
                 >
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white hover:text-[#e66a00] transition-colors">
-                    Jam pasar
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white hover:text-[#107c41] transition-colors">
+                    Jam Pasar Forex
                   </h3>
                   <ChevronRight className="w-4 h-4 text-gray-500" />
                 </div>
-                <span className="text-[11px] text-emerald-600 font-semibold">Live Time</span>
+                <span className="text-[11px] text-[#107c41] dark:text-emerald-400 font-semibold">Live Time</span>
               </div>
 
               {/* List Sesi Jam Pasar Dunia */}
-              <div className="p-4 space-y-3">
+              <div className="p-4 space-y-2.5">
                 {marketSessions.map((session, idx) => {
                   const Icon = session.icon;
                   return (
@@ -463,7 +427,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       </div>
 
                       <div className="flex items-center gap-1.5">
-                        <Icon className={`w-3.5 h-3.5 ${session.isOpen ? 'text-amber-500 animate-spin-slow' : 'text-slate-400'}`} />
+                        <Icon className={`w-3.5 h-3.5 ${session.isOpen ? 'text-amber-500' : 'text-slate-400'}`} />
                         <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${
                           session.isOpen 
                             ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300' 
@@ -479,7 +443,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
 
             {/* 2. KOTAK BERITA REAL-TIME (FEED) */}
-            <div className="bg-white dark:bg-[#181f2b] border border-gray-200 dark:border-slate-800 rounded shadow-xs overflow-hidden">
+            <div className="bg-white dark:bg-[#1a2232] border border-gray-200 dark:border-slate-800 rounded shadow-xs overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Radio className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
@@ -489,7 +453,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
                 <button
                   onClick={() => onNavigate('news')}
-                  className="text-xs text-[#e66a00] hover:underline font-semibold"
+                  className="text-xs text-[#107c41] dark:text-emerald-400 hover:underline font-semibold"
                 >
                   Lihat Semua
                 </button>
@@ -503,7 +467,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     className="py-2.5 px-2 hover:bg-gray-50 dark:hover:bg-slate-800/40 rounded transition-colors cursor-pointer space-y-1"
                   >
                     <div className="flex items-center justify-between text-[10px]">
-                      <span className="font-bold font-mono text-[#e66a00]">
+                      <span className="font-bold font-mono text-[#107c41] dark:text-emerald-400">
                         {item.currency}
                       </span>
                       <span className="text-gray-400 flex items-center gap-1">
