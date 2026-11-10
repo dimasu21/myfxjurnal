@@ -11,6 +11,7 @@ import {
   BarChart3,
   Globe
 } from 'lucide-react';
+import { SiteFooter } from './SiteFooter';
 
 interface HeatmapViewProps {
   onBack: () => void;
@@ -265,6 +266,9 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ onBack, trades }) => {
             <strong>Catatan Transparansi:</strong> Seluruh statistik di halaman Heatmap ini dihitung murni dari baris transaksi yang telah Anda simpan di Jurnal Trading ini. Sistem tidak menghubungkan API diam-diam ke broker MetaTrader manapun, menjaga privasi dan keamanan akun Anda 100%.
           </p>
         </div>
+
+        {/* Footer */}
+        <SiteFooter />
       </div>
     </div>
   );

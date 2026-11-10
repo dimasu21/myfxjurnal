@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Trade } from '../types/trade';
 import { ArrowUpRight, ArrowDownRight, Plus } from 'lucide-react';
+import { SiteFooter } from './SiteFooter';
 
 interface TradeTableProps {
   trades: Trade[];
@@ -358,6 +359,9 @@ export const TradeTable: React.FC<TradeTableProps> = ({
           })}
         </tbody>
       </table>
+
+      {/* Website Footer on Desktop Spreadsheet */}
+      <SiteFooter />
     </div>
   );
 };

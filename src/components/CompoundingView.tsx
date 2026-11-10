@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Info
 } from 'lucide-react';
+import { SiteFooter } from './SiteFooter';
 
 interface CompoundingViewProps {
   onBack: () => void;
@@ -310,6 +311,9 @@ export const CompoundingView: React.FC<CompoundingViewProps> = ({ onBack }) => {
             </table>
           </div>
         </div>
+
+        {/* Footer */}
+        <SiteFooter />
       </div>
     </div>
   );

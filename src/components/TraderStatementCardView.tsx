@@ -13,6 +13,7 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import { SiteFooter } from './SiteFooter';
 
 interface TraderStatementCardViewProps {
   onBack: () => void;
@@ -187,6 +188,9 @@ export const TraderStatementCardView: React.FC<TraderStatementCardViewProps> = (
             </span>
           </div>
         </div>
+
+        {/* Footer */}
+        <SiteFooter />
       </div>
     </div>
   );
