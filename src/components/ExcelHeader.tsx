@@ -103,6 +103,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   onOpenProfile,
   onLogout,
   currentUsername,
+  userAvatar,
 }) => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(documentTitle);
@@ -201,54 +202,15 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
       <div className="border-b border-white/10">
         <div className="max-w-[1240px] w-full mx-auto px-4 py-2 flex items-center justify-between gap-4 text-xs sm:text-sm">
           
-          {/* Sisi Kiri: FX Logo & Judul Dokumen Excel */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div 
+          {/* Sisi Kiri: FX Logo Bersih */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            <img
+              src="/fx-logo.png"
+              alt="Fx"
+              className="h-8 w-auto object-contain cursor-pointer transition-transform active:scale-95"
               onClick={onOpenHome}
-              className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95"
-              title="Kembali ke Beranda"
-            >
-              <img
-                src="/fx-logo.png"
-                alt="Fx"
-                className="h-8 w-auto object-contain"
-              />
-              <span className="font-bold text-white tracking-tight hidden sm:inline">
-                FX Journal
-              </span>
-            </div>
-
-            {/* Rename Title File Excel */}
-            <div className="hidden md:flex items-center gap-1.5 pl-2 border-l border-white/20">
-              <FileSpreadsheet className="w-4 h-4 text-emerald-200" />
-              {isEditingTitle ? (
-                <div className="flex items-center gap-1">
-                  <input
-                    ref={titleInputRef}
-                    type="text"
-                    value={titleInput}
-                    onChange={(e) => setTitleInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    className="bg-white text-gray-900 px-2 py-0.5 rounded text-xs font-semibold focus:outline-none w-44"
-                  />
-                  <button onClick={handleSaveTitle} className="p-1 hover:bg-white/20 rounded">
-                    <Check className="w-3.5 h-3.5 text-white" />
-                  </button>
-                  <button onClick={handleCancelTitle} className="p-1 hover:bg-white/20 rounded">
-                    <X className="w-3.5 h-3.5 text-white" />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setIsEditingTitle(true)}
-                  className="flex items-center gap-1 font-semibold hover:bg-white/15 px-2 py-0.5 rounded transition-colors text-xs text-white"
-                  title="Klik untuk mengubah nama dokumen"
-                >
-                  <span>{documentTitle}</span>
-                  <Edit2 className="w-3 h-3 text-emerald-200 opacity-70" />
-                </button>
-              )}
-            </div>
+              title="Beranda"
+            />
 
             {/* Indikator Status Save */}
             {hasUnsavedChanges && (
@@ -365,8 +327,12 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                 className="flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded bg-white/15 hover:bg-white/25 text-white text-xs font-semibold transition-colors cursor-pointer"
               >
-                <div className="w-5 h-5 rounded-full bg-emerald-800 text-white flex items-center justify-center text-[10px] font-bold">
-                  {usernameDisplay.charAt(0).toUpperCase()}
+                <div className="w-6 h-6 rounded-full overflow-hidden bg-emerald-800 border border-white/30 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                  {userAvatar ? (
+                    <img src={userAvatar} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <span>{usernameDisplay.charAt(0).toUpperCase()}</span>
+                  )}
                 </div>
                 <span className="hidden sm:inline">{usernameDisplay}</span>
                 <ChevronDown className="w-3 h-3 text-emerald-200" />
@@ -374,9 +340,18 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
 
               {isUserMenuOpen && (
                 <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-[#1e293b] text-gray-800 dark:text-slate-100 border border-gray-200 dark:border-slate-700 rounded shadow-xl py-1 z-50 text-xs animate-in fade-in zoom-in-95 duration-100">
-                  <div className="px-3 py-2 border-b border-gray-100 dark:border-slate-700">
-                    <p className="font-bold text-gray-900 dark:text-white truncate">{usernameDisplay}</p>
-                    <p className="text-[10px] text-gray-500 dark:text-slate-400">Akun Trading Aktif</p>
+                  <div className="px-3 py-2 border-b border-gray-100 dark:border-slate-700 flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full overflow-hidden bg-emerald-700 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                      {userAvatar ? (
+                        <img src={userAvatar} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{usernameDisplay.charAt(0).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-gray-900 dark:text-white truncate">{usernameDisplay}</p>
+                      <p className="text-[10px] text-gray-500 dark:text-slate-400">Akun Trading Aktif</p>
+                    </div>
                   </div>
 
                   <button

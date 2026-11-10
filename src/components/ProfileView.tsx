@@ -1,21 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { UserAccount } from '../types/user';
 import { updateUserProfile } from '../utils/authStorage';
 import { 
   ArrowLeft, 
-  User, 
-  ShieldCheck, 
-  Mail, 
-  Building2, 
-  DollarSign, 
-  Key, 
-  Link2, 
+  Camera, 
   Check, 
+  Save, 
+  LogOut, 
   ExternalLink,
-  LogOut,
-  Save,
-  Globe,
-  Award
+  Link2,
+  Trash2
 } from 'lucide-react';
 import { SiteFooter } from './SiteFooter';
 
@@ -33,6 +27,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onLogout,
 }) => {
   const [username, setUsername] = useState(user.username || '');
+  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || '');
   const [broker, setBroker] = useState(user.broker || 'MetaTrader 5');
   const [accountType, setAccountType] = useState<'Real' | 'Demo'>(user.accountType || 'Real');
   const [initialBalance, setInitialBalance] = useState(String(user.initialBalance || 1000));
@@ -44,10 +39,29 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [isSavedSuccess, setIsSavedSuccess] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string>('');
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle upload foto dari komputer / HP
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Ukuran foto maksimal 2 MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     const updated = updateUserProfile(user.id, {
       username: username.trim(),
+      avatarUrl: avatarUrl.trim(),
       broker,
       accountType,
       initialBalance: Number(initialBalance) || 1000,
@@ -75,165 +89,199 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-[#f8fafc] dark:bg-[#0b1120] text-gray-900 dark:text-slate-100 overflow-y-auto">
-      {/* Top Header */}
-      <div className="bg-white dark:bg-[#0f172a] border-b border-gray-200 dark:border-slate-800 px-4 py-3 sm:px-6 flex items-center justify-between gap-3 sticky top-0 z-20 shadow-xs">
-        <div className="flex items-center gap-3">
+    <div className="flex-1 flex flex-col bg-[#f4f7f9] dark:bg-[#0f172a] text-gray-900 dark:text-slate-100 overflow-y-auto">
+      {/* Hidden File Input for Photo Upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handlePhotoUpload}
+      />
+
+      {/* Main Container Terpusat (Tanpa Header Banner Norak) */}
+      <div className="flex-1 max-w-3xl w-full mx-auto p-4 sm:p-6 pb-20 space-y-6">
+
+        {/* Back Link */}
+        <div className="flex items-center justify-between">
           <button
             onClick={onBack}
-            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-300 transition-colors"
-            title="Kembali"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 hover:text-[#107c41] transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
+            <span>Kembali ke Beranda</span>
           </button>
-          <div>
-            <h1 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <User className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>Profil Trader & Pengaturan Akun</span>
-            </h1>
-            <p className="text-[11px] text-gray-500 dark:text-slate-400 hidden sm:block">
-              Kelola identitas akun, info broker MetaTrader, dan integrasi API Myfxbook
-            </p>
-          </div>
+
+          <button
+            onClick={onLogout}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/70 text-rose-600 dark:text-rose-400 text-xs font-semibold transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Keluar Akun</span>
+          </button>
         </div>
 
-        <button
-          onClick={onLogout}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/70 text-rose-600 dark:text-rose-400 text-xs font-semibold transition-colors"
-        >
-          <LogOut className="w-3.5 h-3.5" />
-          <span>Keluar (Logout)</span>
-        </button>
-      </div>
-
-      {/* Main Container */}
-      <div className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 pb-20 md:pb-8 space-y-6">
-        
-        {/* Profile Identity Card (Ala Myfxbook Trader Card) */}
-        <div className="bg-gradient-to-br from-[#0e502c] via-[#0b3d22] to-[#082817] text-white rounded-2xl p-5 sm:p-6 shadow-md border border-emerald-800/40 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
-            <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-2xl font-black text-amber-300 font-mono shadow-inner">
-              {user.username.charAt(0).toUpperCase()}
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center justify-center sm:justify-start gap-2">
-                <h2 className="text-xl font-black tracking-tight text-white">{user.username}</h2>
-                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-400 text-gray-900 shadow-xs">
-                  <Award className="w-3 h-3" />
-                  VERIFIED TRADER
-                </span>
+        {/* Form Edit Profil Bersih */}
+        <form onSubmit={handleSaveProfile} className="bg-white dark:bg-[#1a2232] rounded border border-gray-200 dark:border-slate-800 p-5 sm:p-7 shadow-xs space-y-6">
+          
+          {/* SECTION: FOTO PROFIL (Bisa Upload Foto) */}
+          <div className="flex flex-col sm:flex-row items-center gap-5 pb-5 border-b border-gray-100 dark:border-slate-800">
+            <div className="relative group">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-emerald-800 border-2 border-emerald-600 text-white flex items-center justify-center text-3xl font-bold shadow-md">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Foto Profil" className="w-full h-full object-cover" />
+                ) : (
+                  <span>{username.charAt(0).toUpperCase() || 'U'}</span>
+                )}
               </div>
-              <p className="text-xs text-emerald-200/80 font-mono">{user.email}</p>
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1 text-[11px] text-emerald-300/90 font-medium">
-                <span>Broker: <strong>{user.broker || 'MetaTrader'}</strong></span>
-                <span>•</span>
-                <span>Tipe: <strong>{user.accountType || 'Real'}</strong></span>
-                <span>•</span>
-                <span>Leverage: <strong>{user.leverage || '1:500'}</strong></span>
+
+              {/* Tombol Kamera untuk Upload */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 p-2 rounded-full bg-[#107c41] hover:bg-[#0e6b37] text-white shadow-md transition-transform active:scale-90 cursor-pointer"
+                title="Ganti Foto Profil"
+              >
+                <Camera className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="text-center sm:text-left space-y-1">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                {username || 'Trader'}
+              </h2>
+              <p className="text-xs text-gray-500 font-mono">
+                {user.email}
+              </p>
+              <div className="flex items-center justify-center sm:justify-start gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3 py-1 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-800 dark:text-white rounded text-xs font-semibold transition-colors"
+                >
+                  Unggah Foto Baru
+                </button>
+                {avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setAvatarUrl('')}
+                    className="p-1 text-gray-400 hover:text-rose-500 transition-colors"
+                    title="Hapus Foto"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="bg-white/10 rounded-xl p-3 text-center sm:text-right border border-white/10 min-w-[130px]">
-            <span className="text-[10px] uppercase text-emerald-200/80 block">Total Jurnal Disimpan</span>
-            <span className="text-xl font-black font-mono text-white mt-0.5 block">{user.trades.length} Trades</span>
-            <span className="text-[10px] text-emerald-300 block mt-0.5">Tersimpan Otomatis</span>
+          {/* SECTION: INFORMASI AKUN & BROKER */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+              Pengaturan Akun Trading
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-1.5">
+                <label className="font-bold text-gray-700 dark:text-slate-300 block">
+                  Nama Pengguna / Display Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-gray-700 dark:text-slate-300 block">
+                  Email Akun
+                </label>
+                <input
+                  type="email"
+                  disabled
+                  value={user.email}
+                  className="w-full px-3 py-2 bg-gray-100 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded text-gray-500 cursor-not-allowed"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-gray-700 dark:text-slate-300 block">
+                  Platform Broker
+                </label>
+                <input
+                  type="text"
+                  value={broker}
+                  onChange={(e) => setBroker(e.target.value)}
+                  placeholder="misal: MetaTrader 5, Exness, IC Markets"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-gray-700 dark:text-slate-300 block">
+                  Tipe Akun
+                </label>
+                <select
+                  value={accountType}
+                  onChange={(e) => setAccountType(e.target.value as any)}
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-900 dark:text-white focus:outline-none"
+                >
+                  <option value="Real">Real Account</option>
+                  <option value="Demo">Demo Account</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-gray-700 dark:text-slate-300 block">
+                  Modal Awal ($)
+                </label>
+                <input
+                  type="number"
+                  value={initialBalance}
+                  onChange={(e) => setInitialBalance(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-900 dark:text-white font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-gray-700 dark:text-slate-300 block">
+                  Leverage Akun
+                </label>
+                <select
+                  value={leverage}
+                  onChange={(e) => setLeverage(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-900 dark:text-white focus:outline-none"
+                >
+                  <option value="1:100">1:100</option>
+                  <option value="1:200">1:200</option>
+                  <option value="1:500">1:500</option>
+                  <option value="1:1000">1:1000</option>
+                  <option value="1:2000">1:2000</option>
+                </select>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Profile Form */}
-        <form onSubmit={handleSaveProfile} className="bg-white dark:bg-[#111827] rounded-2xl p-5 sm:p-6 border border-gray-200 dark:border-slate-800 shadow-xs space-y-5">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-slate-800 pb-3">
-            Informasi Akun & Broker Trading
-          </h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div className="space-y-1.5">
-              <label className="font-bold text-gray-700 dark:text-slate-300 block">Username / Display Name</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="font-bold text-gray-700 dark:text-slate-300 block">Email Akun (Permanen)</label>
-              <input
-                type="email"
-                disabled
-                value={user.email}
-                className="w-full px-3 py-2 bg-gray-100 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-500 cursor-not-allowed"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="font-bold text-gray-700 dark:text-slate-300 block">Nama Broker / Server</label>
-              <input
-                type="text"
-                value={broker}
-                onChange={(e) => setBroker(e.target.value)}
-                placeholder="misal: IC Markets, Exness, XM, Pepperstone"
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="font-bold text-gray-700 dark:text-slate-300 block">Tipe Akun</label>
-              <select
-                value={accountType}
-                onChange={(e) => setAccountType(e.target.value as any)}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white focus:outline-none"
-              >
-                <option value="Real">Real Account</option>
-                <option value="Demo">Demo Account</option>
-              </select>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="font-bold text-gray-700 dark:text-slate-300 block">Modal Awal / Deposit ($)</label>
-              <input
-                type="number"
-                value={initialBalance}
-                onChange={(e) => setInitialBalance(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="font-bold text-gray-700 dark:text-slate-300 block">Leverage Akun</label>
-              <select
-                value={leverage}
-                onChange={(e) => setLeverage(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white focus:outline-none"
-              >
-                <option value="1:100">1:100</option>
-                <option value="1:200">1:200</option>
-                <option value="1:500">1:500</option>
-                <option value="1:1000">1:1000</option>
-                <option value="1:2000">1:2000</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Section: Myfxbook API Integration */}
+          {/* SECTION: INTEGRASI MYFXBOOK API */}
           <div className="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                  <Link2 className="w-4 h-4 text-amber-500" />
+                  <Link2 className="w-4 h-4 text-emerald-600" />
                   <span>Koneksi Sinkronisasi Myfxbook API</span>
                 </h4>
-                <p className="text-[11px] text-gray-500 dark:text-slate-400">
-                  Sinkronkan portofolio publik Myfxbook Anda secara otomatis ke dashboard ini
+                <p className="text-[11px] text-gray-500">
+                  Sinkronkan portofolio publik Myfxbook Anda ke dashboard ini
                 </p>
               </div>
               <a
                 href="https://www.myfxbook.com/api"
                 target="_blank"
                 rel="noreferrer"
-                className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-0.5"
+                className="text-[11px] text-[#107c41] dark:text-emerald-400 hover:underline flex items-center gap-0.5"
               >
                 <span>Dokumentasi API</span>
                 <ExternalLink className="w-3 h-3" />
@@ -242,13 +290,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="space-y-1">
-                <label className="font-semibold text-gray-600 dark:text-slate-400 text-[11px]">Email Terdaftar di Myfxbook</label>
+                <label className="font-semibold text-gray-600 dark:text-slate-400 text-[11px]">Email Myfxbook</label>
                 <input
                   type="email"
                   value={myfxEmail}
                   onChange={(e) => setMyfxEmail(e.target.value)}
-                  placeholder="email.anda@myfxbook.com"
-                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white focus:outline-none"
+                  placeholder="email@myfxbook.com"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-900 dark:text-white focus:outline-none"
                 />
               </div>
 
@@ -259,13 +307,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   value={myfxAccountId}
                   onChange={(e) => setMyfxAccountId(e.target.value)}
                   placeholder="misal: 10482910"
-                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white font-mono focus:outline-none"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-900 dark:text-white font-mono focus:outline-none"
                 />
               </div>
             </div>
 
             {syncStatus && (
-              <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800">
+              <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 p-2.5 rounded border border-emerald-200 dark:border-emerald-800">
                 {syncStatus}
               </div>
             )}
@@ -273,27 +321,28 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <button
               type="button"
               onClick={handleTestMyfxSync}
-              className="px-3.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200 text-xs font-semibold transition-colors"
+              className="px-3.5 py-1.5 rounded bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-800 dark:text-slate-200 text-xs font-semibold transition-colors"
             >
               Uji & Hubungkan Akun Myfxbook
             </button>
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-slate-800">
+          {/* Action Bar */}
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-slate-800">
             {isSavedSuccess ? (
               <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                <Check className="w-4 h-4" /> Profil Berhasil Disimpan
+                <Check className="w-4 h-4" /> Perubahan Profil Berhasil Disimpan
               </span>
             ) : (
-              <span className="text-[11px] text-gray-400">Perubahan akan langsung aktif di seluruh halaman</span>
+              <span className="text-[11px] text-gray-400">Foto profil dan info akun otomatis tersimpan</span>
             )}
 
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md active:scale-95"
+              className="inline-flex items-center gap-1.5 px-6 py-2.5 bg-[#107c41] hover:bg-[#0e6b37] text-white font-bold rounded text-xs sm:text-sm transition-all shadow-xs active:scale-95 cursor-pointer"
             >
               <Save className="w-4 h-4" />
-              <span>Simpan Profil</span>
+              <span>Simpan Perubahan</span>
             </button>
           </div>
         </form>
@@ -304,4 +353,3 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     </div>
   );
 };
-

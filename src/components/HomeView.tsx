@@ -43,8 +43,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
     let cumulative = 0;
     if (trades.length === 0) {
       return [
-        { name: 'Start', pips: 0 },
-        { name: 'Target', pips: 0 },
+        { name: 'Day 1', pips: 0 },
+        { name: 'Day 2', pips: 20 },
+        { name: 'Day 3', pips: 15 },
+        { name: 'Day 4', pips: 45 },
+        { name: 'Day 5', pips: 65 },
+        { name: 'Target', pips: 100 },
       ];
     }
     return trades.map((t, idx) => {
@@ -122,178 +126,135 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
               </div>
 
-              {/* Tab Content */}
-              <div className="p-5">
-                {trades.length === 0 ? (
-                  // Tampilan jika belum ada transaksi di jurnal
-                  <div className="py-10 text-center space-y-4">
-                    <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
-                      <Info className="w-4 h-4 text-[#107c41]" />
-                      <span>Belum ada catatan transaksi pada akun ini. Mulai dengan mencatat entri pertama Anda.</span>
+              {/* Tab Content: Selalu Tampilkan Dashboard Lengkap & Grafik Kurva */}
+              <div className="p-5 space-y-5">
+                {/* Top Row: Balance & Action Button */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-slate-800 pb-4">
+                  <div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                      <span className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded text-[10px]">
+                        {user.accountType || 'Real'}
+                      </span>
+                      <span>•</span>
+                      <span>{user.broker || 'MetaTrader 5'}</span>
+                      <span>•</span>
+                      <span>Leverage {user.leverage || '1:500'}</span>
                     </div>
-
-                    <div className="p-4 max-w-md mx-auto bg-gray-50 dark:bg-slate-800/40 rounded border border-gray-100 dark:border-slate-800 text-left space-y-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-500">Saldo Awal:</span>
-                        <strong className="font-mono text-gray-900 dark:text-white">${initialBal.toLocaleString()}</strong>
-                      </div>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-500">Platform Broker:</span>
-                        <span className="text-gray-900 dark:text-white font-medium">{user.broker || 'MetaTrader 5'}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-500">Leverage Akun:</span>
-                        <span className="text-gray-900 dark:text-white font-medium">{user.leverage || '1:500'}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-center gap-3 pt-2">
-                      <button
-                        onClick={() => onNavigate('sheet')}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#107c41] hover:bg-[#0e6b37] text-white font-bold rounded text-xs transition-colors shadow-xs"
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        <span>Buka Jurnal Spreadsheet</span>
-                      </button>
-
-                      <button
-                        onClick={onOpenNewTrade}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 text-gray-800 dark:text-white font-semibold rounded text-xs transition-colors"
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span>+ Tambah Trade Baru</span>
-                      </button>
+                    <div className="flex items-baseline gap-2 mt-1">
+                      <h3 className="text-2xl sm:text-3xl font-black font-mono text-gray-900 dark:text-white">
+                        ${currentEstBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </h3>
+                      <span className="text-xs text-gray-500 dark:text-slate-400">
+                        Estimated Balance
+                      </span>
                     </div>
                   </div>
-                ) : (
-                  // Tampilan jika sudah ada transaksi (Portofolio Ringkas)
-                  <div className="space-y-5">
-                    {/* Top Row: Balance & Action Button */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-slate-800 pb-4">
-                      <div>
-                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                          <span className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded text-[10px]">
-                            {user.accountType || 'Real'}
-                          </span>
-                          <span>•</span>
-                          <span>{user.broker || 'MetaTrader 5'}</span>
-                          <span>•</span>
-                          <span>Leverage {user.leverage || '1:500'}</span>
-                        </div>
-                        <div className="flex items-baseline gap-2 mt-1">
-                          <h3 className="text-2xl sm:text-3xl font-black font-mono text-gray-900 dark:text-white">
-                            ${currentEstBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </h3>
-                          <span className="text-xs text-gray-500 dark:text-slate-400">
-                            Estimated Balance
-                          </span>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={onOpenNewTrade}
-                          className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-800 dark:text-white font-semibold text-xs rounded transition-colors"
-                        >
-                          <Plus className="w-4 h-4" />
-                          <span>Entri Baru</span>
-                        </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={onOpenNewTrade}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-800 dark:text-white font-semibold text-xs rounded transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Entri Baru</span>
+                    </button>
 
-                        <button
-                          onClick={() => onNavigate('sheet')}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-[#107c41] hover:bg-[#0e6b37] text-white font-bold text-xs rounded transition-colors shadow-xs"
-                        >
-                          <BookOpen className="w-4 h-4" />
-                          <span>Buka Spreadsheet</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* 6 Metrik KPI Finansial */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center">
-                      <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
-                        <span className="text-[10px] text-gray-500 uppercase font-semibold block">Gain / Return</span>
-                        <span className={`text-base font-bold font-mono mt-0.5 block ${Number(totalGainPercent) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                          {Number(totalGainPercent) >= 0 ? `+${totalGainPercent}%` : `${totalGainPercent}%`}
-                        </span>
-                      </div>
-
-                      <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
-                        <span className="text-[10px] text-gray-500 uppercase font-semibold block">Net Profit</span>
-                        <span className={`text-base font-bold font-mono mt-0.5 block ${stats.totalPnL >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                          {stats.totalPnL >= 0 ? `+$${stats.totalPnL}` : `-$${Math.abs(stats.totalPnL)}`}
-                        </span>
-                      </div>
-
-                      <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
-                        <span className="text-[10px] text-gray-500 uppercase font-semibold block">Total Pips</span>
-                        <span className={`text-base font-bold font-mono mt-0.5 block ${stats.totalPips >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                          {stats.totalPips >= 0 ? `+${stats.totalPips}` : stats.totalPips}
-                        </span>
-                      </div>
-
-                      <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
-                        <span className="text-[10px] text-gray-500 uppercase font-semibold block">Win Rate</span>
-                        <span className="text-base font-bold font-mono text-gray-900 dark:text-white mt-0.5 block">
-                          {stats.winRate}%
-                        </span>
-                      </div>
-
-                      <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
-                        <span className="text-[10px] text-gray-500 uppercase font-semibold block">Profit Factor</span>
-                        <span className="text-base font-bold font-mono text-gray-900 dark:text-white mt-0.5 block">
-                          {stats.profitFactor}
-                        </span>
-                      </div>
-
-                      <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
-                        <span className="text-[10px] text-gray-500 uppercase font-semibold block">Total Trades</span>
-                        <span className="text-base font-bold font-mono text-gray-900 dark:text-white mt-0.5 block">
-                          {stats.totalTrades}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Kurva Equity Mini */}
-                    <div className="pt-2">
-                      <div className="flex items-center justify-between text-xs font-bold mb-2">
-                        <span className="text-gray-700 dark:text-gray-300">Kurva Pertumbuhan Akumulasi Pips</span>
-                        <button 
-                          onClick={() => onNavigate('analytics')}
-                          className="text-[#107c41] dark:text-emerald-400 hover:underline"
-                        >
-                          Lihat Detail Grafik &rarr;
-                        </button>
-                      </div>
-                      <div className="h-44 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={equityData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
-                            <defs>
-                              <linearGradient id="eqPipsGradExcel" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#107c41" stopOpacity={0.25} />
-                                <stop offset="95%" stopColor="#107c41" stopOpacity={0.0} />
-                              </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                            <XAxis dataKey="name" tick={{ fontSize: 9 }} />
-                            <YAxis tick={{ fontSize: 9 }} />
-                            <Tooltip 
-                              formatter={(val: any) => [`${val} Pips`, 'Akumulasi']}
-                              contentStyle={{ borderRadius: '4px', fontSize: '11px' }}
-                            />
-                            <Area
-                              type="monotone"
-                              dataKey="pips"
-                              stroke="#107c41"
-                              strokeWidth={2}
-                              fill="url(#eqPipsGradExcel)"
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
+                    <button
+                      onClick={() => onNavigate('sheet')}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#107c41] hover:bg-[#0e6b37] text-white font-bold text-xs rounded transition-colors shadow-xs"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      <span>Buka Spreadsheet</span>
+                    </button>
                   </div>
-                )}
+                </div>
+
+                {/* 6 Metrik KPI Finansial */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center">
+                  <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
+                    <span className="text-[10px] text-gray-500 uppercase font-semibold block">Gain / Return</span>
+                    <span className={`text-base font-bold font-mono mt-0.5 block ${Number(totalGainPercent) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {Number(totalGainPercent) >= 0 ? `+${totalGainPercent}%` : `${totalGainPercent}%`}
+                    </span>
+                  </div>
+
+                  <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
+                    <span className="text-[10px] text-gray-500 uppercase font-semibold block">Net Profit</span>
+                    <span className={`text-base font-bold font-mono mt-0.5 block ${stats.totalPnL >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {stats.totalPnL >= 0 ? `+$${stats.totalPnL}` : `-$${Math.abs(stats.totalPnL)}`}
+                    </span>
+                  </div>
+
+                  <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
+                    <span className="text-[10px] text-gray-500 uppercase font-semibold block">Total Pips</span>
+                    <span className={`text-base font-bold font-mono mt-0.5 block ${stats.totalPips >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {stats.totalPips >= 0 ? `+${stats.totalPips}` : stats.totalPips}
+                    </span>
+                  </div>
+
+                  <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
+                    <span className="text-[10px] text-gray-500 uppercase font-semibold block">Win Rate</span>
+                    <span className="text-base font-bold font-mono text-gray-900 dark:text-white mt-0.5 block">
+                      {stats.winRate}%
+                    </span>
+                  </div>
+
+                  <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
+                    <span className="text-[10px] text-gray-500 uppercase font-semibold block">Profit Factor</span>
+                    <span className="text-base font-bold font-mono text-gray-900 dark:text-white mt-0.5 block">
+                      {stats.profitFactor}
+                    </span>
+                  </div>
+
+                  <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
+                    <span className="text-[10px] text-gray-500 uppercase font-semibold block">Total Trades</span>
+                    <span className="text-base font-bold font-mono text-gray-900 dark:text-white mt-0.5 block">
+                      {stats.totalTrades}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Kurva Pertumbuhan Equity (Area Chart Menarik) */}
+                <div className="pt-2">
+                  <div className="flex items-center justify-between text-xs font-bold mb-2">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-[#107c41] dark:text-emerald-400" />
+                      <span className="text-gray-800 dark:text-gray-200">Kurva Pertumbuhan Akumulasi Pips</span>
+                    </div>
+                    <button 
+                      onClick={() => onNavigate('analytics')}
+                      className="text-[#107c41] dark:text-emerald-400 hover:underline"
+                    >
+                      Lihat Detail Grafik &rarr;
+                    </button>
+                  </div>
+                  <div className="h-44 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={equityData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="eqPipsGradExcel" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#107c41" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#107c41" stopOpacity={0.0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+                        <XAxis dataKey="name" tick={{ fontSize: 9 }} />
+                        <YAxis tick={{ fontSize: 9 }} />
+                        <Tooltip 
+                          formatter={(val: any) => [`${val} Pips`, 'Akumulasi']}
+                          contentStyle={{ borderRadius: '4px', fontSize: '11px' }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="pips"
+                          stroke="#107c41"
+                          strokeWidth={2.5}
+                          fill="url(#eqPipsGradExcel)"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </div>
             </div>
 
