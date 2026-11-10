@@ -517,11 +517,11 @@ export default function App() {
         totalTrades={trades.length}
       />
 
-      {/* Discipline Alert Banner */}
-      <DisciplineAlertBanner warnings={disciplineWarnings} />
+      {/* Discipline Alert Banner: Hanya di Sheet */}
+      {activePageView === 'sheet' && <DisciplineAlertBanner warnings={disciplineWarnings} />}
 
-      {/* Running Forex & Gold Price Ticker */}
-      {showLiveTicker && (
+      {/* Running Forex & Gold Price Ticker: Hanya di Sheet */}
+      {showLiveTicker && activePageView === 'sheet' && (
         <LiveTicker
           tickers={tickers}
           isLive={isLive}
@@ -529,8 +529,8 @@ export default function App() {
         />
       )}
 
-      {/* Market Sessions Clock (Desktop) */}
-      {showMarketSessions && (
+      {/* Market Sessions Clock (Desktop): Hanya di Sheet */}
+      {showMarketSessions && activePageView === 'sheet' && (
         <div className="hidden md:block">
           <MarketSessions />
         </div>

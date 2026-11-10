@@ -273,7 +273,8 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
         </div>
       </div>
 
-      {/* Excel Ribbon Quick Action Bar (Visible on Desktop; on Mobile handled by Myfxbook Bottom Nav) */}
+      {/* Excel Ribbon Quick Action Bar (Hanya tampil saat membuka sheet Jurnal / Alat Analisa) */}
+      {activePageView !== 'home' && activePageView !== 'profile' && activePageView !== 'news' && (
       <div className={`hidden md:flex px-3 py-1.5 items-center justify-between gap-2 overflow-x-auto text-xs scrollbar-none ${isDarkMode ? 'bg-[#1e293b]' : 'bg-[#0e6b37]'}`}>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {/* SECTION 1: ENTRI & SIMPAN */}
@@ -415,6 +416,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
           Total Baris: <strong className="text-white">{totalTrades}</strong>
         </div>
       </div>
+      )}
 
       {/* REACT PORTAL DROPDOWN MENU — MENEMPEL LANGSUNG KE BODY SEHINGGA TIDAK BISA TERPOTONG */}
       {isFileMenuOpen && typeof document !== 'undefined' && createPortal(
