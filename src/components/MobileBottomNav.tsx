@@ -174,10 +174,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 </div>
                 <div>
                   <strong className="block text-xs font-bold text-emerald-900 dark:text-emerald-300">
-                    Profil Akun & Integrasi Myfxbook
+                    Profil Saya
                   </strong>
                   <span className="text-[10px] text-emerald-700 dark:text-emerald-400">
-                    Kelola data trader & API MetaTrader
+                    Kelola identitas & foto profil
                   </span>
                 </div>
               </div>

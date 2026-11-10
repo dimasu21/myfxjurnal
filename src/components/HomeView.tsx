@@ -133,88 +133,25 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 pb-2">
-                  <button 
-                    onClick={() => onNavigate('analytics')}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 transition-colors shadow-2xs cursor-pointer"
+                  <button
+                    onClick={onOpenNewTrade}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-800 dark:text-gray-200 rounded text-xs font-semibold cursor-pointer border border-gray-300 dark:border-slate-700 transition-colors"
                   >
-                    <span>Analisis Performa</span>
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-gray-500" />
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Entri Baru</span>
+                  </button>
+                  <button
+                    onClick={() => onNavigate('sheet')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#107c41] hover:bg-[#0e6b37] text-white rounded text-xs font-bold shadow-xs cursor-pointer transition-colors"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Buka Spreadsheet</span>
                   </button>
                 </div>
               </div>
 
               {/* Tab Content */}
               <div className="p-5 space-y-5">
-                {/* Top Row: Balance / Real Profit & Action Button */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-slate-800 pb-4">
-                  <div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                      <span className="font-bold text-gray-700 dark:text-gray-300">
-                        {user.username || 'Trader'}
-                      </span>
-                      {user.broker && (
-                        <>
-                          <span>•</span>
-                          <span>{user.broker}</span>
-                        </>
-                      )}
-                      {user.leverage && (
-                        <>
-                          <span>•</span>
-                          <span>{user.leverage}</span>
-                        </>
-                      )}
-                      {user.accountType && (
-                        <>
-                          <span>•</span>
-                          <span className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-bold px-1.5 py-0.2 rounded text-[10px]">
-                            {user.accountType}
-                          </span>
-                        </>
-                      )}
-                    </div>
-
-                    <div className="flex items-baseline gap-2 mt-1">
-                      <h3 className={`text-2xl sm:text-3xl font-black font-mono tracking-tight ${
-                        stats.totalPnL > 0 
-                          ? 'text-emerald-600 dark:text-emerald-400' 
-                          : stats.totalPnL < 0 
-                          ? 'text-rose-600 dark:text-rose-400' 
-                          : 'text-gray-900 dark:text-white'
-                      }`}>
-                        {stats.totalPnL >= 0 
-                          ? `+$${stats.totalPnL.toFixed(2)}` 
-                          : `-$${Math.abs(stats.totalPnL).toFixed(2)}`}
-                      </h3>
-                      <span className="text-xs text-gray-500 dark:text-slate-400">
-                        Total Net P&L
-                      </span>
-                      {user.initialBalance && user.initialBalance > 0 && (
-                        <span className="text-xs text-gray-400 font-mono pl-2 border-l border-gray-200 dark:border-slate-700">
-                          Saldo: ${(user.initialBalance + stats.totalPnL).toFixed(2)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={onOpenNewTrade}
-                      className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-800 dark:text-white font-semibold text-xs rounded transition-colors cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Entri Baru</span>
-                    </button>
-
-                    <button
-                      onClick={() => onNavigate('sheet')}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#107c41] hover:bg-[#0e6b37] text-white font-bold text-xs rounded transition-colors shadow-xs cursor-pointer"
-                    >
-                      <BookOpen className="w-4 h-4" />
-                      <span>Buka Spreadsheet</span>
-                    </button>
-                  </div>
-                </div>
 
                 {/* 6 Metrik KPI Finansial Riil (Dari Jurnal) */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center">

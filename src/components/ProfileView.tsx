@@ -7,8 +7,6 @@ import {
   Check, 
   Save, 
   LogOut, 
-  ExternalLink,
-  Link2,
   Trash2
 } from 'lucide-react';
 import { SiteFooter } from './SiteFooter';
@@ -33,9 +31,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [initialBalance, setInitialBalance] = useState(user.initialBalance ? String(user.initialBalance) : '');
   const [leverage, setLeverage] = useState(user.leverage || '');
   
-  // Myfxbook link / account ID
-  const [myfxEmail, setMyfxEmail] = useState(user.myfxbookEmail || '');
-  const [myfxAccountId, setMyfxAccountId] = useState(user.myfxbookAccountId || '');
   const [isSavedSuccess, setIsSavedSuccess] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -65,8 +60,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       accountType: (accountType as any) || undefined,
       initialBalance: initialBalance ? Number(initialBalance) : undefined,
       leverage: leverage.trim() || undefined,
-      myfxbookEmail: myfxEmail.trim() || undefined,
-      myfxbookAccountId: myfxAccountId.trim() || undefined,
     });
 
     if (updated) {
@@ -252,54 +245,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   <option value="1:1000">1:1000</option>
                   <option value="1:2000">1:2000</option>
                 </select>
-              </div>
-            </div>
-          </div>
-
-          {/* SECTION: INTEGRASI MYFXBOOK (OPSIONAL) */}
-          <div className="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                  <Link2 className="w-4 h-4 text-emerald-600" />
-                  <span>Akun Myfxbook (Opsional)</span>
-                </h4>
-                <p className="text-[11px] text-gray-500">
-                  Tautkan info akun Myfxbook publik Anda jika ada
-                </p>
-              </div>
-              <a
-                href="https://www.myfxbook.com/api"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[11px] text-[#107c41] dark:text-emerald-400 hover:underline flex items-center gap-0.5"
-              >
-                <span>Dokumentasi API</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="space-y-1">
-                <label className="font-semibold text-gray-600 dark:text-slate-400 text-[11px]">Email Myfxbook</label>
-                <input
-                  type="email"
-                  value={myfxEmail}
-                  onChange={(e) => setMyfxEmail(e.target.value)}
-                  placeholder="email@myfxbook.com"
-                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-900 dark:text-white focus:outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-semibold text-gray-600 dark:text-slate-400 text-[11px]">Myfxbook Account ID</label>
-                <input
-                  type="text"
-                  value={myfxAccountId}
-                  onChange={(e) => setMyfxAccountId(e.target.value)}
-                  placeholder="misal: 10482910"
-                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-900 dark:text-white font-mono focus:outline-none"
-                />
               </div>
             </div>
           </div>

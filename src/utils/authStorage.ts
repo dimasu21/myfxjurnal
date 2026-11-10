@@ -4,12 +4,40 @@ import { Trade } from '../types/trade';
 const USERS_STORAGE_KEY = 'myfx_users_database_v1';
 const SESSION_STORAGE_KEY = 'myfx_active_session_user_id';
 
-// Ambil semua akun user dari storage lokal
+// Ambil semua akun user dari storage lokal (membersihkan residu data dummy lama)
 export function getAllUsers(): UserAccount[] {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(USERS_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const users: UserAccount[] = JSON.parse(raw);
+    
+    let modified = false;
+    users.forEach((u) => {
+      // Bersihkan data dummy default lama jika ada
+      if (u.broker === 'MetaTrader 5') {
+        delete u.broker;
+        modified = true;
+      }
+      if (u.leverage === '1:500') {
+        delete u.leverage;
+        modified = true;
+      }
+      if (u.accountType === 'Real') {
+        delete u.accountType;
+        modified = true;
+      }
+      if (u.initialBalance === 1000) {
+        delete u.initialBalance;
+        modified = true;
+      }
+    });
+
+    if (modified) {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+    }
+
+    return users;
   } catch (e) {
     console.error('Error getting users:', e);
     return [];
