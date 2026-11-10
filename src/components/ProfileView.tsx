@@ -1,18 +1,25 @@
 import React, { useState, useRef } from 'react';
 import { UserAccount } from '../types/user';
+import { Trade } from '../types/trade';
 import { updateUserProfile } from '../utils/authStorage';
+import { generateAccountSyncToken } from '../services/syncToken';
+import { isSupabaseConfigured } from '../services/supabaseClient';
 import { 
   ArrowLeft, 
   Camera, 
   Check, 
   Save, 
   LogOut, 
-  Trash2
+  Trash2,
+  Smartphone,
+  Copy,
+  Cloud
 } from 'lucide-react';
 import { SiteFooter } from './SiteFooter';
 
 interface ProfileViewProps {
   user: UserAccount;
+  trades?: Trade[];
   onBack: () => void;
   onUpdateUser: (updatedUser: UserAccount) => void;
   onLogout: () => void;
@@ -20,6 +27,7 @@ interface ProfileViewProps {
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
   user,
+  trades = [],
   onBack,
   onUpdateUser,
   onLogout,
@@ -32,8 +40,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [leverage, setLeverage] = useState(user.leverage || '');
   
   const [isSavedSuccess, setIsSavedSuccess] = useState(false);
+  const [isCopiedToken, setIsCopiedToken] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle Salin Kode Sinkronisasi untuk Device Lain
+  const handleCopySyncToken = () => {
+    const token = generateAccountSyncToken(user, trades);
+    navigator.clipboard.writeText(token);
+    setIsCopiedToken(true);
+    setTimeout(() => setIsCopiedToken(false), 3000);
+  };
 
   // Handle upload foto dari komputer / HP
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -268,6 +285,46 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </button>
           </div>
         </form>
+
+        {/* SECTION SINKRONISASI & TRANSFER AKUN ANTAR DEVICE */}
+        <div className="mt-6 p-4 sm:p-5 bg-white dark:bg-[#1a2232] border border-gray-200 dark:border-slate-800 rounded shadow-xs space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Buka Akun Ini di HP / Device Lain</span>
+              </h3>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                Salin kode sinkronisasi berikut untuk membuka akun dan seluruh riwayat trading Anda di perangkat lain tanpa perlu daftar ulang.
+              </p>
+            </div>
+            {isSupabaseConfigured() && (
+              <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
+                <Cloud className="w-3 h-3" /> Cloud Aktif
+              </span>
+            )}
+          </div>
+
+          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopySyncToken}
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              <span>{isCopiedToken ? 'Kode Sinkronisasi Tersalin!' : 'Salin Kode Sinkronisasi Akun'}</span>
+            </button>
+            <span className="text-[11px] text-gray-400 italic text-center sm:text-left">
+              {isCopiedToken ? (
+                <span className="text-emerald-600 font-semibold not-italic">
+                  ✓ Buka di HP Anda &rarr; Pilih "Masuk via Kode Device" &rarr; Tempelkan!
+                </span>
+              ) : (
+                'Bisa ditempelkan di halaman Masuk pada perangkat lain'
+              )}
+            </span>
+          </div>
+        </div>
 
         {/* Footer */}
         <SiteFooter />

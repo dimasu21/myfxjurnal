@@ -145,6 +145,13 @@ export function loginUser(emailOrUsername: string, password?: string): { success
   return { success: true, user };
 }
 
+// Ambil trades untuk user tertentu
+export function getUserTrades(userId: string): Trade[] {
+  const users = getAllUsers();
+  const user = users.find((u) => u.id === userId);
+  return user?.trades || [];
+}
+
 // Simpan data trades khusus untuk user yang sedang aktif (OTOMATIS TERSIMPAN PERMANEN)
 export function saveTradesForCurrentUser(userId: string, trades: Trade[]): void {
   const users = getAllUsers();

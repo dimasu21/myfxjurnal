@@ -30,6 +30,7 @@ import { RealtimeNewsView } from './components/RealtimeNewsView';
 import { ProfileView } from './components/ProfileView';
 import { AuthModal } from './components/AuthModal';
 import { checkAndAutoArchiveMonth, getMonthlyArchives } from './utils/monthlyArchive';
+import { syncTradesToCloudDatabase } from './services/cloudAuth';
 import { Plus } from 'lucide-react';
 
 export default function App() {
@@ -280,6 +281,7 @@ export default function App() {
     if (currentUser) {
       saveTradesForCurrentUser(currentUser.id, updated);
       setCurrentUser((prev) => prev ? { ...prev, trades: updated } : null);
+      syncTradesToCloudDatabase(currentUser.id, updated);
     } else {
       saveTrades(updated);
     }
@@ -291,7 +293,7 @@ export default function App() {
     }
   };
 
-  // Simpan Trade Baru / Revisi (OTOMATIS TERSIMPAN DI AKUN USER)
+  // Simpan Trade Baru / Revisi (OTOMATIS TERSIMPAN DI AKUN USER & CLOUD)
   const handleSaveTrade = (savedTrade: Trade) => {
     let updated: Trade[];
     const exists = trades.some((t) => t.id === savedTrade.id);
@@ -303,10 +305,11 @@ export default function App() {
 
     setTrades(updated);
     
-    // Jaminan tersimpan permanen di akun user (Tidak hilang saat refresh)
+    // Jaminan tersimpan permanen di akun user (Tidak hilang saat refresh) & sync cloud
     if (currentUser) {
       saveTradesForCurrentUser(currentUser.id, updated);
       setCurrentUser((prev) => prev ? { ...prev, trades: updated } : null);
+      syncTradesToCloudDatabase(currentUser.id, updated);
     } else {
       saveTrades(updated);
     }
@@ -320,6 +323,7 @@ export default function App() {
   const handleManualSave = () => {
     if (currentUser) {
       saveTradesForCurrentUser(currentUser.id, trades);
+      syncTradesToCloudDatabase(currentUser.id, trades);
     } else {
       saveTrades(trades);
     }
@@ -591,6 +595,7 @@ export default function App() {
               createdAt: new Date().toISOString(),
               trades: trades,
             }}
+            trades={trades}
             onBack={() => setActivePageView('home')}
             onUpdateUser={(updated) => {
               setCurrentUser(updated);
