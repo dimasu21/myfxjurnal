@@ -55,24 +55,31 @@ export function setCurrentSessionUser(userId: string | null): void {
 }
 
 // Register user baru
-export function registerUser(username: string, email: string, broker = 'MetaTrader 5 (Raw)', initialBalance = 1000): { success: boolean; user?: UserAccount; error?: string } {
+export function registerUser(
+  username: string, 
+  email: string, 
+  broker = 'MetaTrader 5', 
+  initialBalance = 1000,
+  password?: string
+): { success: boolean; user?: UserAccount; error?: string } {
   const users = getAllUsers();
   const cleanEmail = email.trim().toLowerCase();
   const cleanUsername = username.trim();
 
   if (!cleanEmail || !cleanUsername) {
-    return { success: false, error: 'Username dan email wajib diisi.' };
+    return { success: false, error: 'Nama Pengguna dan Email wajib diisi.' };
   }
 
-  const existing = users.find((u) => u.email.toLowerCase() === cleanEmail);
+  const existing = users.find((u) => u.email.toLowerCase() === cleanEmail || u.username.toLowerCase() === cleanUsername.toLowerCase());
   if (existing) {
-    return { success: false, error: 'Email sudah terdaftar. Silakan langsung login.' };
+    return { success: false, error: 'Email atau Nama Pengguna sudah terdaftar. Silakan langsung masuk.' };
   }
 
   const newUser: UserAccount = {
     id: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     username: cleanUsername,
     email: cleanEmail,
+    password: password || undefined,
     broker: broker || 'MetaTrader 5',
     accountType: 'Real',
     initialBalance: Number(initialBalance) || 1000,
@@ -90,7 +97,7 @@ export function registerUser(username: string, email: string, broker = 'MetaTrad
 }
 
 // Login user
-export function loginUser(emailOrUsername: string): { success: boolean; user?: UserAccount; error?: string } {
+export function loginUser(emailOrUsername: string, password?: string): { success: boolean; user?: UserAccount; error?: string } {
   const users = getAllUsers();
   const query = emailOrUsername.trim().toLowerCase();
 
@@ -99,7 +106,11 @@ export function loginUser(emailOrUsername: string): { success: boolean; user?: U
   );
 
   if (!user) {
-    return { success: false, error: 'Akun tidak ditemukan. Silakan buat akun baru terlebih dahulu.' };
+    return { success: false, error: 'Akun tidak ditemukan. Silakan daftar terlebih dahulu.' };
+  }
+
+  if (user.password && password && user.password !== password) {
+    return { success: false, error: 'Kata sandi tidak sesuai.' };
   }
 
   setCurrentSessionUser(user.id);

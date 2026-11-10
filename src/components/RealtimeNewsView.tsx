@@ -215,3 +215,4 @@ export const RealtimeNewsView: React.FC<RealtimeNewsViewProps> = ({ onBack }) =>
     </div>
   );
 };
+

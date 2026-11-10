@@ -4,6 +4,7 @@ export interface UserAccount {
   id: string;
   email: string;
   username: string;
+  password?: string;
   fullName?: string;
   avatarUrl?: string;
   broker?: string;

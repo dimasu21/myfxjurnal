@@ -304,3 +304,4 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     </div>
   );
 };
+

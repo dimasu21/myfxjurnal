@@ -87,3 +87,4 @@ export function generateRealtimeNews(baseDate = new Date()): ForexNewsItem[] {
     },
   ];
 }
+

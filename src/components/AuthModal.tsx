@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserAccount } from '../types/user';
 import { registerUser, loginUser } from '../utils/authStorage';
-import { Mail, User, ShieldCheck, ArrowRight, Lock, Sparkles, TrendingUp } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -9,12 +9,14 @@ interface AuthModalProps {
   onClose?: () => void;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose }) => {
-  const [isRegister, setIsRegister] = useState(false);
+export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess }) => {
+  const [isRegister, setIsRegister] = useState(true);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [broker, setBroker] = useState('MetaTrader 5');
-  const [initialBalance, setInitialBalance] = useState('1000');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isRobotChecked, setIsRobotChecked] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
@@ -24,11 +26,32 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
     setError('');
 
     if (isRegister) {
-      if (!username.trim() || !email.trim()) {
-        setError('Harap isi username dan email Anda.');
+      if (!username.trim()) {
+        setError('Nama Pengguna harus diisi.');
         return;
       }
-      const res = registerUser(username, email, broker, Number(initialBalance) || 1000);
+      if (!email.trim()) {
+        setError('Email harus diisi.');
+        return;
+      }
+      if (!password) {
+        setError('Kata Sandi harus diisi.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Ketik ulang kata sandi tidak cocok.');
+        return;
+      }
+      if (!isRobotChecked) {
+        setError('Silakan centang verifikasi "I\'m not a robot".');
+        return;
+      }
+      if (!agreeTerms) {
+        setError('Harap setujui Ketentuan Layanan & Kebijakan Privasi.');
+        return;
+      }
+
+      const res = registerUser(username, email, 'MetaTrader 5', 1000, password);
       if (res.success && res.user) {
         onSuccess(res.user);
       } else {
@@ -36,167 +59,192 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
       }
     } else {
       if (!email.trim()) {
-        setError('Harap masukkan email atau username Anda.');
+        setError('Masukkan Nama Pengguna atau Email Anda.');
         return;
       }
-      const res = loginUser(email);
+      const res = loginUser(email, password);
       if (res.success && res.user) {
         onSuccess(res.user);
       } else {
-        setError(res.error || 'Akun tidak ditemukan.');
+        setError(res.error || 'Akun tidak ditemukan atau kata sandi salah.');
       }
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 select-none">
       <div 
-        className="bg-white dark:bg-[#111827] text-gray-900 dark:text-slate-100 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-gray-200 dark:border-slate-800 space-y-6 relative overflow-hidden"
+        className="bg-white dark:bg-[#1a2232] text-gray-800 dark:text-gray-100 rounded-sm max-w-[390px] w-full p-6 sm:p-8 shadow-xl border border-gray-200 dark:border-slate-800"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Glow decoration */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
-
-        {/* Brand & Logo Header */}
-        <div className="flex flex-col items-center text-center space-y-2">
+        {/* Logo FX & Teks Judul */}
+        <div className="flex flex-col items-center justify-center mb-6">
           <img 
             src="/fx-logo.png" 
-            alt="Fx" 
-            className="h-10 w-auto object-contain mb-1" 
+            alt="Fx Logo" 
+            className="h-16 w-auto object-contain mb-2" 
           />
-          <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">
-            {isRegister ? 'Buat Akun Trader Baru' : 'Masuk ke Akun Jurnal'}
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">
+            {isRegister ? 'Daftar' : 'Masuk'}
           </h2>
-          <p className="text-xs text-gray-500 dark:text-slate-400 max-w-xs">
-            {isRegister 
-              ? 'Data jurnal Anda akan otomatis tersimpan permanen di profil akun Anda tanpa takut hilang.'
-              : 'Akses portofolio, analitik performa, dan riwayat jurnal trading pribadi Anda.'}
-          </p>
         </div>
 
         {error && (
-          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs font-semibold text-center">
+          <div className="mb-4 p-2.5 rounded bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs text-center font-medium">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isRegister && (
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider block">
-                Username / Panggilan
-              </label>
-              <div className="relative">
-                <User className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="misal: Dimas Trader"
-                  className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider block">
-              {isRegister ? 'Alamat Email' : 'Email atau Username'}
-            </label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <form onSubmit={handleSubmit} className="space-y-3">
+          {isRegister ? (
+            <>
+              {/* Nama Pengguna */}
               <input
                 type="text"
-                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Nama Pengguna"
+                className="w-full px-3.5 py-2.5 bg-[#e9eff5] dark:bg-slate-800 border border-[#d6dfe7] dark:border-slate-700 rounded-xs text-slate-800 dark:text-slate-100 placeholder-[#8a9ba8] text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+
+              {/* Email */}
+              <input
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={isRegister ? 'trader@domain.com' : 'Masukkan email atau username'}
-                className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Email"
+                className="w-full px-3.5 py-2.5 bg-[#e9eff5] dark:bg-slate-800 border border-[#d6dfe7] dark:border-slate-700 rounded-xs text-slate-800 dark:text-slate-100 placeholder-[#8a9ba8] text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
               />
-            </div>
-          </div>
 
-          {isRegister && (
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider block">
-                  Platform Broker
-                </label>
-                <select
-                  value={broker}
-                  onChange={(e) => setBroker(e.target.value)}
-                  className="w-full px-2.5 py-2 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white focus:outline-none"
-                >
-                  <option value="MetaTrader 5">MetaTrader 5 (MT5)</option>
-                  <option value="MetaTrader 4">MetaTrader 4 (MT4)</option>
-                  <option value="cTrader">cTrader</option>
-                  <option value="TradingView Paper">TradingView</option>
-                </select>
+              {/* Kata Sandi */}
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Kata Sandi"
+                className="w-full px-3.5 py-2.5 bg-[#e9eff5] dark:bg-slate-800 border border-[#d6dfe7] dark:border-slate-700 rounded-xs text-slate-800 dark:text-slate-100 placeholder-[#8a9ba8] text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+
+              {/* Ketik Ulang Kata Sandi */}
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Ketik Ulang Kata Sandi Anda"
+                className="w-full px-3.5 py-2.5 bg-[#e9eff5] dark:bg-slate-800 border border-[#d6dfe7] dark:border-slate-700 rounded-xs text-slate-800 dark:text-slate-100 placeholder-[#8a9ba8] text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+
+              {/* reCAPTCHA Box */}
+              <div 
+                onClick={() => setIsRobotChecked(!isRobotChecked)}
+                className="cursor-pointer bg-[#f9f9f9] dark:bg-slate-800/60 border border-gray-300 dark:border-slate-700 rounded p-3 flex items-center justify-between select-none hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-6 h-6 rounded-xs border-2 flex items-center justify-center transition-colors ${
+                    isRobotChecked 
+                      ? 'border-emerald-600 bg-emerald-600 text-white' 
+                      : 'border-gray-400 bg-white dark:bg-slate-700'
+                  }`}>
+                    {isRobotChecked && <Check className="w-4 h-4 stroke-[3]" />}
+                  </div>
+                  <span className="text-sm text-gray-800 dark:text-gray-200 font-medium">
+                    I'm not a robot
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-6 h-6 flex items-center justify-center">
+                    <svg viewBox="0 0 48 48" className="w-6 h-6 text-blue-500 fill-current">
+                      <path d="M24 8V2l-8 8 8 8v-6c6.63 0 12 5.37 12 12 0 2.03-.51 3.93-1.39 5.61l2.92 2.92C39.08 29.85 40 27.05 40 24c0-8.84-7.16-16-16-16zm-8 8c0-2.03.51-3.93 1.39-5.61l-2.92-2.92C12.92 10.15 12 12.95 12 16c0 8.84 7.16 16 16 16v6l8-8-8-8v6c-6.63 0-12-5.37-12-12z" />
+                    </svg>
+                  </div>
+                  <span className="text-[9px] text-gray-400 tracking-tighter uppercase font-semibold">reCAPTCHA</span>
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider block">
-                  Modal Awal ($)
-                </label>
+              {/* Checkbox Ketentuan Layanan */}
+              <div className="flex items-start gap-2 pt-1">
                 <input
-                  type="number"
-                  value={initialBalance}
-                  onChange={(e) => setInitialBalance(e.target.value)}
-                  placeholder="1000"
-                  className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white focus:outline-none font-mono"
+                  type="checkbox"
+                  id="agreeTerms"
+                  checked={agreeTerms}
+                  onChange={(e) => setAgreeTerms(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded-xs border-gray-300 text-amber-600 focus:ring-0 cursor-pointer"
                 />
+                <label htmlFor="agreeTerms" className="text-xs text-gray-600 dark:text-gray-400 leading-tight cursor-pointer">
+                  Saya menyetujui{' '}
+                  <span className="text-gray-800 dark:text-gray-200 underline">Ketentuan Layanan</span>
+                  {' '}&{' '}
+                  <span className="text-gray-800 dark:text-gray-200 underline">Kebijakan Privasi</span>.
+                </label>
               </div>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 mt-2"
-          >
-            <span>{isRegister ? 'Daftar & Buat Akun Baru' : 'Masuk ke Beranda'}</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </form>
-
-        {/* Toggle Register / Login */}
-        <div className="text-center pt-2 border-t border-gray-100 dark:border-slate-800 text-xs text-gray-500 dark:text-slate-400">
-          {isRegister ? (
-            <p>
-              Sudah punya akun?{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsRegister(false);
-                  setError('');
-                }}
-                className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline ml-1"
-              >
-                Langsung Masuk
-              </button>
-            </p>
+            </>
           ) : (
-            <p>
-              Belum punya akun?{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsRegister(true);
-                  setError('');
-                }}
-                className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline ml-1"
-              >
-                Daftar Gratis Di Sini
-              </button>
-            </p>
-          )}
-        </div>
+            <>
+              {/* Login mode inputs */}
+              <input
+                type="text"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Nama Pengguna atau Email"
+                className="w-full px-3.5 py-2.5 bg-[#e9eff5] dark:bg-slate-800 border border-[#d6dfe7] dark:border-slate-700 rounded-xs text-slate-800 dark:text-slate-100 placeholder-[#8a9ba8] text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
 
-        {/* Guarantee Info */}
-        <div className="flex items-center justify-center gap-1.5 text-[10px] text-gray-400 dark:text-slate-500">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-          <span>Akun tersimpan otomatis, aman, dan privasi terjaga</span>
-        </div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Kata Sandi"
+                className="w-full px-3.5 py-2.5 bg-[#e9eff5] dark:bg-slate-800 border border-[#d6dfe7] dark:border-slate-700 rounded-xs text-slate-800 dark:text-slate-100 placeholder-[#8a9ba8] text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </>
+          )}
+
+          {/* Bottom Row */}
+          <div className="flex items-end justify-between pt-4">
+            <div>
+              {isRegister ? (
+                <div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    Sudah menjadi anggota?
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsRegister(false);
+                      setError('');
+                    }}
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium block text-left"
+                  >
+                    Masuk
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    Belum menjadi anggota?
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsRegister(true);
+                      setError('');
+                    }}
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium block text-left"
+                  >
+                    Daftar
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="px-7 py-2 bg-[#e66a00] hover:bg-[#cf5f00] text-white font-bold rounded text-sm transition-colors cursor-pointer shadow-xs active:scale-98"
+            >
+              {isRegister ? 'Daftar' : 'Masuk'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
