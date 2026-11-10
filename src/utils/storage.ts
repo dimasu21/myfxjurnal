@@ -1,17 +1,15 @@
 import { Trade } from '../types/trade';
 
-const STORAGE_KEY = 'forex_trading_journal_data_v2';
+export const STORAGE_KEY = 'forex_trading_journal_data_v2';
 
-// Lembar kosong awal (bersih tanpa dummy data)
 export const INITIAL_TRADES: Trade[] = [];
 
+// Fallback jika tidak ada user login
 export function getSavedTrades(): Trade[] {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return [];
-    }
+    if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
@@ -33,7 +31,6 @@ export function clearSavedTrades(): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem('forex_trading_journal_data_v1'); // Bersihkan v1 lama jika ada
   } catch (e) {
     console.error('Error clearing storage:', e);
   }

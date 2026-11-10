@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { 
+  Home,
   BookOpen, 
   BarChart3, 
   Calendar, 
@@ -19,7 +20,9 @@ import {
   FileText,
   Upload,
   Database,
-  Trash2
+  Trash2,
+  Newspaper,
+  User
 } from 'lucide-react';
 
 interface MobileBottomNavProps {
@@ -72,10 +75,24 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     <>
       {/* PERSISTENT BOTTOM NAVIGATION BAR ALA MYFXBOOK MOBILE (THUMB ZONE) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-[#0f172a] border-t border-gray-200 dark:border-slate-800 flex items-center justify-around py-1 px-1 shadow-[0_-2px_10px_rgba(0,0,0,0.06)] select-none">
-        {/* Tab 1: Jurnal / Portofolio */}
+        
+        {/* Tab 1: Beranda (Home Myfxbook) */}
+        <button
+          onClick={() => handleNavClick('home')}
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition-colors flex-1 ${
+            activePageView === 'home'
+              ? 'text-emerald-600 dark:text-emerald-400 font-bold'
+              : 'text-gray-500 dark:text-slate-400 hover:text-gray-800'
+          }`}
+        >
+          <Home className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px]">Beranda</span>
+        </button>
+
+        {/* Tab 2: Jurnal */}
         <button
           onClick={() => handleNavClick('sheet')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg transition-colors flex-1 ${
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition-colors flex-1 ${
             activePageView === 'sheet'
               ? 'text-emerald-600 dark:text-emerald-400 font-bold'
               : 'text-gray-500 dark:text-slate-400 hover:text-gray-800'
@@ -85,23 +102,23 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           <span className="text-[10px]">Jurnal</span>
         </button>
 
-        {/* Tab 2: Statistik / Myfxbook Stats */}
+        {/* Tab 3: Berita Real-Time */}
         <button
-          onClick={() => handleNavClick('analytics')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg transition-colors flex-1 ${
-            activePageView === 'analytics'
+          onClick={() => handleNavClick('news')}
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition-colors flex-1 ${
+            activePageView === 'news'
               ? 'text-emerald-600 dark:text-emerald-400 font-bold'
               : 'text-gray-500 dark:text-slate-400 hover:text-gray-800'
           }`}
         >
-          <BarChart3 className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px]">Statistik</span>
+          <Newspaper className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px]">Berita</span>
         </button>
 
-        {/* Tab 3: Kalender News */}
+        {/* Tab 4: Kalender */}
         <button
           onClick={() => handleNavClick('calendar')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg transition-colors flex-1 ${
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition-colors flex-1 ${
             activePageView === 'calendar'
               ? 'text-emerald-600 dark:text-emerald-400 font-bold'
               : 'text-gray-500 dark:text-slate-400 hover:text-gray-800'
@@ -111,23 +128,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           <span className="text-[10px]">Kalender</span>
         </button>
 
-        {/* Tab 4: Kalkulator Lot */}
-        <button
-          onClick={() => handleNavClick('lot-calc')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg transition-colors flex-1 ${
-            activePageView === 'lot-calc'
-              ? 'text-emerald-600 dark:text-emerald-400 font-bold'
-              : 'text-gray-500 dark:text-slate-400 hover:text-gray-800'
-          }`}
-        >
-          <Calculator className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px]">Kalkulator</span>
-        </button>
-
-        {/* Tab 5: Menu / Tools Sheet */}
+        {/* Tab 5: Menu Fitur & Profil */}
         <button
           onClick={() => setIsMenuOpen((prev) => !prev)}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg transition-colors flex-1 ${
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg transition-colors flex-1 ${
             isMenuOpen
               ? 'text-emerald-600 dark:text-emerald-400 font-bold'
               : 'text-gray-500 dark:text-slate-400 hover:text-gray-800'
@@ -142,7 +146,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       {isMenuOpen && (
         <div className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex flex-col justify-end animate-in fade-in duration-150">
           <div 
-            className="bg-white dark:bg-[#111827] rounded-t-2xl max-h-[85vh] overflow-y-auto border-t border-gray-200 dark:border-slate-800 p-4 pb-20 space-y-4 shadow-2xl"
+            className="bg-white dark:bg-[#111827] rounded-t-3xl max-h-[85vh] overflow-y-auto border-t border-gray-200 dark:border-slate-800 p-4 pb-20 space-y-4 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer Header */}
@@ -159,11 +163,58 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               </button>
             </div>
 
+            {/* Profil Trader Link */}
+            <button
+              onClick={() => handleNavClick('profile')}
+              className="w-full p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between text-left transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-emerald-600 text-white">
+                  <User className="w-4 h-4" />
+                </div>
+                <div>
+                  <strong className="block text-xs font-bold text-emerald-900 dark:text-emerald-300">
+                    Profil Akun & Integrasi Myfxbook
+                  </strong>
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400">
+                    Kelola data trader & API MetaTrader
+                  </span>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">&rarr;</span>
+            </button>
+
             {/* Fitur Analisa Tambahan */}
             <div className="space-y-1">
               <span className="text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
                 Fitur Analisis & Chart
               </span>
+
+              <button
+                onClick={() => handleNavClick('analytics')}
+                className="w-full p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-3 text-left transition-colors"
+              >
+                <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
+                  <BarChart3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <strong className="block text-xs text-gray-900 dark:text-white">Statistik & Analisis Performa</strong>
+                  <span className="text-[10px] text-gray-500 dark:text-slate-400">Win rate, drawdown & equity curve</span>
+                </div>
+              </button>
+
+              <button
+                onClick={() => handleNavClick('lot-calc')}
+                className="w-full p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-3 text-left transition-colors"
+              >
+                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+                  <Calculator className="w-4 h-4" />
+                </div>
+                <div>
+                  <strong className="block text-xs text-gray-900 dark:text-white">Kalkulator Ukuran Lot</strong>
+                  <span className="text-[10px] text-gray-500 dark:text-slate-400">Manajemen risiko akun $10 s/d institusi</span>
+                </div>
+              </button>
 
               <button
                 onClick={() => handleNavClick('heatmap')}
@@ -332,4 +383,3 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     </>
   );
 };
-

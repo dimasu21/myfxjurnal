@@ -40,6 +40,10 @@ interface ExcelHeaderProps {
   onOpenHeatmap: () => void;
   onOpenCompounding: () => void;
   onOpenStatementCard: () => void;
+  onOpenNews?: () => void;
+  onOpenHome?: () => void;
+  onOpenProfile?: () => void;
+  currentUsername?: string;
   showMarketSessions: boolean;
   onToggleMarketSessions: () => void;
   showLiveTicker: boolean;
@@ -94,7 +98,11 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   onToggleDarkMode,
   totalTrades,
   activePageView = 'sheet',
-  onSwitchToSheet
+  onSwitchToSheet,
+  onOpenNews,
+  onOpenHome,
+  onOpenProfile,
+  currentUsername,
 }) => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(documentTitle);
@@ -204,8 +212,47 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
           )}
         </div>
 
-        {/* Action Buttons Top Right: Dark Mode Toggle */}
+        {/* Action Buttons Top Right: Home, Profile, & Dark Mode Toggle */}
         <div className="flex items-center gap-2">
+          {onOpenHome && (
+            <button
+              onClick={onOpenHome}
+              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                activePageView === 'home'
+                  ? 'bg-white text-emerald-800 font-bold shadow-xs'
+                  : 'bg-white/10 hover:bg-white/20 text-white'
+              }`}
+            >
+              <span>Beranda</span>
+            </button>
+          )}
+
+          {onOpenNews && (
+            <button
+              onClick={onOpenNews}
+              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                activePageView === 'news'
+                  ? 'bg-white text-emerald-800 font-bold shadow-xs'
+                  : 'bg-white/10 hover:bg-white/20 text-white'
+              }`}
+            >
+              <span>Berita Real-Time</span>
+            </button>
+          )}
+
+          {onOpenProfile && (
+            <button
+              onClick={onOpenProfile}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors"
+              title="Profil Pengguna & Akun Myfxbook"
+            >
+              <div className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">
+                {currentUsername ? currentUsername.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <span className="hidden sm:inline">{currentUsername || 'Profil'}</span>
+            </button>
+          )}
+
           <button
             onClick={onToggleDarkMode}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white transition-colors text-xs font-semibold"

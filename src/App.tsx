@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Trade, TradeFilter } from './types/trade';
+import { UserAccount } from './types/user';
+import { getCurrentSessionUser, saveTradesForCurrentUser, logoutUser } from './utils/authStorage';
 import { getSavedTrades, saveTrades, clearSavedTrades } from './utils/storage';
 import { exportToExcel, exportToCsv, exportToPdf, importFromSpreadsheet, exportToJson, importFromJson } from './utils/exportImport';
 import { useForexTickers } from './utils/useForexTickers';
@@ -23,10 +25,18 @@ import { CompoundingView } from './components/CompoundingView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { LiveChartView } from './components/LiveChartView';
 import { TraderStatementCardView } from './components/TraderStatementCardView';
+import { HomeView } from './components/HomeView';
+import { RealtimeNewsView } from './components/RealtimeNewsView';
+import { ProfileView } from './components/ProfileView';
+import { AuthModal } from './components/AuthModal';
 import { checkAndAutoArchiveMonth, getMonthlyArchives } from './utils/monthlyArchive';
 import { Plus } from 'lucide-react';
 
 export default function App() {
+  // Authentication & Current User State
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => getCurrentSessionUser());
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
   // Document title dengan dukungan CRUD / rename
   const [documentTitle, setDocumentTitle] = useState<string>(() => {
     return typeof window !== 'undefined' 
@@ -34,7 +44,7 @@ export default function App() {
       : 'Jurnal_Trading_Forex.xlsx';
   });
 
-  // Dark Mode Theme (Bloomberg / TradingView Dark)
+  // Dark Mode Theme
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('forex_journal_dark_mode');
@@ -62,7 +72,7 @@ export default function App() {
     }
   }, [isDarkMode]);
 
-  // Data trades default kosong (tanpa dummy data awal)
+  // Data trades: dimuat dari akun user jika login, atau dari storage lokal
   const [trades, setTrades] = useState<Trade[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaveSuccess, setIsSaveSuccess] = useState(false);
@@ -73,9 +83,9 @@ export default function App() {
   const [showMarketSessions, setShowMarketSessions] = useState(true);
   const [chartPair, setChartPair] = useState('EUR/USD');
 
-  // Full-Page Views: 1 page penuh tanpa modal pop-up (Best Practice)
-  type PageView = 'sheet' | 'lot-calc' | 'calendar' | 'heatmap' | 'compounding' | 'analytics' | 'chart' | 'statement';
-  const [activePageView, setActivePageView] = useState<PageView>('sheet');
+  // Full-Page Views: Beranda default jika ada user, atau sheet jurnal
+  type PageView = 'home' | 'sheet' | 'news' | 'profile' | 'lot-calc' | 'calendar' | 'heatmap' | 'compounding' | 'analytics' | 'chart' | 'statement';
+  const [activePageView, setActivePageView] = useState<PageView>('home');
 
   // Active view: otomatis 'cards' di HP (< 768px), otomatis 'table' (sheet) di Desktop/Website (>= 768px)
   const [activeView, setActiveView] = useState<'table' | 'cards'>(() => {
@@ -140,18 +150,20 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const jsonFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load from localStorage on mount (hanya sekali saat pertama buka)
+  // Inisialisasi User & Trades saat aplikasi dibuka
   useEffect(() => {
-    localStorage.removeItem('forex_trading_journal_data_v1');
-
-    const loaded = getSavedTrades();
-    setTrades(loaded);
-    setHasUnsavedChanges(false);
-
-    // Auto switch ke card view di HP
-    if (window.innerWidth < 768) {
-      setActiveView('cards');
+    const sessionUser = getCurrentSessionUser();
+    if (sessionUser) {
+      setCurrentUser(sessionUser);
+      setTrades(sessionUser.trades || []);
+      setActivePageView('home'); // Masuk langsung ke beranda Myfxbook setelah login
+    } else {
+      // Jika belum ada user, buka AuthModal otomatis
+      setIsAuthModalOpen(true);
+      const fallbackTrades = getSavedTrades();
+      setTrades(fallbackTrades);
     }
+    setHasUnsavedChanges(false);
   }, []);
 
   // Evaluasi kedisiplinan trading
@@ -177,7 +189,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [trades]);
+  }, [trades, currentUser]);
 
   // Peringatan saat menutup tab jika ada data belum disimpan
   useEffect(() => {
@@ -261,7 +273,17 @@ export default function App() {
   };
 
   const handleDelete = (id: string) => {
-    setTrades((prev) => prev.filter((t) => t.id !== id));
+    const updated = trades.filter((t) => t.id !== id);
+    setTrades(updated);
+    
+    // Simpan otomatis ke akun user aktif
+    if (currentUser) {
+      saveTradesForCurrentUser(currentUser.id, updated);
+      setCurrentUser((prev) => prev ? { ...prev, trades: updated } : null);
+    } else {
+      saveTrades(updated);
+    }
+
     setHasUnsavedChanges(true);
     if (selectedTradeId === id) {
       setSelectedTradeId(null);
@@ -269,21 +291,38 @@ export default function App() {
     }
   };
 
+  // Simpan Trade Baru / Revisi (OTOMATIS TERSIMPAN DI AKUN USER)
   const handleSaveTrade = (savedTrade: Trade) => {
-    setTrades((prev) => {
-      const exists = prev.some((t) => t.id === savedTrade.id);
-      if (exists) {
-        return prev.map((t) => (t.id === savedTrade.id ? savedTrade : t));
-      } else {
-        return [savedTrade, ...prev];
-      }
-    });
-    setHasUnsavedChanges(true);
+    let updated: Trade[];
+    const exists = trades.some((t) => t.id === savedTrade.id);
+    if (exists) {
+      updated = trades.map((t) => (t.id === savedTrade.id ? savedTrade : t));
+    } else {
+      updated = [savedTrade, ...trades];
+    }
+
+    setTrades(updated);
+    
+    // Jaminan tersimpan permanen di akun user (Tidak hilang saat refresh)
+    if (currentUser) {
+      saveTradesForCurrentUser(currentUser.id, updated);
+      setCurrentUser((prev) => prev ? { ...prev, trades: updated } : null);
+    } else {
+      saveTrades(updated);
+    }
+
+    setHasUnsavedChanges(false);
+    setIsSaveSuccess(true);
+    setTimeout(() => setIsSaveSuccess(false), 2000);
   };
 
-  // Simpan Manual (Bukan Auto-Save)
+  // Simpan Manual Tambahan (Ctrl+S / Klik Tombol)
   const handleManualSave = () => {
-    saveTrades(trades);
+    if (currentUser) {
+      saveTradesForCurrentUser(currentUser.id, trades);
+    } else {
+      saveTrades(trades);
+    }
     setHasUnsavedChanges(false);
     setIsSaveSuccess(true);
     setTimeout(() => {
@@ -300,7 +339,12 @@ export default function App() {
 
     if (confirm('Yakin ingin mengosongkan seluruh catatan trade di sheet ini?')) {
       setTrades([]);
-      clearSavedTrades();
+      if (currentUser) {
+        saveTradesForCurrentUser(currentUser.id, []);
+        setCurrentUser((prev) => prev ? { ...prev, trades: [] } : null);
+      } else {
+        clearSavedTrades();
+      }
       setHasUnsavedChanges(false);
       setSelectedTradeId(null);
       setCellValue('');
@@ -341,9 +385,16 @@ export default function App() {
     try {
       const imported = await importFromSpreadsheet(file);
       if (imported.length > 0) {
-        setTrades((prev) => [...imported, ...prev]);
-        setHasUnsavedChanges(true);
-        alert(`Berhasil mengimpor ${imported.length} baris trade! Klik "Simpan" jika ingin menyimpannya.`);
+        const merged = [...imported, ...trades];
+        setTrades(merged);
+        if (currentUser) {
+          saveTradesForCurrentUser(currentUser.id, merged);
+          setCurrentUser((prev) => prev ? { ...prev, trades: merged } : null);
+        } else {
+          saveTrades(merged);
+        }
+        setHasUnsavedChanges(false);
+        alert(`Berhasil mengimpor ${imported.length} baris trade dan langsung tersimpan di akun Anda!`);
       } else {
         alert('Tidak ada baris data valid dalam file tersebut.');
       }
@@ -362,9 +413,16 @@ export default function App() {
     try {
       const imported = await importFromJson(file);
       if (imported.length > 0) {
-        setTrades((prev) => [...imported, ...prev]);
-        setHasUnsavedChanges(true);
-        alert(`Berhasil me-restore ${imported.length} baris data trade dari file backup JSON! Klik "Simpan" untuk menyimpan permanen.`);
+        const merged = [...imported, ...trades];
+        setTrades(merged);
+        if (currentUser) {
+          saveTradesForCurrentUser(currentUser.id, merged);
+          setCurrentUser((prev) => prev ? { ...prev, trades: merged } : null);
+        } else {
+          saveTrades(merged);
+        }
+        setHasUnsavedChanges(false);
+        alert(`Berhasil me-restore ${imported.length} baris data trade dari file backup JSON ke akun Anda!`);
       } else {
         alert('Tidak ada baris data trade valid dalam file JSON tersebut.');
       }
@@ -383,6 +441,21 @@ export default function App() {
 
   const handleSelectTickerPair = (pair: string) => {
     handleOpenLiveChart(pair);
+  };
+
+  // Auth Handlers
+  const handleAuthSuccess = (user: UserAccount) => {
+    setCurrentUser(user);
+    setTrades(user.trades || []);
+    setIsAuthModalOpen(false);
+    setActivePageView('home'); // Masuk langsung ke beranda
+  };
+
+  const handleLogout = () => {
+    logoutUser();
+    setCurrentUser(null);
+    setTrades([]);
+    setIsAuthModalOpen(true);
   };
 
   return (
@@ -405,7 +478,7 @@ export default function App() {
         onChange={handleJsonFileChange}
       />
 
-      {/* Excel Ribbon Top Header with Dropdown File & Ekspor */}
+      {/* Excel Ribbon Top Header with FX Logo, Home, Profile, & Theme Toggle */}
       <ExcelHeader
         documentTitle={documentTitle}
         onUpdateTitle={handleUpdateTitle}
@@ -417,8 +490,12 @@ export default function App() {
         onOpenHeatmap={() => setActivePageView((prev) => (prev === 'heatmap' ? 'sheet' : 'heatmap'))}
         onOpenCompounding={() => setActivePageView((prev) => (prev === 'compounding' ? 'sheet' : 'compounding'))}
         onOpenStatementCard={() => setActivePageView((prev) => (prev === 'statement' ? 'sheet' : 'statement'))}
+        onOpenNews={() => setActivePageView('news')}
+        onOpenHome={() => setActivePageView('home')}
+        onOpenProfile={() => setActivePageView('profile')}
+        currentUsername={currentUser?.username}
         activePageView={activePageView}
-        onSwitchToSheet={() => setActivePageView('sheet')}
+        onSwitchToSheet={() => setActivePageView('home')}
         showMarketSessions={showMarketSessions}
         onToggleMarketSessions={() => setShowMarketSessions((prev) => !prev)}
         showLiveTicker={showLiveTicker}
@@ -440,10 +517,10 @@ export default function App() {
         totalTrades={trades.length}
       />
 
-      {/* Discipline Alert Banner (Overtrading / Revenge Trade / Loss Streak) */}
+      {/* Discipline Alert Banner */}
       <DisciplineAlertBanner warnings={disciplineWarnings} />
 
-      {/* REAL-TIME FEATURE 1: Running Forex & Gold Price Ticker */}
+      {/* Running Forex & Gold Price Ticker */}
       {showLiveTicker && (
         <LiveTicker
           tickers={tickers}
@@ -452,14 +529,14 @@ export default function App() {
         />
       )}
 
-      {/* REAL-TIME FEATURE 2: Market Sessions Clock (Tampil di Desktop) */}
+      {/* Market Sessions Clock (Desktop) */}
       {showMarketSessions && (
         <div className="hidden md:block">
           <MarketSessions />
         </div>
       )}
 
-      {/* Formula Bar & Stats Bar: Hanya muncul saat di Desktop & di Sheet/Tabel Excel */}
+      {/* Formula Bar & Stats Bar: Hanya muncul saat di Desktop & di Sheet Excel */}
       {activePageView === 'sheet' && (
         <div className="hidden md:block">
           <FormulaBar
@@ -483,9 +560,51 @@ export default function App() {
         </div>
       )}
 
-      {/* Main Content: 1 Page Penuh (Full Page View) atau Lembar Kerja Excel */}
+      {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        {activePageView === 'lot-calc' ? (
+        {activePageView === 'home' ? (
+          <HomeView
+            user={currentUser || {
+              id: 'guest',
+              username: 'Trader',
+              email: 'guest@trader.com',
+              broker: 'MetaTrader 5',
+              accountType: 'Real',
+              initialBalance: 1000,
+              currency: 'USD',
+              leverage: '1:500',
+              createdAt: new Date().toISOString(),
+              trades: trades,
+            }}
+            trades={trades}
+            onNavigate={(view) => setActivePageView(view)}
+            onOpenNewTrade={handleAddNew}
+          />
+        ) : activePageView === 'news' ? (
+          <RealtimeNewsView
+            onBack={() => setActivePageView('home')}
+          />
+        ) : activePageView === 'profile' ? (
+          <ProfileView
+            user={currentUser || {
+              id: 'guest',
+              username: 'Trader',
+              email: 'guest@trader.com',
+              broker: 'MetaTrader 5',
+              accountType: 'Real',
+              initialBalance: 1000,
+              currency: 'USD',
+              leverage: '1:500',
+              createdAt: new Date().toISOString(),
+              trades: trades,
+            }}
+            onBack={() => setActivePageView('home')}
+            onUpdateUser={(updated) => {
+              setCurrentUser(updated);
+            }}
+            onLogout={handleLogout}
+          />
+        ) : activePageView === 'lot-calc' ? (
           <LotCalculatorView
             onBack={() => setActivePageView('sheet')}
           />
@@ -523,7 +642,10 @@ export default function App() {
             currentTrades={trades}
             onLoadTradesToSheet={(loadedTrades) => {
               setTrades(loadedTrades);
-              setHasUnsavedChanges(true);
+              if (currentUser) {
+                saveTradesForCurrentUser(currentUser.id, loadedTrades);
+              }
+              setHasUnsavedChanges(false);
             }}
             onBackToMainSheet={() => setActiveSheet('all')}
           />
@@ -546,7 +668,7 @@ export default function App() {
           />
         )}
 
-        {/* Floating Action Button (FAB) for Quick Add (Mobile & Website Desktop) */}
+        {/* Floating Action Button (FAB) for Quick Add */}
         {activePageView === 'sheet' && activeSheet !== 'history' && (
           <button
             onClick={handleAddNew}
@@ -559,29 +681,30 @@ export default function App() {
         )}
       </main>
 
-      {/* Excel Sheet Tabs & Status Bar (Hanya tampil di Layar Desktop) */}
-      <ExcelFooter
-        activeSheet={activeSheet}
-        setActiveSheet={(sheet) => {
-          if (sheet === 'summary') {
-            setActivePageView('analytics');
-          } else {
-            setActivePageView('sheet');
-            setActiveSheet(sheet);
-          }
-        }}
-        filteredTrades={filteredTrades}
-        totalArchivedMonths={archivedMonthsCount}
-      />
+      {/* Excel Sheet Tabs & Status Bar (Khusus di Halaman Sheet di Desktop) */}
+      {activePageView === 'sheet' && (
+        <ExcelFooter
+          activeSheet={activeSheet}
+          setActiveSheet={(sheet) => {
+            if (sheet === 'summary') {
+              setActivePageView('analytics');
+            } else {
+              setActivePageView('sheet');
+              setActiveSheet(sheet);
+            }
+          }}
+          filteredTrades={filteredTrades}
+          totalArchivedMonths={archivedMonthsCount}
+        />
+      )}
 
-      {/* Persistent Bottom Navigation Bar Ala Myfxbook Mobile (Khusus Tampil di HP) */}
+      {/* Persistent Bottom Navigation Bar Ala Myfxbook Mobile */}
       <MobileBottomNav
         activePageView={activePageView}
         setActivePageView={setActivePageView}
         activeView={activeView}
         setActiveView={(v) => {
           setActiveView(v);
-          try { sessionStorage.setItem('user_view_preference', v); } catch (e) {}
         }}
         onOpenNewModal={handleAddNew}
         onManualSave={handleManualSave}
@@ -604,6 +727,13 @@ export default function App() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveTrade}
         editingTrade={editingTrade}
+      />
+
+      {/* Auth / Register / Login Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onSuccess={handleAuthSuccess}
+        onClose={() => setIsAuthModalOpen(false)}
       />
     </div>
   );
