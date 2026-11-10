@@ -14,8 +14,8 @@ export interface UserAccount {
   leverage?: string;
   createdAt: string;
   trades: Trade[];
-  myfxbookEmail?: string;
-  myfxbookAccountId?: string;
+  authProvider?: 'google' | 'local';
+  googleId?: string;
 }
 
 export interface AuthState {
