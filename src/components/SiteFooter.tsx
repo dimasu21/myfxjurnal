@@ -91,28 +91,6 @@ export const SiteFooter: React.FC<SiteFooterProps> = ({ onScrollToTop }) => {
             Perdagangan valuta asing (Forex) dan instrumen ber-leverage memiliki tingkat risiko tinggi dan mungkin tidak cocok untuk semua investor. Anda dapat mengalami kerugian sebagian atau seluruh modal yang diinvestasikan. Sebelum memutuskan untuk berdagang, pertimbangkan tujuan keuangan, tingkat keahlian, dan toleransi risiko Anda dengan matang. Seluruh data, catatan trading, dan kalkulator pada platform ini disediakan semata-mata untuk kebutuhan dokumentasi pribadi dan edukasi mandiri, bukan merupakan rekomendasi investasi atau anjuran perdagangan. Kinerja masa lalu tidak menjamin hasil di masa depan.
           </div>
 
-          {/* 4. FOOTER BOTTOM: Badges & Scroll to Top */}
-          <div className="flex items-center justify-between pt-1">
-            <div className="flex items-center gap-3 text-[11px] text-gray-500 dark:text-slate-400">
-              <span className="inline-flex items-center gap-1.5 font-medium text-emerald-700 dark:text-emerald-400">
-                <Shield className="w-3.5 h-3.5" />
-                Local-First &bull; Privasi Terjaga
-              </span>
-              <span className="hidden sm:inline text-gray-300 dark:text-slate-700">&bull;</span>
-              <span className="hidden sm:inline">Data tersimpan di browser Anda</span>
-            </div>
-
-            <button
-              onClick={handleScrollTop}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 text-xs font-semibold shadow-xs transition-all active:scale-95"
-              aria-label="Kembali ke atas"
-              title="Kembali ke atas"
-            >
-              <span>Atas</span>
-              <ArrowUp className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
         </div>
       </footer>
 

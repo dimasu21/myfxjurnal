@@ -159,32 +159,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               </button>
             </div>
 
-            {/* Quick Actions Row */}
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => {
-                  onManualSave();
-                  setIsMenuOpen(false);
-                }}
-                className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-bold transition-all ${
-                  hasUnsavedChanges
-                    ? 'bg-amber-400 text-gray-900 border-amber-500 shadow-sm'
-                    : 'bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 border-gray-200 dark:border-slate-700'
-                }`}
-              >
-                <Save className="w-4 h-4" />
-                <span>{hasUnsavedChanges ? 'Simpan Data (Ada Revisi)' : 'Tersimpan Aman'}</span>
-              </button>
-
-              <button
-                onClick={onToggleDarkMode}
-                className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 text-xs font-semibold"
-              >
-                {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
-                <span>{isDarkMode ? 'Tema Terang' : 'Tema Gelap'}</span>
-              </button>
-            </div>
-
             {/* Fitur Analisa Tambahan */}
             <div className="space-y-1">
               <span className="text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
