@@ -570,12 +570,7 @@ export default function App() {
             user={currentUser || {
               id: 'guest',
               username: 'Trader',
-              email: 'guest@trader.com',
-              broker: 'MetaTrader 5',
-              accountType: 'Real',
-              initialBalance: 1000,
-              currency: 'USD',
-              leverage: '1:500',
+              email: '',
               createdAt: new Date().toISOString(),
               trades: trades,
             }}
@@ -592,12 +587,7 @@ export default function App() {
             user={currentUser || {
               id: 'guest',
               username: 'Trader',
-              email: 'guest@trader.com',
-              broker: 'MetaTrader 5',
-              accountType: 'Real',
-              initialBalance: 1000,
-              currency: 'USD',
-              leverage: '1:500',
+              email: '',
               createdAt: new Date().toISOString(),
               trades: trades,
             }}

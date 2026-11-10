@@ -45,7 +45,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess }) => {
         return;
       }
 
-      const res = registerUser(username, email, 'MetaTrader 5', 1000, password);
+      const res = registerUser(username, email, undefined, undefined, password);
       if (res.success && res.user) {
         onSuccess(res.user);
       } else {

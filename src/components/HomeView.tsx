@@ -10,7 +10,6 @@ import {
   ArrowRight, 
   Radio, 
   SlidersHorizontal, 
-  Info, 
   Sun, 
   Moon, 
   ChevronRight, 
@@ -35,21 +34,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'my-account' | 'watchlist'>('my-account');
 
-  // Perhitungan statistik portofolio
+  // Perhitungan statistik portofolio nyata dari transaksi
   const stats = useMemo(() => calculateStats(trades), [trades]);
 
-  // Data kumulatif Pips untuk grafik Equity
+  // Data kumulatif Pips untuk grafik Equity nyata
   const equityData = useMemo(() => {
     let cumulative = 0;
     if (trades.length === 0) {
-      return [
-        { name: 'Day 1', pips: 0 },
-        { name: 'Day 2', pips: 20 },
-        { name: 'Day 3', pips: 15 },
-        { name: 'Day 4', pips: 45 },
-        { name: 'Day 5', pips: 65 },
-        { name: 'Target', pips: 100 },
-      ];
+      return [{ name: '0', pips: 0 }];
     }
     return trades.map((t, idx) => {
       cumulative += Number(t.pips) || 0;
@@ -62,16 +54,41 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   const latestNews = useMemo(() => generateRealtimeNews().slice(0, 4), []);
 
-  const initialBal = user.initialBalance || 1000;
-  const currentEstBalance = initialBal + stats.totalPnL;
-  const totalGainPercent = initialBal > 0 ? ((stats.totalPnL / initialBal) * 100).toFixed(2) : '0.00';
-
-  // Sesi Pasar Jam Trading
+  // Jam Pasar Nyata dihitung dari jam UTC saat ini
+  const currentUtcHour = new Date().getUTCHours();
   const marketSessions = [
-    { name: 'New York', status: 'Buka', time: '13:00 - 22:00 UTC', isOpen: true, icon: Sun, flag: '🇺🇸' },
-    { name: 'London', status: 'Buka', time: '08:00 - 17:00 UTC', isOpen: true, icon: Sun, flag: '🇬🇧' },
-    { name: 'Tokyo', status: 'Tutup', time: '00:00 - 09:00 UTC', isOpen: false, icon: Moon, flag: '🇯🇵' },
-    { name: 'Sydney', status: 'Tutup', time: '22:00 - 07:00 UTC', isOpen: false, icon: Moon, flag: '🇦🇺' },
+    { 
+      name: 'New York', 
+      isOpen: currentUtcHour >= 13 && currentUtcHour < 22, 
+      status: currentUtcHour >= 13 && currentUtcHour < 22 ? 'Buka' : 'Tutup', 
+      time: '13:00 - 22:00 UTC', 
+      icon: currentUtcHour >= 13 && currentUtcHour < 22 ? Sun : Moon, 
+      flag: '🇺🇸' 
+    },
+    { 
+      name: 'London', 
+      isOpen: currentUtcHour >= 8 && currentUtcHour < 17, 
+      status: currentUtcHour >= 8 && currentUtcHour < 17 ? 'Buka' : 'Tutup', 
+      time: '08:00 - 17:00 UTC', 
+      icon: currentUtcHour >= 8 && currentUtcHour < 17 ? Sun : Moon, 
+      flag: '🇬🇧' 
+    },
+    { 
+      name: 'Tokyo', 
+      isOpen: currentUtcHour >= 0 && currentUtcHour < 9, 
+      status: currentUtcHour >= 0 && currentUtcHour < 9 ? 'Buka' : 'Tutup', 
+      time: '00:00 - 09:00 UTC', 
+      icon: currentUtcHour >= 0 && currentUtcHour < 9 ? Sun : Moon, 
+      flag: '🇯🇵' 
+    },
+    { 
+      name: 'Sydney', 
+      isOpen: currentUtcHour >= 22 || currentUtcHour < 7, 
+      status: currentUtcHour >= 22 || currentUtcHour < 7 ? 'Buka' : 'Tutup', 
+      time: '22:00 - 07:00 UTC', 
+      icon: currentUtcHour >= 22 || currentUtcHour < 7 ? Sun : Moon, 
+      flag: '🇦🇺' 
+    },
   ];
 
   return (
@@ -118,7 +135,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <div className="flex items-center gap-2 pb-2">
                   <button 
                     onClick={() => onNavigate('analytics')}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 transition-colors shadow-2xs"
+                    className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 transition-colors shadow-2xs cursor-pointer"
                   >
                     <span>Analisis Performa</span>
                     <SlidersHorizontal className="w-3.5 h-3.5 text-gray-500" />
@@ -126,34 +143,64 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
               </div>
 
-              {/* Tab Content: Selalu Tampilkan Dashboard Lengkap & Grafik Kurva */}
+              {/* Tab Content */}
               <div className="p-5 space-y-5">
-                {/* Top Row: Balance & Action Button */}
+                {/* Top Row: Balance / Real Profit & Action Button */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-slate-800 pb-4">
                   <div>
                     <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                      <span className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded text-[10px]">
-                        {user.accountType || 'Real'}
+                      <span className="font-bold text-gray-700 dark:text-gray-300">
+                        {user.username || 'Trader'}
                       </span>
-                      <span>•</span>
-                      <span>{user.broker || 'MetaTrader 5'}</span>
-                      <span>•</span>
-                      <span>Leverage {user.leverage || '1:500'}</span>
+                      {user.broker && (
+                        <>
+                          <span>•</span>
+                          <span>{user.broker}</span>
+                        </>
+                      )}
+                      {user.leverage && (
+                        <>
+                          <span>•</span>
+                          <span>{user.leverage}</span>
+                        </>
+                      )}
+                      {user.accountType && (
+                        <>
+                          <span>•</span>
+                          <span className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-bold px-1.5 py-0.2 rounded text-[10px]">
+                            {user.accountType}
+                          </span>
+                        </>
+                      )}
                     </div>
+
                     <div className="flex items-baseline gap-2 mt-1">
-                      <h3 className="text-2xl sm:text-3xl font-black font-mono text-gray-900 dark:text-white">
-                        ${currentEstBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      <h3 className={`text-2xl sm:text-3xl font-black font-mono tracking-tight ${
+                        stats.totalPnL > 0 
+                          ? 'text-emerald-600 dark:text-emerald-400' 
+                          : stats.totalPnL < 0 
+                          ? 'text-rose-600 dark:text-rose-400' 
+                          : 'text-gray-900 dark:text-white'
+                      }`}>
+                        {stats.totalPnL >= 0 
+                          ? `+$${stats.totalPnL.toFixed(2)}` 
+                          : `-$${Math.abs(stats.totalPnL).toFixed(2)}`}
                       </h3>
                       <span className="text-xs text-gray-500 dark:text-slate-400">
-                        Estimated Balance
+                        Total Net P&L
                       </span>
+                      {user.initialBalance && user.initialBalance > 0 && (
+                        <span className="text-xs text-gray-400 font-mono pl-2 border-l border-gray-200 dark:border-slate-700">
+                          Saldo: ${(user.initialBalance + stats.totalPnL).toFixed(2)}
+                        </span>
+                      )}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <button
                       onClick={onOpenNewTrade}
-                      className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-800 dark:text-white font-semibold text-xs rounded transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-800 dark:text-white font-semibold text-xs rounded transition-colors cursor-pointer"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Entri Baru</span>
@@ -161,7 +208,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
                     <button
                       onClick={() => onNavigate('sheet')}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#107c41] hover:bg-[#0e6b37] text-white font-bold text-xs rounded transition-colors shadow-xs"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#107c41] hover:bg-[#0e6b37] text-white font-bold text-xs rounded transition-colors shadow-xs cursor-pointer"
                     >
                       <BookOpen className="w-4 h-4" />
                       <span>Buka Spreadsheet</span>
@@ -169,17 +216,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   </div>
                 </div>
 
-                {/* 6 Metrik KPI Finansial */}
+                {/* 6 Metrik KPI Finansial Riil (Dari Jurnal) */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center">
                   <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
-                    <span className="text-[10px] text-gray-500 uppercase font-semibold block">Gain / Return</span>
-                    <span className={`text-base font-bold font-mono mt-0.5 block ${Number(totalGainPercent) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {Number(totalGainPercent) >= 0 ? `+${totalGainPercent}%` : `${totalGainPercent}%`}
-                    </span>
-                  </div>
-
-                  <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
-                    <span className="text-[10px] text-gray-500 uppercase font-semibold block">Net Profit</span>
+                    <span className="text-[10px] text-gray-500 uppercase font-semibold block">Net Profit ($)</span>
                     <span className={`text-base font-bold font-mono mt-0.5 block ${stats.totalPnL >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {stats.totalPnL >= 0 ? `+$${stats.totalPnL}` : `-$${Math.abs(stats.totalPnL)}`}
                     </span>
@@ -212,18 +252,25 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       {stats.totalTrades}
                     </span>
                   </div>
+
+                  <div className="bg-gray-50 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-800 rounded p-2.5">
+                    <span className="text-[10px] text-gray-500 uppercase font-semibold block">Menang / Kalah</span>
+                    <span className="text-base font-bold font-mono text-gray-900 dark:text-white mt-0.5 block">
+                      {stats.winTrades}W / {stats.lossTrades}L
+                    </span>
+                  </div>
                 </div>
 
-                {/* Kurva Pertumbuhan Equity (Area Chart Menarik) */}
+                {/* Kurva Pertumbuhan Equity Riil */}
                 <div className="pt-2">
                   <div className="flex items-center justify-between text-xs font-bold mb-2">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-[#107c41] dark:text-emerald-400" />
-                      <span className="text-gray-800 dark:text-gray-200">Kurva Pertumbuhan Akumulasi Pips</span>
+                      <span className="text-gray-800 dark:text-gray-200">Kurva Akumulasi Pips</span>
                     </div>
                     <button 
                       onClick={() => onNavigate('analytics')}
-                      className="text-[#107c41] dark:text-emerald-400 hover:underline"
+                      className="text-[#107c41] dark:text-emerald-400 hover:underline cursor-pointer"
                     >
                       Lihat Detail Grafik &rarr;
                     </button>
@@ -248,12 +295,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
                           type="monotone"
                           dataKey="pips"
                           stroke="#107c41"
-                          strokeWidth={2.5}
+                          strokeWidth={2}
                           fill="url(#eqPipsGradExcel)"
                         />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
+                  {trades.length === 0 && (
+                    <p className="text-center text-[11px] text-gray-400 pt-1">
+                      Belum ada trade yang dicatat. Entri baru di spreadsheet akan langsung menggambar kurva akumulasi Anda di sini.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -270,7 +322,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
                 <button
                   onClick={() => onNavigate('sheet')}
-                  className="px-3 py-1 border border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 rounded text-xs font-semibold text-gray-700 dark:text-gray-300 transition-colors flex items-center gap-1.5"
+                  className="px-3 py-1 border border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 rounded text-xs font-semibold text-gray-700 dark:text-gray-300 transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <FileSpreadsheet className="w-3.5 h-3.5 text-[#107c41]" />
                   <span>Buka Semua di Sheet</span>
@@ -293,7 +345,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     {trades.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="py-8 text-center text-gray-500 text-xs">
-                          Belum ada transaksi tercatat. Klik "Buka Semua di Sheet" untuk mencatat.
+                          Belum ada transaksi tercatat. Klik "Buka Semua di Sheet" atau tombol "+ Entri Baru" di atas untuk mencatat.
                         </td>
                       </tr>
                     ) : (
@@ -351,7 +403,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           {/* ============================================================ */}
           <div className="lg:col-span-4 space-y-6">
             
-            {/* 1. KOTAK 'JAM PASAR' */}
+            {/* 1. KOTAK 'JAM PASAR' NYATA */}
             <div className="bg-white dark:bg-[#1a2232] border border-gray-200 dark:border-slate-800 rounded shadow-xs overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
                 <div 
@@ -414,7 +466,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
                 <button
                   onClick={() => onNavigate('news')}
-                  className="text-xs text-[#107c41] dark:text-emerald-400 hover:underline font-semibold"
+                  className="text-xs text-[#107c41] dark:text-emerald-400 hover:underline font-semibold cursor-pointer"
                 >
                   Lihat Semua
                 </button>

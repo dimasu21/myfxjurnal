@@ -58,8 +58,8 @@ export function setCurrentSessionUser(userId: string | null): void {
 export function registerUser(
   username: string, 
   email: string, 
-  broker = 'MetaTrader 5', 
-  initialBalance = 1000,
+  broker?: string, 
+  initialBalance?: number,
   password?: string
 ): { success: boolean; user?: UserAccount; error?: string } {
   const users = getAllUsers();
@@ -80,11 +80,11 @@ export function registerUser(
     username: cleanUsername,
     email: cleanEmail,
     password: password || undefined,
-    broker: broker || 'MetaTrader 5',
-    accountType: 'Real',
-    initialBalance: Number(initialBalance) || 1000,
+    broker: broker || undefined,
+    accountType: undefined,
+    initialBalance: initialBalance !== undefined ? Number(initialBalance) : undefined,
     currency: 'USD',
-    leverage: '1:500',
+    leverage: undefined,
     createdAt: new Date().toISOString(),
     trades: [], // Bersih kosong untuk user baru
   };

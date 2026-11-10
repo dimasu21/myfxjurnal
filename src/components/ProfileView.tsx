@@ -28,16 +28,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 }) => {
   const [username, setUsername] = useState(user.username || '');
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || '');
-  const [broker, setBroker] = useState(user.broker || 'MetaTrader 5');
-  const [accountType, setAccountType] = useState<'Real' | 'Demo'>(user.accountType || 'Real');
-  const [initialBalance, setInitialBalance] = useState(String(user.initialBalance || 1000));
-  const [leverage, setLeverage] = useState(user.leverage || '1:500');
+  const [broker, setBroker] = useState(user.broker || '');
+  const [accountType, setAccountType] = useState<string>(user.accountType || '');
+  const [initialBalance, setInitialBalance] = useState(user.initialBalance ? String(user.initialBalance) : '');
+  const [leverage, setLeverage] = useState(user.leverage || '');
   
-  // Myfxbook API sync integration
+  // Myfxbook link / account ID
   const [myfxEmail, setMyfxEmail] = useState(user.myfxbookEmail || '');
   const [myfxAccountId, setMyfxAccountId] = useState(user.myfxbookAccountId || '');
   const [isSavedSuccess, setIsSavedSuccess] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<string>('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -62,12 +61,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     const updated = updateUserProfile(user.id, {
       username: username.trim(),
       avatarUrl: avatarUrl.trim(),
-      broker,
-      accountType,
-      initialBalance: Number(initialBalance) || 1000,
-      leverage,
-      myfxbookEmail: myfxEmail.trim(),
-      myfxbookAccountId: myfxAccountId.trim(),
+      broker: broker.trim() || undefined,
+      accountType: (accountType as any) || undefined,
+      initialBalance: initialBalance ? Number(initialBalance) : undefined,
+      leverage: leverage.trim() || undefined,
+      myfxbookEmail: myfxEmail.trim() || undefined,
+      myfxbookAccountId: myfxAccountId.trim() || undefined,
     });
 
     if (updated) {
@@ -75,17 +74,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       setIsSavedSuccess(true);
       setTimeout(() => setIsSavedSuccess(false), 2500);
     }
-  };
-
-  const handleTestMyfxSync = () => {
-    if (!myfxEmail || !myfxAccountId) {
-      setSyncStatus('Harap masukkan Email & Account ID Myfxbook Anda.');
-      return;
-    }
-    setSyncStatus('Menghubungkan ke API Myfxbook...');
-    setTimeout(() => {
-      setSyncStatus('✓ Akun Myfxbook berhasil disinkronkan ke portofolio Anda!');
-    }, 1200);
   };
 
   return (
@@ -222,13 +210,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
               <div className="space-y-1.5">
                 <label className="font-bold text-gray-700 dark:text-slate-300 block">
-                  Tipe Akun
+                  Tipe Akun (Opsional)
                 </label>
                 <select
                   value={accountType}
-                  onChange={(e) => setAccountType(e.target.value as any)}
+                  onChange={(e) => setAccountType(e.target.value)}
                   className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-900 dark:text-white focus:outline-none"
                 >
+                  <option value="">-- Pilih Tipe Akun --</option>
                   <option value="Real">Real Account</option>
                   <option value="Demo">Demo Account</option>
                 </select>
@@ -236,25 +225,27 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
               <div className="space-y-1.5">
                 <label className="font-bold text-gray-700 dark:text-slate-300 block">
-                  Modal Awal ($)
+                  Modal Awal ($) (Opsional)
                 </label>
                 <input
                   type="number"
                   value={initialBalance}
                   onChange={(e) => setInitialBalance(e.target.value)}
+                  placeholder="misal: 500"
                   className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-900 dark:text-white font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="font-bold text-gray-700 dark:text-slate-300 block">
-                  Leverage Akun
+                  Leverage Akun (Opsional)
                 </label>
                 <select
                   value={leverage}
                   onChange={(e) => setLeverage(e.target.value)}
                   className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-900 dark:text-white focus:outline-none"
                 >
+                  <option value="">-- Pilih Leverage --</option>
                   <option value="1:100">1:100</option>
                   <option value="1:200">1:200</option>
                   <option value="1:500">1:500</option>
@@ -265,16 +256,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
           </div>
 
-          {/* SECTION: INTEGRASI MYFXBOOK API */}
+          {/* SECTION: INTEGRASI MYFXBOOK (OPSIONAL) */}
           <div className="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                   <Link2 className="w-4 h-4 text-emerald-600" />
-                  <span>Koneksi Sinkronisasi Myfxbook API</span>
+                  <span>Akun Myfxbook (Opsional)</span>
                 </h4>
                 <p className="text-[11px] text-gray-500">
-                  Sinkronkan portofolio publik Myfxbook Anda ke dashboard ini
+                  Tautkan info akun Myfxbook publik Anda jika ada
                 </p>
               </div>
               <a
@@ -311,20 +302,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 />
               </div>
             </div>
-
-            {syncStatus && (
-              <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 p-2.5 rounded border border-emerald-200 dark:border-emerald-800">
-                {syncStatus}
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={handleTestMyfxSync}
-              className="px-3.5 py-1.5 rounded bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-800 dark:text-slate-200 text-xs font-semibold transition-colors"
-            >
-              Uji & Hubungkan Akun Myfxbook
-            </button>
           </div>
 
           {/* Action Bar */}
