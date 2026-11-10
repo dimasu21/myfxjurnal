@@ -179,126 +179,49 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
     <header className={`${isDarkMode ? 'bg-[#0f172a] border-b border-slate-700' : 'bg-excel-green'} text-white shadow-md select-none sticky top-0 z-30 transition-colors`}>
       {/* Top Title Bar */}
       <div className="px-3 py-1.5 flex items-center justify-between border-b border-white/10 text-xs sm:text-sm">
-        {/* Document Title Area (CRUD Judul) */}
-        <div className="flex items-center gap-2 overflow-hidden max-w-[55%] sm:max-w-md">
-          <div className="bg-white/20 p-1 rounded flex items-center justify-center shrink-0">
-            <FileSpreadsheet className="w-4 h-4 text-white" />
-          </div>
-
-          {isEditingTitle ? (
-            <div className="flex items-center gap-1">
-              <input
-                ref={titleInputRef}
-                type="text"
-                value={titleInput}
-                onChange={(e) => setTitleInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="bg-white text-gray-900 font-semibold px-2 py-0.5 rounded text-xs focus:outline-none ring-2 ring-yellow-400"
-                placeholder="Nama dokumen..."
-              />
-              <button
-                onClick={handleSaveTitle}
-                className="p-1 hover:bg-white/20 rounded text-emerald-200 hover:text-white"
-                title="Simpan nama"
-              >
-                <Check className="w-3.5 h-3.5 text-yellow-300" />
-              </button>
-              <button
-                onClick={handleCancelTitle}
-                className="p-1 hover:bg-white/20 rounded text-rose-200 hover:text-white"
-                title="Batal"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ) : (
-            <div 
-              onClick={() => setIsEditingTitle(true)}
-              className="group flex items-center gap-1.5 cursor-pointer py-0.5 px-1.5 rounded hover:bg-white/10 transition-colors truncate"
-              title="Klik untuk mengubah nama lembar kerja (CRUD Judul)"
-            >
-              <span className="font-semibold tracking-wide truncate">
-                {documentTitle}
-              </span>
-              <Edit2 className="w-3 h-3 text-emerald-200 opacity-60 group-hover:opacity-100 transition-opacity shrink-0" />
-            </div>
-          )}
+        {/* Logo Area (FX Logo ala Myfxbook) */}
+        <div className="flex items-center gap-2.5">
+          <img
+            src="/fx-logo.png"
+            alt="Fx"
+            className="h-8 w-auto object-contain cursor-pointer transition-transform active:scale-95"
+            onClick={onSwitchToSheet}
+            title="MyFX Journal"
+          />
 
           {/* Indikator Status Save */}
           {hasUnsavedChanges && (
-            <span className="inline-flex items-center gap-1 text-[11px] bg-amber-400 text-gray-900 font-bold px-2 py-0.5 rounded shadow-xs shrink-0 animate-pulse">
-              <AlertCircle className="w-3 h-3 text-amber-900" /> Belum Disimpan
+            <span className="inline-flex items-center gap-1 text-[10px] bg-amber-400 text-gray-900 font-bold px-2 py-0.5 rounded shadow-xs shrink-0 animate-pulse">
+              <AlertCircle className="w-3 h-3 text-amber-900" />
+              <span className="hidden sm:inline">Belum Disimpan</span>
             </span>
           )}
           {isSaveSuccess && !hasUnsavedChanges && (
-            <span className="inline-flex items-center gap-1 text-[11px] bg-emerald-800 text-emerald-200 px-2 py-0.5 rounded font-medium shrink-0">
-              <CheckCircle2 className="w-3 h-3 text-emerald-300" /> Tersimpan
+            <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-800 text-emerald-200 px-2 py-0.5 rounded font-medium shrink-0">
+              <CheckCircle2 className="w-3 h-3 text-emerald-300" />
+              <span className="hidden sm:inline">Tersimpan</span>
             </span>
           )}
         </div>
 
-        {/* Action Buttons Top Right */}
+        {/* Action Buttons Top Right: Dark Mode Toggle */}
         <div className="flex items-center gap-2">
-          {/* Fitur #9: Dark Mode Toggle */}
           <button
             onClick={onToggleDarkMode}
-            className="flex items-center gap-1 px-2 py-1 rounded bg-white/15 hover:bg-white/25 text-white transition-colors text-xs font-semibold"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white transition-colors text-xs font-semibold"
             title={isDarkMode ? 'Beralih ke Tema Excel Terang' : 'Beralih ke Tema TradingView Dark'}
           >
             {isDarkMode ? (
               <>
                 <Sun className="w-3.5 h-3.5 text-yellow-300" />
-                <span className="hidden sm:inline">Light</span>
+                <span className="text-[11px]">Light</span>
               </>
             ) : (
               <>
                 <Moon className="w-3.5 h-3.5 text-slate-200" />
-                <span className="hidden sm:inline">Dark</span>
+                <span className="text-[11px]">Dark</span>
               </>
             )}
-          </button>
-
-          {/* View Toggle on Mobile */}
-          <div className="flex bg-black/25 p-0.5 rounded text-xs">
-            <button
-              onClick={() => {
-                if (onSwitchToSheet) onSwitchToSheet();
-                setActiveView('table');
-              }}
-              className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                activePageView === 'sheet' && activeView === 'table' 
-                  ? 'bg-white text-emerald-800 font-bold shadow-xs' 
-                  : 'text-emerald-100 hover:text-white'
-              }`}
-              title="Tampilan Tabel Excel"
-            >
-              <TableIcon className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Sheet Excel</span>
-            </button>
-            <button
-              onClick={() => {
-                if (onSwitchToSheet) onSwitchToSheet();
-                setActiveView('cards');
-              }}
-              className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                activePageView === 'sheet' && activeView === 'cards' 
-                  ? 'bg-white text-emerald-800 font-bold shadow-xs' 
-                  : 'text-emerald-100 hover:text-white'
-              }`}
-              title="Tampilan Kartu Ringkas (Cocok di HP)"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Mode Kartu HP</span>
-            </button>
-          </div>
-
-          {/* Tombol Tambah Entry Baru */}
-          <button
-            onClick={onOpenNewModal}
-            className="flex items-center gap-1.5 bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold px-3 py-1.5 rounded text-xs sm:text-sm transition-all shadow-sm active:scale-95"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Entry Baru</span>
           </button>
         </div>
       </div>

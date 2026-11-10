@@ -77,7 +77,7 @@ export default function App() {
   type PageView = 'sheet' | 'lot-calc' | 'calendar' | 'heatmap' | 'compounding' | 'analytics' | 'chart' | 'statement';
   const [activePageView, setActivePageView] = useState<PageView>('sheet');
 
-  // Active view: 'cards' default di Mobile (< 768px ala Myfxbook), 'table' default di Desktop
+  // Active view: otomatis 'cards' di HP (< 768px), otomatis 'table' (sheet) di Desktop/Website (>= 768px)
   const [activeView, setActiveView] = useState<'table' | 'cards'>(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth < 768 ? 'cards' : 'table';
@@ -85,20 +85,19 @@ export default function App() {
     return 'table';
   });
 
-  // Listener resize otomatis untuk transisi responsif
+  // Listener resize otomatis: HP otomatis kartu, desktop otomatis sheet
   useEffect(() => {
     const handleResize = () => {
-      // Jika user pertama kali buka di HP, otomatis beralih ke kartu Myfxbook
-      if (window.innerWidth < 768 && activeView === 'table') {
-        const hasManuallyChosen = sessionStorage.getItem('user_view_preference');
-        if (!hasManuallyChosen) {
-          setActiveView('cards');
-        }
+      if (window.innerWidth < 768) {
+        setActiveView('cards');
+      } else {
+        setActiveView('table');
       }
     };
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [activeView]);
+  }, []);
 
   // Sheet Tabs: 'all' | 'win' | 'loss' | 'summary' | 'history'
   const [activeSheet, setActiveSheet] = useState<'all' | 'win' | 'loss' | 'summary' | 'history'>('all');
@@ -547,12 +546,13 @@ export default function App() {
           />
         )}
 
-        {/* Floating Action Button (FAB) for Mobile Quick Add */}
+        {/* Floating Action Button (FAB) for Quick Add (Mobile & Website Desktop) */}
         {activePageView === 'sheet' && activeSheet !== 'history' && (
           <button
             onClick={handleAddNew}
             aria-label="Tambah Trade Baru"
-            className="md:hidden fixed bottom-16 right-4 z-30 bg-excel-green hover:bg-excel-darkgreen text-white p-3.5 rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+            title="Tambah Trade Baru"
+            className="fixed bottom-16 md:bottom-12 right-4 md:right-6 z-30 bg-emerald-600 hover:bg-emerald-700 text-white p-3.5 md:p-4 rounded-full shadow-xl flex items-center justify-center active:scale-90 hover:scale-105 transition-all group"
           >
             <Plus className="w-6 h-6 stroke-[2.5]" />
           </button>

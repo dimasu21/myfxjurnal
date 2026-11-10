@@ -185,45 +185,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               </button>
             </div>
 
-            {/* Switch Mode: Kartu HP vs Sheet Excel */}
-            <div className="bg-gray-50 dark:bg-slate-800/60 p-3 rounded-xl border border-gray-200 dark:border-slate-700 space-y-2">
-              <span className="text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider block">
-                Mode Tampilan Data
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => {
-                    setActiveView('cards');
-                    setActivePageView('sheet');
-                    setIsMenuOpen(false);
-                  }}
-                  className={`py-2 px-3 text-xs font-bold rounded-lg border flex items-center justify-center gap-1.5 transition-all ${
-                    activeView === 'cards'
-                      ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
-                      : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700'
-                  }`}
-                >
-                  <LayoutGrid className="w-3.5 h-3.5" />
-                  <span>Mode Kartu HP (Myfxbook)</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveView('table');
-                    setActivePageView('sheet');
-                    setIsMenuOpen(false);
-                  }}
-                  className={`py-2 px-3 text-xs font-bold rounded-lg border flex items-center justify-center gap-1.5 transition-all ${
-                    activeView === 'table'
-                      ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
-                      : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700'
-                  }`}
-                >
-                  <TableIcon className="w-3.5 h-3.5" />
-                  <span>Mode Spreadsheet Excel</span>
-                </button>
-              </div>
-            </div>
-
             {/* Fitur Analisa Tambahan */}
             <div className="space-y-1">
               <span className="text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
@@ -301,10 +262,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               </button>
             </div>
 
-            {/* Ekspor & Impor */}
+            {/* Ekspor & Impor (Format Sheet Spreadsheet Otomatis) */}
             <div className="space-y-1 pt-2 border-t border-gray-200 dark:border-slate-800">
               <span className="text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
-                Ekspor & Backup
+                Ekspor Lembar Kerja (Format Sheet)
               </span>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <button
@@ -313,9 +274,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     setIsMenuOpen(false);
                   }}
                   className="p-2 rounded-lg border border-gray-200 dark:border-slate-700 text-left flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-800"
+                  title="Ekspor seluruh data ke file spreadsheet Excel (.xlsx)"
                 >
                   <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Export Excel</span>
+                  <span>Sheet Excel (.xlsx)</span>
                 </button>
                 <button
                   onClick={() => {
@@ -323,9 +285,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     setIsMenuOpen(false);
                   }}
                   className="p-2 rounded-lg border border-gray-200 dark:border-slate-700 text-left flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-800"
+                  title="Ekspor tabel baris trade ke PDF"
                 >
                   <FileText className="w-3.5 h-3.5 text-rose-600" />
-                  <span>Export PDF</span>
+                  <span>Tabel PDF</span>
                 </button>
                 <button
                   onClick={() => {
@@ -333,9 +296,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     setIsMenuOpen(false);
                   }}
                   className="p-2 rounded-lg border border-gray-200 dark:border-slate-700 text-left flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-800"
+                  title="Ekspor ke CSV spreadsheet"
                 >
                   <Download className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Export CSV</span>
+                  <span>Sheet CSV</span>
                 </button>
                 <button
                   onClick={() => {
@@ -343,6 +307,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     setIsMenuOpen(false);
                   }}
                   className="p-2 rounded-lg border border-gray-200 dark:border-slate-700 text-left flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-800"
+                  title="Cadangkan database data trade"
                 >
                   <Database className="w-3.5 h-3.5 text-purple-600" />
                   <span>Backup JSON</span>
