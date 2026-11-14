@@ -601,6 +601,29 @@ export default function App() {
         ) : activePageView === 'lot-calc' ? (
           <LotCalculatorView
             onBack={() => setActivePageView('sheet')}
+            trades={trades}
+            tickers={tickers}
+            user={currentUser}
+            onApplyToTrade={(prefill) => {
+              setEditingTrade({
+                id: '',
+                tanggal: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+                pair: prefill.pair,
+                posisi: prefill.posisi,
+                entry: prefill.entry,
+                sl: prefill.sl,
+                tp: prefill.tp,
+                lot: prefill.lot,
+                pips: 0,
+                status: 'OPEN',
+                alasan: 'Manajemen risiko lot terukur',
+                emosi: 'Disiplin',
+                evaluasi: '',
+                riskReward: prefill.riskReward || '1:2',
+              } as Trade);
+              setIsModalOpen(true);
+              setActivePageView('sheet');
+            }}
           />
         ) : activePageView === 'calendar' ? (
           <EconomicCalendarView

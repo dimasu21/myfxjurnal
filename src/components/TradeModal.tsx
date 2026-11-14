@@ -177,7 +177,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     const status = pipsNum > 0 ? 'WIN' : pipsNum < 0 ? 'LOSS' : 'BE';
 
     const newTrade: Trade = {
-      id: editingTrade ? editingTrade.id : `tr-${Date.now()}`,
+      id: editingTrade?.id ? editingTrade.id : `tr-${Date.now()}`,
       tanggal,
       pair: activePair,
       posisi,
