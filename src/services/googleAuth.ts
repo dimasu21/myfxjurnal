@@ -2,14 +2,15 @@ import { UserAccount } from '../types/user';
 import { Trade } from '../types/trade';
 import { getAllUsers, saveUsers, setCurrentSessionUser, saveTradesForCurrentUser } from '../utils/authStorage';
 
+const DEFAULT_GOOGLE_CLIENT_ID = '826447209342-g49dmpplk4nmol2ahs7f1guv0umnek5a.apps.googleusercontent.com';
 const GOOGLE_CLIENT_ID_STORAGE_KEY = 'myfx_google_custom_client_id';
 
-// Ambil Google Client ID dari env atau custom localStorage
+// Ambil Google Client ID dari env, storage, atau default fallback
 export function getGoogleClientId(): string {
   const metaEnv = (import.meta as any).env || {};
   const envId = metaEnv.VITE_GOOGLE_CLIENT_ID || '';
   const storedId = typeof window !== 'undefined' ? localStorage.getItem(GOOGLE_CLIENT_ID_STORAGE_KEY) || '' : '';
-  return envId || storedId;
+  return envId || storedId || DEFAULT_GOOGLE_CLIENT_ID;
 }
 
 export function saveGoogleClientId(clientId: string): void {
