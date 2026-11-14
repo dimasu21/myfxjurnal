@@ -581,6 +581,10 @@ export default function App() {
         ) : activePageView === 'news' ? (
           <RealtimeNewsView
             onBack={() => setActivePageView('home')}
+            onOpenChart={(pair) => {
+              setChartPair(pair);
+              setActivePageView('chart');
+            }}
           />
         ) : activePageView === 'profile' ? (
           <ProfileView

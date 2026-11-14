@@ -256,13 +256,13 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
             {onOpenNews && (
               <button
                 onClick={onOpenNews}
-                className={`px-3 py-1 rounded text-xs font-semibold transition-all shrink-0 ${
+                className={`px-3 py-1 rounded text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                   activePageView === 'news'
                     ? 'bg-white text-[#107c41] font-bold shadow-xs'
                     : 'bg-white/10 hover:bg-white/20 text-white'
                 }`}
               >
-                Berita Live
+                Berita
               </button>
             )}
 

@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { UserAccount } from '../types/user';
 import { Trade } from '../types/trade';
 import { calculateStats } from '../utils/calculations';
-import { generateRealtimeNews } from '../utils/newsService';
+import { generateRealtimeNews, ForexNewsItem } from '../utils/newsService';
 import { 
   BookOpen, 
   TrendingUp, 
@@ -52,7 +52,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
     });
   }, [trades]);
 
-  const latestNews = useMemo(() => generateRealtimeNews().slice(0, 4), []);
+  const latestNews = useMemo<ForexNewsItem[]>(() => generateRealtimeNews().slice(0, 4), []);
 
   // Jam Pasar Nyata dihitung dari jam UTC saat ini
   const currentUtcHour = new Date().getUTCHours();
@@ -410,7 +410,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
 
               <div className="p-3 divide-y divide-gray-100 dark:divide-slate-800">
-                {latestNews.slice(0, 3).map((item) => (
+                {latestNews.slice(0, 3).map((item: ForexNewsItem) => (
                   <div 
                     key={item.id} 
                     onClick={() => onNavigate('news')}
