@@ -6,22 +6,15 @@ import {
 } from '../utils/newsService';
 import { 
   ArrowLeft, 
-  Newspaper, 
+  RefreshCw, 
+  Search, 
+  X, 
   ExternalLink, 
-  TrendingUp, 
-  TrendingDown, 
-  Minus, 
-  RefreshCw,
-  Search,
-  Filter,
-  Clock,
-  LineChart,
-  X,
-  Compass,
-  Flame,
-  Globe,
+  LineChart, 
+  ChevronDown,
+  ChevronUp,
   SlidersHorizontal,
-  ChevronRight
+  Flame
 } from 'lucide-react';
 import { SiteFooter } from './SiteFooter';
 
@@ -30,16 +23,16 @@ interface RealtimeNewsViewProps {
   onOpenChart?: (pair: string) => void;
 }
 
-const CURRENCY_TAGS = [
-  { id: 'ALL', label: 'Semua Instrumen' },
-  { id: 'USD', label: 'USD (Dollar AS)' },
-  { id: 'XAU', label: 'XAU (Emas Spot)' },
-  { id: 'EUR', label: 'EUR (Euro)' },
-  { id: 'GBP', label: 'GBP (Sterling)' },
-  { id: 'JPY', label: 'JPY (Yen Jepang)' },
-  { id: 'BTC', label: 'BTC (Bitcoin)' },
-  { id: 'AUD', label: 'AUD (Aussie)' },
-  { id: 'CAD', label: 'CAD (Loonie)' },
+const INSTRUMENT_TABS = [
+  { id: 'ALL', label: 'Semua' },
+  { id: 'USD', label: 'USD' },
+  { id: 'XAU', label: 'XAU' },
+  { id: 'EUR', label: 'EUR' },
+  { id: 'GBP', label: 'GBP' },
+  { id: 'JPY', label: 'JPY' },
+  { id: 'BTC', label: 'BTC' },
+  { id: 'AUD', label: 'AUD' },
+  { id: 'CAD', label: 'CAD' },
 ];
 
 const CATEGORIES = [
@@ -55,27 +48,26 @@ export const RealtimeNewsView: React.FC<RealtimeNewsViewProps> = ({
   onBack, 
   onOpenChart 
 }) => {
-  // State berita
   const [news, setNews] = useState<ForexNewsItem[]>(CURATED_MARKET_NEWS);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<string>('');
   
-  // State Filter & Pencarian
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  // State Filter
   const [selectedCurrency, setSelectedCurrency] = useState<string>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua Kategori');
-  const [selectedSentiment, setSelectedSentiment] = useState<'ALL' | 'Bullish' | 'Bearish' | 'Netral'>('ALL');
+  const [selectedSentiment, setSelectedSentiment] = useState<'ALL' | 'Bullish' | 'Bearish'>('ALL');
+  const [selectedImpact, setSelectedImpact] = useState<'ALL' | 'HIGH' | 'MED' | 'LOW'>('ALL');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Load Berita Awal & Auto-Refresh per 60 detik
+  // Expand row state untuk melihat summary detail
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   useEffect(() => {
-    loadLiveNews();
-    const interval = setInterval(() => {
-      loadLiveNews();
-    }, 60000);
+    loadNews();
+    const interval = setInterval(loadNews, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  // Keyboard shortcut Esc
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onBack();
@@ -84,7 +76,7 @@ export const RealtimeNewsView: React.FC<RealtimeNewsViewProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onBack]);
 
-  const loadLiveNews = async () => {
+  const loadNews = async () => {
     setIsLoading(true);
     try {
       const data = await fetchLiveMarketNews();
@@ -92,527 +84,367 @@ export const RealtimeNewsView: React.FC<RealtimeNewsViewProps> = ({
         setNews(data);
       }
     } catch (e) {
-      console.warn('Gagal memperbarui berita:', e);
+      console.warn('Gagal memuat feed:', e);
     } finally {
       setIsLoading(false);
       const now = new Date();
       setLastUpdated(
-        now.toLocaleTimeString('id-ID', {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-        }) + ' WIB'
+        now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) + ' WIB'
       );
     }
   };
 
-  // Filter Berita Cerdas
   const filteredNews = useMemo(() => {
     return news.filter((item) => {
-      // 1. Filter Mata Uang / Instrumen
-      if (selectedCurrency !== 'ALL' && item.currency !== selectedCurrency) {
-        return false;
-      }
+      if (selectedCurrency !== 'ALL' && item.currency !== selectedCurrency) return false;
+      if (selectedCategory !== 'Semua Kategori' && item.category !== selectedCategory) return false;
+      if (selectedSentiment !== 'ALL' && item.sentiment !== selectedSentiment) return false;
+      if (selectedImpact !== 'ALL' && item.impact !== selectedImpact) return false;
 
-      // 2. Filter Kategori
-      if (selectedCategory !== 'Semua Kategori' && item.category !== selectedCategory) {
-        return false;
-      }
-
-      // 3. Filter Sentimen
-      if (selectedSentiment !== 'ALL' && item.sentiment !== selectedSentiment) {
-        return false;
-      }
-
-      // 4. Pencarian Teks Bebas
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        const matchTitle = item.title.toLowerCase().includes(q);
-        const matchSummary = item.summary.toLowerCase().includes(q);
-        const matchSource = item.source.toLowerCase().includes(q);
-        const matchCurrency = item.currency.toLowerCase().includes(q);
-        const matchCategory = item.category.toLowerCase().includes(q);
-        if (!matchTitle && !matchSummary && !matchSource && !matchCurrency && !matchCategory) {
-          return false;
-        }
+        const match = 
+          item.title.toLowerCase().includes(q) ||
+          item.summary.toLowerCase().includes(q) ||
+          item.source.toLowerCase().includes(q) ||
+          item.pair.toLowerCase().includes(q);
+        if (!match) return false;
       }
-
       return true;
     });
-  }, [news, selectedCurrency, selectedCategory, selectedSentiment, searchQuery]);
+  }, [news, selectedCurrency, selectedCategory, selectedSentiment, selectedImpact, searchQuery]);
 
-  // Barometer Sentimen Pasar dari berita yang tampil
-  const sentimentStats = useMemo(() => {
-    let bull = 0;
-    let bear = 0;
-    let net = 0;
-    const total = filteredNews.length || 1;
+  const hasActiveFilters = 
+    selectedCurrency !== 'ALL' || 
+    selectedCategory !== 'Semua Kategori' || 
+    selectedSentiment !== 'ALL' || 
+    selectedImpact !== 'ALL' || 
+    Boolean(searchQuery.trim());
 
-    filteredNews.forEach((n) => {
-      if (n.sentiment === 'Bullish') bull++;
-      else if (n.sentiment === 'Bearish') bear++;
-      else net++;
-    });
-
-    return {
-      bullCount: bull,
-      bearCount: bear,
-      netCount: net,
-      bullPct: Math.round((bull / total) * 100),
-      bearPct: Math.round((bear / total) * 100),
-      netPct: Math.round((net / total) * 100),
-    };
-  }, [filteredNews]);
-
-  // Berita Utama (Hero Headline)
-  const featuredItem = useMemo(() => {
-    if (selectedCurrency === 'ALL' && !searchQuery.trim()) {
-      return filteredNews.find((n) => n.currency === 'XAU' || n.isFeatured) || filteredNews[0];
-    }
-    return null;
-  }, [filteredNews, selectedCurrency, searchQuery]);
-
-  // Sisa berita non-hero
-  const displayFeed = useMemo(() => {
-    if (featuredItem && selectedCurrency === 'ALL' && !searchQuery.trim()) {
-      return filteredNews.filter((n) => n.id !== featuredItem.id);
-    }
-    return filteredNews;
-  }, [filteredNews, featuredItem, selectedCurrency, searchQuery]);
-
-  // Map Badge Warna Mata Uang
-  const getCurrencyBadgeStyle = (curr: string) => {
-    switch (curr) {
-      case 'XAU':
-        return 'bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border-amber-300 dark:border-amber-700';
-      case 'USD':
-        return 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700';
-      case 'EUR':
-        return 'bg-blue-100 text-blue-900 dark:bg-blue-950/80 dark:text-blue-300 border-blue-300 dark:border-blue-700';
-      case 'GBP':
-        return 'bg-purple-100 text-purple-900 dark:bg-purple-950/80 dark:text-purple-300 border-purple-300 dark:border-purple-700';
-      case 'JPY':
-        return 'bg-rose-100 text-rose-900 dark:bg-rose-950/80 dark:text-rose-300 border-rose-300 dark:border-rose-700';
-      case 'BTC':
-        return 'bg-orange-100 text-orange-900 dark:bg-orange-950/80 dark:text-orange-300 border-orange-300 dark:border-orange-700';
-      default:
-        return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700';
-    }
-  };
-
-  // Navigasi ke Chart Pair yang relevan
-  const handleJumpToChart = (curr: string) => {
-    if (!onOpenChart) return;
-    const pairMap: Record<string, string> = {
-      XAU: 'XAU/USD',
-      USD: 'EUR/USD',
-      EUR: 'EUR/USD',
-      GBP: 'GBP/USD',
-      JPY: 'USD/JPY',
-      AUD: 'AUD/USD',
-      CAD: 'USD/CAD',
-      BTC: 'BTC/USD',
-    };
-    const targetPair = pairMap[curr] || 'EUR/USD';
-    onOpenChart(targetPair);
+  const resetFilters = () => {
+    setSelectedCurrency('ALL');
+    setSelectedCategory('Semua Kategori');
+    setSelectedSentiment('ALL');
+    setSelectedImpact('ALL');
+    setSearchQuery('');
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-[#f4f7f9] dark:bg-[#0b1120] text-gray-900 dark:text-slate-100 overflow-y-auto">
+    <div className="flex-1 flex flex-col bg-[#0b0f17] text-slate-200 overflow-y-auto font-sans select-text">
+      
       {/* ============================================================ */}
-      {/* TOP BAR HEADER (BERSIH & PROFESIONAL) */}
+      {/* 1. COMPACT TERMINAL HEADER (No bloated badge, No loud green) */}
       {/* ============================================================ */}
-      <div className="bg-white dark:bg-[#0f172a] border-b border-gray-200 dark:border-slate-800 px-4 py-3 sm:px-6 flex items-center justify-between gap-3 sticky top-0 z-20 shadow-xs">
+      <div className="bg-[#0e1420] border-b border-[#1e293b] px-4 py-2.5 sm:px-6 flex items-center justify-between gap-3 sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-300 transition-colors cursor-pointer"
-            title="Kembali ke Lembar Kerja (Esc)"
+            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            title="Kembali ke Sheet (Esc)"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
           </button>
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-[#107c41] dark:text-emerald-400">
-                <Newspaper className="w-4 h-4" />
-              </div>
-              <h1 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
-                Warta Pasar & Berita Forex
-              </h1>
-              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border border-gray-200 dark:border-slate-700">
-                <Globe className="w-3 h-3 text-emerald-600" />
-                Agregator Global
-              </span>
-            </div>
-            <p className="text-[11px] text-gray-500 dark:text-slate-400 hidden sm:block">
-              Analisis fundamental, sentimen suku bunga bank sentral & pergerakan komoditas
-            </p>
+
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-bold text-white tracking-wide uppercase font-mono">
+              Market Wire
+            </h1>
+            <span className="text-slate-500 text-xs hidden sm:inline">|</span>
+            <span className="text-xs text-slate-400 hidden sm:inline">
+              Feed Makroekonomi & Berita Pasar Finansial
+            </span>
           </div>
         </div>
 
-        {/* Sync Status & Refresh Button */}
-        <div className="flex items-center gap-2">
+        {/* Sync Status & Minimal Refresh */}
+        <div className="flex items-center gap-2 text-xs">
           {lastUpdated && (
-            <span className="text-[11px] font-mono text-gray-500 dark:text-slate-400 hidden sm:inline">
-              Update: {lastUpdated}
+            <span className="font-mono text-slate-400 text-[11px] tabular-nums">
+              Sync: {lastUpdated}
             </span>
           )}
           <button
-            onClick={loadLiveNews}
+            onClick={loadNews}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#107c41] hover:bg-[#0e6b37] text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs disabled:opacity-60"
-            title="Segarkan feed berita pasar"
+            className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+            title="Segarkan feed sekarang"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">{isLoading ? 'Memperbarui...' : 'Segarkan'}</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-slate-200' : ''}`} />
           </button>
         </div>
       </div>
 
       {/* ============================================================ */}
-      {/* MAIN CONTAINER */}
+      {/* 2. SINGLE INTEGRATED TOOLBAR (All controls in ONE unified bar) */}
       {/* ============================================================ */}
-      <div className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 pb-20 md:pb-8 space-y-5">
-        
-        {/* ============================================================ */}
-        {/* BAROMETER SENTIMEN PASAR (INTERACTIVE MARKET BIAS) */}
-        {/* ============================================================ */}
-        <div className="bg-white dark:bg-[#111827] rounded-xl p-4 border border-gray-200 dark:border-slate-800 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2.5">
-            <div className="flex items-center gap-2">
-              <Compass className="w-4 h-4 text-[#107c41] dark:text-emerald-400" />
-              <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
-                Barometer Sentimen Berita Pasar ({filteredNews.length} Analisis)
-              </span>
-            </div>
-            <div className="flex items-center gap-4 text-xs font-mono">
-              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
-                <TrendingUp className="w-3.5 h-3.5" /> Bullish: {sentimentStats.bullPct}%
-              </span>
-              <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400 font-bold">
-                <TrendingDown className="w-3.5 h-3.5" /> Bearish: {sentimentStats.bearPct}%
-              </span>
-              <span className="flex items-center gap-1 text-gray-500 dark:text-slate-400 font-semibold">
-                <Minus className="w-3.5 h-3.5" /> Netral: {sentimentStats.netPct}%
-              </span>
-            </div>
+      <div className="bg-[#111726] border-b border-[#1e293b] px-4 sm:px-6 py-2 sticky top-[45px] z-20">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+          
+          {/* Instrument Underline Tabs */}
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-1 md:pb-0 text-xs font-mono">
+            {INSTRUMENT_TABS.map((tab) => {
+              const isActive = selectedCurrency === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedCurrency(tab.id)}
+                  className={`px-2.5 py-1 text-xs font-bold transition-all shrink-0 cursor-pointer border-b-2 ${
+                    isActive
+                      ? 'border-emerald-500 text-white font-extrabold'
+                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Progress Bar Sentimen Komposit */}
-          <div className="w-full h-2 rounded-full bg-gray-100 dark:bg-slate-800 overflow-hidden flex">
-            <div 
-              style={{ width: `${sentimentStats.bullPct}%` }} 
-              className="bg-emerald-500 transition-all duration-500" 
-              title={`Bullish ${sentimentStats.bullPct}%`}
-            />
-            <div 
-              style={{ width: `${sentimentStats.bearPct}%` }} 
-              className="bg-rose-500 transition-all duration-500" 
-              title={`Bearish ${sentimentStats.bearPct}%`}
-            />
-            <div 
-              style={{ width: `${sentimentStats.netPct}%` }} 
-              className="bg-slate-300 dark:bg-slate-600 transition-all duration-500" 
-              title={`Netral ${sentimentStats.netPct}%`}
-            />
-          </div>
-        </div>
+          {/* Right Toolbar Controls (Search + Dropdown Kategori + Sentiment Segmented) */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari warta (Fed, CPI, Emas)..."
+                className="w-40 sm:w-52 pl-8 pr-6 py-1 bg-[#090d16] border border-[#243048] rounded text-xs text-white placeholder-slate-500 focus:outline-none focus:border-slate-400"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
 
-        {/* ============================================================ */}
-        {/* PENCARIAN & FILTER MULTI-DIMENSI */}
-        {/* ============================================================ */}
-        <div className="bg-white dark:bg-[#111827] rounded-xl p-4 border border-gray-200 dark:border-slate-800 shadow-xs space-y-3">
-          {/* Search Box Input */}
-          <div className="relative">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari isu berita makro, The Fed, CPI, Emas, Suku Bunga, atau institusi..."
-              className="w-full pl-10 pr-9 py-2.5 text-xs sm:text-sm bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#107c41]"
-            />
-            {searchQuery && (
+            {/* Kategori Dropdown */}
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="bg-[#090d16] border border-[#243048] text-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:border-slate-400 cursor-pointer"
+            >
+              {CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+
+            {/* Sentiment Segmented Control */}
+            <div className="inline-flex rounded border border-[#243048] bg-[#090d16] p-0.5 text-xs font-mono">
               <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-white"
+                onClick={() => setSelectedSentiment('ALL')}
+                className={`px-2 py-0.5 rounded text-[11px] font-bold transition-colors cursor-pointer ${
+                  selectedSentiment === 'ALL'
+                    ? 'bg-slate-700 text-white'
+                    : 'text-slate-400 hover:text-white'
+                }`}
               >
-                <X className="w-3.5 h-3.5" />
+                Semua
+              </button>
+              <button
+                onClick={() => setSelectedSentiment('Bullish')}
+                className={`px-2 py-0.5 rounded text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-0.5 ${
+                  selectedSentiment === 'Bullish'
+                    ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                    : 'text-slate-400 hover:text-emerald-400'
+                }`}
+                title="Hanya sentimen Bullish"
+              >
+                <span className="text-emerald-400">▲</span>
+                <span>Bull</span>
+              </button>
+              <button
+                onClick={() => setSelectedSentiment('Bearish')}
+                className={`px-2 py-0.5 rounded text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-0.5 ${
+                  selectedSentiment === 'Bearish'
+                    ? 'bg-rose-950 text-rose-300 border border-rose-800'
+                    : 'text-slate-400 hover:text-rose-400'
+                }`}
+                title="Hanya sentimen Bearish"
+              >
+                <span className="text-rose-400">▼</span>
+                <span>Bear</span>
+              </button>
+            </div>
+
+            {/* Active Filters Clear Button (inline) */}
+            {hasActiveFilters && (
+              <button
+                onClick={resetFilters}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition-colors cursor-pointer"
+                title="Reset filter"
+              >
+                <X className="w-3 h-3 text-slate-400" />
+                <span className="text-[11px]">Reset</span>
               </button>
             )}
           </div>
+        </div>
+      </div>
 
-          {/* Filter Pills Mata Uang / Pasangan */}
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-1 shrink-0">
-              Instrumen:
-            </span>
-            {CURRENCY_TAGS.map((curr) => (
-              <button
-                key={curr.id}
-                onClick={() => setSelectedCurrency(curr.id)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 transition-all cursor-pointer ${
-                  selectedCurrency === curr.id
-                    ? 'bg-[#107c41] text-white shadow-xs font-bold'
-                    : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                {curr.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Sub Filter: Kategori & Sentimen */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-100 dark:border-slate-800/80 text-xs">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-1">
-                Kategori:
-              </span>
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-2.5 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer ${
-                    selectedCategory === cat
-                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold'
-                      : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-1">
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-1">
-                Sentimen:
-              </span>
-              {(['ALL', 'Bullish', 'Bearish', 'Netral'] as const).map((sent) => (
-                <button
-                  key={sent}
-                  onClick={() => setSelectedSentiment(sent)}
-                  className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-colors cursor-pointer ${
-                    selectedSentiment === sent
-                      ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-bold'
-                      : 'text-gray-400 hover:text-gray-700 dark:hover:text-slate-300'
-                  }`}
-                >
-                  {sent === 'ALL' ? 'Semua' : sent}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* ============================================================ */}
+      {/* 3. DENSE SINGLE-COLUMN NEWS FEED (No cards, No blog slop) */}
+      {/* ============================================================ */}
+      <div className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 space-y-4">
+        
+        {/* Wire Header Meta Bar */}
+        <div className="flex items-center justify-between text-xs text-slate-400 font-mono border-b border-[#1e293b] pb-2 px-1">
+          <span>Menampilkan <strong className="text-white">{filteredNews.length}</strong> warta pasar</span>
+          <span className="text-slate-500 text-[11px]">Klik baris untuk melihat ringkasan pasar</span>
         </div>
 
-        {/* Counter Hasil Pencarian */}
-        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-slate-400 px-1">
-          <span>
-            Menampilkan <strong>{filteredNews.length}</strong> warta berita pasar
-          </span>
-          {(searchQuery || selectedCurrency !== 'ALL' || selectedCategory !== 'Semua Kategori' || selectedSentiment !== 'ALL') && (
+        {/* Empty State */}
+        {filteredNews.length === 0 ? (
+          <div className="py-16 text-center text-slate-500 space-y-2 border border-dashed border-[#1e293b] rounded">
+            <p className="text-xs font-mono">Tidak ada berita yang cocok dengan kriteria filter.</p>
             <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedCurrency('ALL');
-                setSelectedCategory('Semua Kategori');
-                setSelectedSentiment('ALL');
-              }}
-              className="text-[#107c41] dark:text-emerald-400 font-semibold hover:underline cursor-pointer flex items-center gap-1"
+              onClick={resetFilters}
+              className="text-xs text-slate-300 hover:text-white underline cursor-pointer font-mono"
             >
-              <span>Reset Semua Filter</span>
-            </button>
-          )}
-        </div>
-
-        {/* ============================================================ */}
-        {/* HERO FEATURED STORY (BREAKING MARKET HEADLINE) */}
-        {/* ============================================================ */}
-        {featuredItem && (
-          <div className="bg-gradient-to-br from-white via-white to-emerald-50/40 dark:from-[#111827] dark:via-[#111827] dark:to-emerald-950/20 rounded-xl p-5 sm:p-6 border border-emerald-300 dark:border-emerald-800/80 shadow-md space-y-3 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
-
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#107c41] text-white shadow-xs">
-                  <Flame className="w-3.5 h-3.5 text-amber-300" />
-                  Sorotan Utama Pasar
-                </span>
-                <span className={`px-2 py-0.5 rounded text-[11px] font-mono font-bold border ${getCurrencyBadgeStyle(featuredItem.currency)}`}>
-                  {featuredItem.currency}/USD
-                </span>
-                <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400">
-                  {featuredItem.category}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-1.5 text-xs text-gray-400 font-mono">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{featuredItem.publishedAt}</span>
-              </div>
-            </div>
-
-            <div>
-              <h2 className="text-base sm:text-xl font-extrabold text-gray-900 dark:text-white leading-snug">
-                {featuredItem.title}
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-300 mt-2 leading-relaxed">
-                {featuredItem.summary}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-slate-800 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400">Sumber:</span>
-                <strong className="text-gray-900 dark:text-white font-semibold">{featuredItem.source}</strong>
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded font-bold text-[11px] ${
-                  featuredItem.sentiment === 'Bullish'
-                    ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
-                    : featuredItem.sentiment === 'Bearish'
-                    ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
-                    : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300'
-                }`}>
-                  {featuredItem.sentiment === 'Bullish' && <TrendingUp className="w-3 h-3" />}
-                  {featuredItem.sentiment === 'Bearish' && <TrendingDown className="w-3 h-3" />}
-                  {featuredItem.sentiment === 'Netral' && <Minus className="w-3 h-3" />}
-                  <span>Sentimen {featuredItem.sentiment}</span>
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {onOpenChart && (
-                  <button
-                    onClick={() => handleJumpToChart(featuredItem.currency)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 font-semibold text-xs transition-colors cursor-pointer"
-                  >
-                    <LineChart className="w-3.5 h-3.5 text-[#107c41]" />
-                    <span>Lihat Chart {featuredItem.currency}</span>
-                  </button>
-                )}
-
-                {featuredItem.url && (
-                  <a
-                    href={featuredItem.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#107c41] hover:bg-[#0e6b37] text-white font-semibold text-xs transition-colors shadow-xs"
-                  >
-                    <span>Baca Laporan Asli</span>
-                    <ExternalLink className="w-3 h-3 text-emerald-100" />
-                  </a>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ============================================================ */}
-        {/* GRID DAFTAR WARTA BERITA PASAR */}
-        {/* ============================================================ */}
-        {displayFeed.length === 0 ? (
-          <div className="bg-white dark:bg-[#111827] rounded-xl p-10 text-center border border-gray-200 dark:border-slate-800 space-y-3">
-            <Newspaper className="w-10 h-10 text-gray-300 dark:text-slate-600 mx-auto" />
-            <h3 className="text-sm font-bold text-gray-700 dark:text-slate-300">
-              Tidak Ada Berita yang Sesuai
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-slate-400 max-w-sm mx-auto">
-              Tidak ditemukan artikel berita untuk kata kunci atau kombinasi filter yang Anda pilih.
-            </p>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedCurrency('ALL');
-                setSelectedCategory('Semua Kategori');
-                setSelectedSentiment('ALL');
-              }}
-              className="px-4 py-2 rounded-lg bg-[#107c41] text-white text-xs font-semibold hover:bg-[#0e6b37] transition-colors cursor-pointer"
-            >
-              Tampilkan Semua Berita
+              Reset semua filter
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {displayFeed.map((item) => (
-              <article
-                key={item.id}
-                className="bg-white dark:bg-[#111827] rounded-xl p-4 sm:p-5 border border-gray-200 dark:border-slate-800 shadow-xs hover:border-[#107c41]/50 hover:shadow-sm transition-all flex flex-col justify-between space-y-3"
-              >
-                <div className="space-y-2.5">
-                  {/* Meta Tag Header */}
-                  <div className="flex items-center justify-between text-xs gap-2">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className={`px-2 py-0.5 rounded font-mono font-bold text-[11px] border ${getCurrencyBadgeStyle(item.currency)}`}>
-                        {item.currency}
+          <div className="border border-[#1e293b] bg-[#0d1420] rounded divide-y divide-[#1e293b] overflow-hidden">
+            {filteredNews.map((item) => {
+              const isExpanded = expandedId === item.id;
+              const isBull = item.sentiment === 'Bullish';
+              const isBear = item.sentiment === 'Bearish';
+
+              return (
+                <div 
+                  key={item.id}
+                  className="hover:bg-[#131c2c] transition-colors"
+                >
+                  {/* MAIN ROW: Waktu | Indicator | Impact | Headline | Pair + % | Source */}
+                  <div
+                    onClick={() => setExpandedId(isExpanded ? null : item.id)}
+                    className="p-3 sm:px-4 sm:py-3 flex items-start sm:items-center justify-between gap-3 cursor-pointer group"
+                  >
+                    {/* Left: Indicator + Waktu */}
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      {/* Sentiment tiny directional marker */}
+                      <span
+                        className={`text-xs font-bold shrink-0 ${
+                          isBull ? 'text-emerald-400' : isBear ? 'text-rose-400' : 'text-slate-500'
+                        }`}
+                        title={`Sentimen ${item.sentiment}`}
+                      >
+                        {isBull ? '▲' : isBear ? '▼' : '—'}
                       </span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400">
-                        {item.category}
+
+                      {/* Time (Mono Tabular) */}
+                      <span className="font-mono text-xs text-slate-400 tabular-nums w-12 sm:w-16 shrink-0">
+                        {item.publishedAt}
                       </span>
-                      <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold ${
-                        item.sentiment === 'Bullish' 
-                          ? 'text-emerald-600 dark:text-emerald-400' 
-                          : item.sentiment === 'Bearish' 
-                          ? 'text-rose-600 dark:text-rose-400' 
-                          : 'text-gray-400 dark:text-slate-500'
-                      }`}>
-                        {item.sentiment === 'Bullish' && <TrendingUp className="w-3 h-3" />}
-                        {item.sentiment === 'Bearish' && <TrendingDown className="w-3 h-3" />}
-                        {item.sentiment === 'Netral' && <Minus className="w-3 h-3" />}
-                        <span>{item.sentiment}</span>
+
+                      {/* Impact Level Badge (Traders Tool) */}
+                      <span
+                        className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border shrink-0 ${
+                          item.impact === 'HIGH'
+                            ? 'text-rose-400 bg-rose-950/70 border-rose-900/80'
+                            : item.impact === 'MED'
+                            ? 'text-amber-400 bg-amber-950/70 border-amber-900/80'
+                            : 'text-slate-400 bg-slate-800/80 border-slate-700'
+                        }`}
+                        title={`Dampak Rilis: ${item.impact}`}
+                      >
+                        {item.impact}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1 text-gray-400 dark:text-slate-500 text-[11px] shrink-0 font-mono">
-                      <Clock className="w-3 h-3" />
-                      <span>{item.publishedAt}</span>
+                    {/* Middle: Headline */}
+                    <div className="flex-1 min-w-0 pr-2">
+                      <p className="text-xs sm:text-sm text-slate-100 font-semibold group-hover:text-emerald-400 transition-colors line-clamp-1 leading-normal">
+                        {item.title}
+                      </p>
+                    </div>
+
+                    {/* Right: Pair & Live % Change + Source + Expand Arrow */}
+                    <div className="flex items-center gap-2.5 shrink-0 text-xs font-mono">
+                      {/* Pair Badge with Movement */}
+                      {item.pair !== 'GLOBAL' && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onOpenChart) onOpenChart(item.pair);
+                          }}
+                          className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#182338] hover:bg-slate-700 text-slate-200 border border-[#243452] transition-colors cursor-pointer"
+                          title={`Buka live chart ${item.pair}`}
+                        >
+                          <span className="font-bold text-[11px] text-white">{item.pair}</span>
+                          <span className={`text-[10px] tabular-nums ${
+                            item.pairChange.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'
+                          }`}>
+                            {item.pairChange}
+                          </span>
+                        </button>
+                      )}
+
+                      {/* Source */}
+                      <span className="text-[11px] text-slate-400 hidden md:inline">
+                        {item.source}
+                      </span>
+
+                      {/* Toggle Expand Icon */}
+                      <span className="text-slate-500 group-hover:text-slate-300">
+                        {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Title & Summary */}
-                  <div>
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-snug line-clamp-2 hover:text-[#107c41] transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-gray-600 dark:text-slate-400 mt-2 leading-relaxed line-clamp-3">
-                      {item.summary}
-                    </p>
-                  </div>
+                  {/* EXPANDABLE INLINE DETAIL (Opens cleanly without jarring modal) */}
+                  {isExpanded && (
+                    <div className="bg-[#090d16] px-4 py-3 sm:px-6 sm:py-3.5 border-t border-[#1e293b] space-y-2.5 text-xs text-slate-300 animate-in fade-in duration-100">
+                      <div className="flex items-center justify-between gap-3 text-slate-400 font-mono text-[11px] flex-wrap">
+                        <div className="flex items-center gap-3">
+                          <span>Waktu Rilis: <strong className="text-slate-200">{item.timeWIB}</strong></span>
+                          <span>Kategori: <strong className="text-slate-200">{item.category}</strong></span>
+                          <span>Sentimen: <strong className={isBull ? 'text-emerald-400' : isBear ? 'text-rose-400' : 'text-slate-300'}>{item.sentiment}</strong></span>
+                        </div>
+                        <span>Sumber: <strong className="text-slate-200">{item.source}</strong></span>
+                      </div>
+
+                      <p className="text-xs leading-relaxed text-slate-200 font-sans">
+                        {item.summary}
+                      </p>
+
+                      <div className="flex items-center justify-end gap-3 pt-1 font-mono">
+                        {item.pair !== 'GLOBAL' && onOpenChart && (
+                          <button
+                            type="button"
+                            onClick={() => onOpenChart(item.pair)}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#162134] hover:bg-slate-700 text-slate-200 border border-[#243452] transition-colors cursor-pointer text-xs"
+                          >
+                            <LineChart className="w-3 h-3 text-emerald-400" />
+                            <span>Buka Live Chart {item.pair}</span>
+                          </button>
+                        )}
+
+                        {item.url && (
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-slate-400 hover:text-white transition-colors text-xs"
+                          >
+                            <span>Baca Laporan Lengkap</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-
-                {/* Footer Actions */}
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-slate-800/80 text-[11px] text-gray-500 dark:text-slate-400">
-                  <div className="flex items-center gap-1">
-                    <span>Sumber:</span>
-                    <strong className="text-gray-700 dark:text-slate-300 font-semibold">{item.source}</strong>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {onOpenChart && item.currency !== 'GLOBAL' && (
-                      <button
-                        type="button"
-                        onClick={() => handleJumpToChart(item.currency)}
-                        className="text-gray-500 dark:text-slate-400 hover:text-[#107c41] dark:hover:text-emerald-400 font-semibold flex items-center gap-1 cursor-pointer"
-                        title={`Buka live chart ${item.currency}`}
-                      >
-                        <LineChart className="w-3 h-3" />
-                        <span>Chart</span>
-                      </button>
-                    )}
-
-                    {item.url && (
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#107c41] dark:text-emerald-400 hover:underline font-bold flex items-center gap-0.5"
-                      >
-                        <span>Baca</span>
-                        <ChevronRight className="w-3 h-3" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </article>
-            ))}
+              );
+            })}
           </div>
         )}
 
