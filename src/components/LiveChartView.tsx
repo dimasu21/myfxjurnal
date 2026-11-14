@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, 
   CandlestickChart, 
@@ -6,8 +6,7 @@ import {
   LogIn, 
   Sun, 
   Moon,
-  Maximize2,
-  Minimize2
+  Info
 } from 'lucide-react';
 
 interface LiveChartViewProps {
@@ -19,7 +18,7 @@ const POPULAR_PAIRS = [
   { label: 'EUR/USD', symbol: 'FX:EURUSD' },
   { label: 'GBP/USD', symbol: 'FX:GBPUSD' },
   { label: 'USD/JPY', symbol: 'FX:USDJPY' },
-  { label: 'XAU/USD (Gold)', symbol: 'OANDA:XAUUSD' },
+  { label: 'XAU/USD (Gold Spot)', symbol: 'OANDA:XAUUSD' },
   { label: 'AUD/USD', symbol: 'FX:AUDUSD' },
   { label: 'USD/CAD', symbol: 'FX:USDCAD' },
   { label: 'USD/CHF', symbol: 'FX:USDCHF' },
@@ -51,6 +50,7 @@ export const LiveChartView: React.FC<LiveChartViewProps> = ({
   const [selectedSymbol, setSelectedSymbol] = useState(getInitialSymbol());
   const [interval, setInterval] = useState('15');
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Keyboard shortcut Esc to go back
   useEffect(() => {
@@ -63,10 +63,54 @@ export const LiveChartView: React.FC<LiveChartViewProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onBack]);
 
-  // TradingView Embed Widget URL
-  const widgetUrl = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview_widget&symbol=${encodeURIComponent(
-    selectedSymbol
-  )}&interval=${interval}&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=%5B%5D&theme=${theme}&style=1&timezone=Asia%2FJakarta&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=id&utm_source=localhost`;
+  // Injeksi Official TradingView Advanced Real-Time Chart Widget
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Bersihkan kontainer
+    containerRef.current.innerHTML = '';
+
+    const widgetContainer = document.createElement('div');
+    widgetContainer.className = 'tradingview-widget-container';
+    widgetContainer.style.height = '100%';
+    widgetContainer.style.width = '100%';
+
+    const widgetDiv = document.createElement('div');
+    widgetDiv.className = 'tradingview-widget-container__widget';
+    widgetDiv.style.height = '100%';
+    widgetDiv.style.width = '100%';
+    widgetContainer.appendChild(widgetDiv);
+
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    script.type = 'text/javascript';
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      autosize: true,
+      symbol: selectedSymbol,
+      interval: interval,
+      timezone: 'Asia/Jakarta',
+      theme: theme,
+      style: '1',
+      locale: 'id',
+      enable_publishing: false,
+      allow_symbol_change: true,
+      hide_top_toolbar: false,
+      hide_side_toolbar: false,
+      save_image: true,
+      calendar: false,
+      support_host: 'https://www.tradingview.com'
+    });
+
+    widgetContainer.appendChild(script);
+    containerRef.current.appendChild(widgetContainer);
+
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
+    };
+  }, [selectedSymbol, interval, theme]);
 
   // URL untuk membuka langsung di akun TradingView user
   const directTvUrl = `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(selectedSymbol)}&interval=${interval}`;
@@ -78,7 +122,7 @@ export const LiveChartView: React.FC<LiveChartViewProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
             title="Kembali ke lembar kerja Excel (Esc)"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -91,7 +135,7 @@ export const LiveChartView: React.FC<LiveChartViewProps> = ({
           <select
             value={selectedSymbol}
             onChange={(e) => setSelectedSymbol(e.target.value)}
-            className="bg-[#2a2e39] text-white border border-[#363a45] rounded-lg px-2.5 py-1 text-xs font-bold font-mono focus:outline-none focus:border-emerald-500"
+            className="bg-[#2a2e39] text-white border border-[#363a45] rounded-lg px-2.5 py-1 text-xs font-bold font-mono focus:outline-none focus:border-emerald-500 cursor-pointer"
           >
             {POPULAR_PAIRS.map((p) => (
               <option key={p.symbol} value={p.symbol}>
@@ -106,9 +150,9 @@ export const LiveChartView: React.FC<LiveChartViewProps> = ({
               <button
                 key={tf.value}
                 onClick={() => setInterval(tf.value)}
-                className={`px-2.5 py-1 rounded transition-colors ${
+                className={`px-2.5 py-1 rounded transition-colors cursor-pointer ${
                   interval === tf.value
-                    ? 'bg-emerald-600 text-white shadow-xs'
+                    ? 'bg-[#107c41] text-white shadow-xs'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -122,7 +166,7 @@ export const LiveChartView: React.FC<LiveChartViewProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))}
-            className="p-1.5 rounded-lg bg-[#2a2e39] hover:bg-[#363a45] text-slate-300 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg bg-[#2a2e39] hover:bg-[#363a45] text-slate-300 hover:text-white transition-colors cursor-pointer"
             title={theme === 'light' ? 'Beralih ke Dark Theme' : 'Beralih ke Light Theme'}
           >
             {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-yellow-400" />}
@@ -136,7 +180,7 @@ export const LiveChartView: React.FC<LiveChartViewProps> = ({
             title="Buka chart langsung di website TradingView dengan indikator & akun login Anda"
           >
             <LogIn className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Login Akun TradingView</span>
+            <span className="hidden sm:inline">Buka di TradingView</span>
             <span className="sm:hidden">TradingView</span>
             <ExternalLink className="w-3 h-3 text-blue-200" />
           </a>
@@ -144,13 +188,11 @@ export const LiveChartView: React.FC<LiveChartViewProps> = ({
       </div>
 
       {/* Chart Canvas: Full viewport */}
-      <div className="flex-1 w-full relative">
-        <iframe
-          key={`${selectedSymbol}-${interval}-${theme}`}
-          title="TradingView Real-Time Chart"
-          src={widgetUrl}
-          className="w-full h-full border-0 absolute inset-0"
-          allow="fullscreen"
+      <div className="flex-1 w-full h-full relative bg-[#131722] flex flex-col">
+        <div 
+          ref={containerRef} 
+          className="w-full h-full flex-1"
+          style={{ minHeight: '400px' }}
         />
       </div>
     </div>

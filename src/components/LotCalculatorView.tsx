@@ -92,10 +92,14 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
 
   // Update Entry Price otomatis saat ganti pair jika ada ticker live
   useEffect(() => {
-    if (currentTicker && !entryPrice) {
-      setEntryPrice(String(posisi === 'BUY' ? currentTicker.ask : currentTicker.bid));
+    if (currentTicker) {
+      const price = posisi === 'BUY' ? currentTicker.ask : currentTicker.bid;
+      setEntryPrice(String(price));
+      const diff = 30 * pairInfo.pipSize;
+      const estimatedSl = posisi === 'BUY' ? price - diff : price + diff;
+      setSlPrice(estimatedSl.toFixed(pairInfo.digits));
     }
-  }, [pair, currentTicker]);
+  }, [pair, currentTicker?.pair]);
 
   // Update Balance jika journalBalance berubah
   useEffect(() => {
@@ -190,7 +194,8 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
     // Kebutuhan Margin Estimasi
     const basePrice = entryNum > 0 ? entryNum : (currentTicker?.bid || 1);
     const notionalValue = standardLotFormatted * (pairInfo.category === 'commodity' ? 100 * basePrice : 100000 * (cleanPair.startsWith('USD') ? 1 : basePrice));
-    const requiredMargin = leverage > 0 ? notionalValue / leverage : notionalValue / 100;
+    const isUnlimitedLeverage = leverage === 0;
+    const requiredMargin = isUnlimitedLeverage ? 0 : (leverage > 0 ? notionalValue / leverage : notionalValue / 100);
 
     // Total Nilai Pip per Transaksi ($/pip)
     const activePipValue = standardLotFormatted * pipValuePerStandardLot;
@@ -203,7 +208,7 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
 
     // Cek Peringatan Risiko
     const isMicroWarning = rawLots < 0.01;
-    const isMarginWarning = requiredMargin > effectiveBalance;
+    const isMarginWarning = isUnlimitedLeverage ? false : requiredMargin > effectiveBalance;
     const isHighRiskWarning = calculatedRiskPct > 5;
 
     return {
@@ -667,13 +672,15 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
                 <select
                   value={leverage}
                   onChange={(e) => setLeverage(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded text-xs font-mono font-bold text-gray-900 dark:text-white focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded text-xs font-mono font-bold text-gray-900 dark:text-white focus:outline-none cursor-pointer"
                 >
                   <option value="100">1:100</option>
                   <option value="200">1:200</option>
                   <option value="500">1:500 (Standar Retail)</option>
                   <option value="1000">1:1000</option>
                   <option value="2000">1:2000</option>
+                  <option value="3000">1:3000</option>
+                  <option value="0">1:Unlimited (1:∞ - Exness / JustMarkets)</option>
                 </select>
               </div>
             </div>
@@ -723,9 +730,11 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
                 <div className="bg-black/15 rounded p-2.5">
                   <span className="text-emerald-200 block text-[10px] uppercase font-semibold">Margin Dibutuhkan</span>
                   <span className="text-base font-bold font-mono text-white mt-0.5 block">
-                    ${calculation.requiredMargin.toFixed(2)} USD
+                    {leverage === 0 ? '$0.00 USD' : `$${calculation.requiredMargin.toFixed(2)} USD`}
                   </span>
-                  <span className="text-[10px] text-emerald-300">(pada 1:{leverage})</span>
+                  <span className="text-[10px] text-emerald-300">
+                    {leverage === 0 ? '(1:Unlimited / Bebas Margin)' : `(pada 1:${leverage})`}
+                  </span>
                 </div>
               </div>
 
@@ -814,7 +823,9 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
               </div>
               <div className="flex justify-between">
                 <span>Margin Bebas Minimum:</span>
-                <strong className="text-gray-900 dark:text-white">${calculation.requiredMargin} USD</strong>
+                <strong className="text-gray-900 dark:text-white">
+                  {leverage === 0 ? '$0.00 USD (Unlimited)' : `$${calculation.requiredMargin} USD`}
+                </strong>
               </div>
             </div>
 

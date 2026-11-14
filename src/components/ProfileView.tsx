@@ -259,6 +259,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   <option value="1:500">1:500</option>
                   <option value="1:1000">1:1000</option>
                   <option value="1:2000">1:2000</option>
+                  <option value="1:3000">1:3000</option>
+                  <option value="1:Unlimited">1:Unlimited (1:∞ - Exness / JustMarkets)</option>
                 </select>
               </div>
             </div>
