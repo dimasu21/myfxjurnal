@@ -195,7 +195,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   };
 
   return (
-    <header className={`${isDarkMode ? 'bg-[#0f172a] border-b border-slate-700' : 'bg-[#107c41]'} text-white shadow-md select-none sticky top-0 z-30 transition-colors`}>
+    <header className={`hidden md:block ${isDarkMode ? 'bg-[#0f172a] border-b border-slate-700' : 'bg-[#107c41]'} text-white shadow-md select-none sticky top-0 z-30 transition-colors`}>
       {/* ============================================================ */}
       {/* 1. TOP BAR EXCEL (Centered container max-w-[1240px]) */}
       {/* ============================================================ */}

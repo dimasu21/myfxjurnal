@@ -95,3 +95,4 @@ export function handleGoogleAuthSuccess(googleProfile: {
   setCurrentSessionUser(newUser.id);
   return newUser;
 }
+
