@@ -115,9 +115,57 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
       setEntryPrice(String(price));
       
       // Berikan estimasi SL otomatis (misal 30 pips di bawah/atas harga)
-      const diff = 30 * pairInfo.pipSize;
+      const diff = customSlPips * pairInfo.pipSize;
       const estimatedSl = posisi === 'BUY' ? price - diff : price + diff;
       setSlPrice(estimatedSl.toFixed(pairInfo.digits));
+    }
+  };
+
+  // Handler sinkronisasi dua arah jika Jarak Pips diubah
+  const handlePipsChange = (newPips: number) => {
+    const validPips = Math.max(0.1, newPips);
+    setCustomSlPips(validPips);
+    const entryNum = parseFloat(entryPrice) || (currentTicker ? (posisi === 'BUY' ? currentTicker.ask : currentTicker.bid) : 0);
+    if (entryNum > 0) {
+      const diff = validPips * pairInfo.pipSize;
+      const newSl = posisi === 'BUY' ? entryNum - diff : entryNum + diff;
+      setSlPrice(newSl.toFixed(pairInfo.digits));
+    }
+  };
+
+  // Handler sinkronisasi dua arah jika Harga Stop Loss diketik manual
+  const handleSlPriceChange = (val: string) => {
+    setSlPrice(val);
+    const entryNum = parseFloat(entryPrice) || (currentTicker ? (posisi === 'BUY' ? currentTicker.ask : currentTicker.bid) : 0);
+    const slNum = parseFloat(val) || 0;
+    if (entryNum > 0 && slNum > 0) {
+      const rawDistance = Math.abs(entryNum - slNum);
+      const calculatedPips = parseFloat((rawDistance / pairInfo.pipSize).toFixed(1));
+      if (calculatedPips > 0) {
+        setCustomSlPips(calculatedPips);
+      }
+    }
+  };
+
+  // Handler jika Harga Entry diedit
+  const handleEntryPriceChange = (val: string) => {
+    setEntryPrice(val);
+    const entryNum = parseFloat(val) || 0;
+    if (entryNum > 0 && customSlPips > 0) {
+      const diff = customSlPips * pairInfo.pipSize;
+      const newSl = posisi === 'BUY' ? entryNum - diff : entryNum + diff;
+      setSlPrice(newSl.toFixed(pairInfo.digits));
+    }
+  };
+
+  // Handler jika Arah Posisi BUY/SELL diganti
+  const handlePosisiChange = (newPosisi: PositionType) => {
+    setPosisi(newPosisi);
+    const entryNum = parseFloat(entryPrice) || (currentTicker ? (newPosisi === 'BUY' ? currentTicker.ask : currentTicker.bid) : 0);
+    if (entryNum > 0 && customSlPips > 0) {
+      const diff = customSlPips * pairInfo.pipSize;
+      const newSl = newPosisi === 'BUY' ? entryNum - diff : entryNum + diff;
+      setSlPrice(newSl.toFixed(pairInfo.digits));
     }
   };
 
@@ -158,10 +206,10 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
         const rawDistance = Math.abs(entryNum - slNum);
         calculatedPips = rawDistance / pairInfo.pipSize;
       } else {
-        calculatedPips = 30; // default jika belum diinput
+        calculatedPips = Math.max(0.1, customSlPips);
       }
     } else {
-      calculatedPips = Math.max(1, customSlPips);
+      calculatedPips = Math.max(0.1, customSlPips);
     }
 
     // 3. Nilai Pip per 1 Standard Lot (100,000 units)
@@ -364,7 +412,7 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
                 <div className="grid grid-cols-2 gap-1.5">
                   <button
                     type="button"
-                    onClick={() => setPosisi('BUY')}
+                    onClick={() => handlePosisiChange('BUY')}
                     className={`py-2 px-3 text-xs font-bold rounded flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       posisi === 'BUY'
                         ? 'bg-emerald-600 text-white shadow-xs'
@@ -376,7 +424,7 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setPosisi('SELL')}
+                    onClick={() => handlePosisiChange('SELL')}
                     className={`py-2 px-3 text-xs font-bold rounded flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       posisi === 'SELL'
                         ? 'bg-rose-600 text-white shadow-xs'
@@ -570,7 +618,7 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
                         type="number"
                         step="any"
                         value={entryPrice}
-                        onChange={(e) => setEntryPrice(e.target.value)}
+                        onChange={(e) => handleEntryPriceChange(e.target.value)}
                         placeholder={`misal: ${currentTicker ? currentTicker.bid : '1.08500'}`}
                         className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded text-sm font-mono font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                       />
@@ -584,18 +632,54 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
                         type="number"
                         step="any"
                         value={slPrice}
-                        onChange={(e) => setSlPrice(e.target.value)}
+                        onChange={(e) => handleSlPriceChange(e.target.value)}
                         placeholder="misal: harga batas risiko"
                         className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded text-sm font-mono font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                       />
                     </div>
                   </div>
 
-                  <div className="p-2.5 rounded bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 flex items-center justify-between text-xs font-mono">
-                    <span className="text-gray-500 dark:text-slate-400">Jarak Stop Loss Dihitung:</span>
-                    <strong className="text-gray-900 dark:text-white font-bold">
-                      {calculation.pips} Pips
-                    </strong>
+                  {/* KOTAK JARAK PIPS (SEKARANG INTERAKTIF & BISA DIUBAH DUA ARAH) */}
+                  <div className="p-3 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-emerald-900 dark:text-emerald-300 block">
+                          Jarak Stop Loss:
+                        </span>
+                        <span className="text-[10px] text-gray-500 dark:text-slate-400">
+                          Ketik pips atau klik preset di bawah
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="number"
+                          min="1"
+                          step="any"
+                          value={customSlPips}
+                          onChange={(e) => handlePipsChange(parseFloat(e.target.value) || 1)}
+                          className="w-20 px-2 py-1 bg-white dark:bg-slate-800 border border-emerald-500 dark:border-emerald-600 rounded text-right text-xs font-mono font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        />
+                        <span className="text-xs font-mono font-bold text-emerald-800 dark:text-emerald-300">Pips</span>
+                      </div>
+                    </div>
+
+                    {/* Presets Cepat Pips */}
+                    <div className="flex gap-1.5 pt-1">
+                      {[15, 20, 25, 30, 50, 100].map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => handlePipsChange(p)}
+                          className={`flex-1 py-1 rounded text-xs font-mono font-semibold border transition-all cursor-pointer ${
+                            Math.round(customSlPips) === p
+                              ? 'bg-[#107c41] text-white border-[#107c41] shadow-xs'
+                              : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:border-emerald-500'
+                          }`}
+                        >
+                          {p}p
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -606,7 +690,7 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
                       min="1"
                       step="1"
                       value={customSlPips}
-                      onChange={(e) => setCustomSlPips(parseFloat(e.target.value) || 1)}
+                      onChange={(e) => handlePipsChange(parseFloat(e.target.value) || 1)}
                       className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded text-sm font-mono font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 pr-12"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">Pips</span>
@@ -618,10 +702,10 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
                       <button
                         key={p}
                         type="button"
-                        onClick={() => setCustomSlPips(p)}
+                        onClick={() => handlePipsChange(p)}
                         className={`flex-1 py-1 rounded text-xs font-mono font-semibold border transition-colors cursor-pointer ${
                           customSlPips === p
-                            ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-600'
+                            ? 'bg-[#107c41] text-white border-[#107c41]'
                             : 'border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-gray-100'
                         }`}
                       >
