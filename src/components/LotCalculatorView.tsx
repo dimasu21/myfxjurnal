@@ -449,22 +449,11 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
               </div>
             </div>
 
-            {/* 2. Saldo Akun (Tersinkronisasi Jurnal) */}
+            {/* 2. Saldo Akun */}
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-semibold text-gray-700 dark:text-slate-300">
-                  Saldo Akun Trading ($ USD)
-                </label>
-                {balance !== journalBalance && (
-                  <button
-                    type="button"
-                    onClick={() => setBalance(journalBalance)}
-                    className="text-[11px] text-[#107c41] dark:text-emerald-400 font-semibold hover:underline cursor-pointer"
-                  >
-                    Gunakan Saldo Jurnal (${journalBalance.toFixed(2)})
-                  </button>
-                )}
-              </div>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                Saldo Akun Trading ($ USD)
+              </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">$</span>
                 <input
