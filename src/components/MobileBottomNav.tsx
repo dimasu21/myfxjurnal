@@ -257,21 +257,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
               <button
                 onClick={() => {
-                  handleNavClick('statement');
-                }}
-                className="w-full p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-3 text-left transition-colors"
-              >
-                <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
-                  <Download className="w-4 h-4" />
-                </div>
-                <div>
-                  <strong className="block text-xs text-gray-900 dark:text-white">Statement Card Performa</strong>
-                  <span className="text-[10px] text-gray-500 dark:text-slate-400">Rapor prestasi trading untuk dibagikan</span>
-                </div>
-              </button>
-
-              <button
-                onClick={() => {
                   setActivePageView('sheet');
                   setIsMenuOpen(false);
                 }}

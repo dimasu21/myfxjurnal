@@ -24,7 +24,6 @@ import { HeatmapView } from './components/HeatmapView';
 import { CompoundingView } from './components/CompoundingView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { LiveChartView } from './components/LiveChartView';
-import { TraderStatementCardView } from './components/TraderStatementCardView';
 import { HomeView } from './components/HomeView';
 import { RealtimeNewsView } from './components/RealtimeNewsView';
 import { ProfileView } from './components/ProfileView';
@@ -84,7 +83,7 @@ export default function App() {
   const [chartPair, setChartPair] = useState('EUR/USD');
 
   // Full-Page Views: Beranda default jika ada user, atau sheet jurnal
-  type PageView = 'home' | 'sheet' | 'news' | 'profile' | 'lot-calc' | 'calendar' | 'heatmap' | 'compounding' | 'analytics' | 'chart' | 'statement';
+  type PageView = 'home' | 'sheet' | 'news' | 'profile' | 'lot-calc' | 'calendar' | 'heatmap' | 'compounding' | 'analytics' | 'chart';
   const [activePageView, setActivePageView] = useState<PageView>('home');
 
   // Active view: otomatis 'cards' di HP (< 768px), otomatis 'table' (sheet) di Desktop/Website (>= 768px)
@@ -489,7 +488,6 @@ export default function App() {
         onOpenEcoCalendar={() => setActivePageView((prev) => (prev === 'calendar' ? 'sheet' : 'calendar'))}
         onOpenHeatmap={() => setActivePageView((prev) => (prev === 'heatmap' ? 'sheet' : 'heatmap'))}
         onOpenCompounding={() => setActivePageView((prev) => (prev === 'compounding' ? 'sheet' : 'compounding'))}
-        onOpenStatementCard={() => setActivePageView((prev) => (prev === 'statement' ? 'sheet' : 'statement'))}
         onOpenNews={() => setActivePageView('news')}
         onOpenHome={() => setActivePageView('home')}
         onOpenProfile={() => setActivePageView('profile')}
@@ -577,6 +575,8 @@ export default function App() {
             trades={trades}
             onNavigate={(view) => setActivePageView(view)}
             onOpenNewTrade={handleAddNew}
+            isDarkMode={isDarkMode}
+            onToggleDarkMode={() => setIsDarkMode((prev) => !prev)}
           />
         ) : activePageView === 'news' ? (
           <RealtimeNewsView
@@ -650,12 +650,6 @@ export default function App() {
         ) : activePageView === 'chart' ? (
           <LiveChartView
             initialPair={chartPair}
-            onBack={() => setActivePageView('sheet')}
-          />
-        ) : activePageView === 'statement' ? (
-          <TraderStatementCardView
-            trades={trades}
-            documentTitle={documentTitle}
             onBack={() => setActivePageView('sheet')}
           />
         ) : activeSheet === 'history' ? (

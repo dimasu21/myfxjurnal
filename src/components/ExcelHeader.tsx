@@ -19,7 +19,6 @@ import {
   Calendar, 
   CandlestickChart, 
   TrendingUp, 
-  Award, 
   ChevronDown, 
   Database, 
   Moon, 
@@ -38,7 +37,6 @@ interface ExcelHeaderProps {
   onOpenEcoCalendar: () => void;
   onOpenHeatmap: () => void;
   onOpenCompounding: () => void;
-  onOpenStatementCard: () => void;
   onOpenNews?: () => void;
   onOpenHome?: () => void;
   onOpenProfile?: () => void;
@@ -79,7 +77,6 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
   onOpenEcoCalendar,
   onOpenHeatmap,
   onOpenCompounding,
-  onOpenStatementCard,
   showMarketSessions,
   onToggleMarketSessions,
   onExportExcel,
@@ -200,10 +197,10 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
       {/* 1. TOP BAR EXCEL (Centered container max-w-[1240px]) */}
       {/* ============================================================ */}
       <div className="border-b border-white/10">
-        <div className="max-w-[1240px] w-full mx-auto px-4 py-2 flex items-center justify-between gap-4 text-xs sm:text-sm">
+        <div className="max-w-[1240px] w-full mx-auto px-5 py-2.5 flex items-center justify-between gap-6 text-xs sm:text-sm">
           
           {/* Sisi Kiri: FX Logo Bersih */}
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             <img
               src="/fx-logo.png"
               alt="Fx"
@@ -228,11 +225,11 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
           </div>
 
           {/* Sisi Tengah: Tab Navigasi Utama Terpusat */}
-          <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none">
+          <nav className="flex items-center gap-2 overflow-x-auto scrollbar-none">
             {onOpenHome && (
               <button
                 onClick={onOpenHome}
-                className={`px-3 py-1 rounded text-xs font-semibold transition-all shrink-0 ${
+                className={`px-3.5 py-1.5 rounded text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                   activePageView === 'home'
                     ? 'bg-white text-[#107c41] font-bold shadow-xs'
                     : 'bg-white/10 hover:bg-white/20 text-white'
@@ -244,7 +241,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
 
             <button
               onClick={handleGoToSheet}
-              className={`px-3 py-1 rounded text-xs font-semibold transition-all shrink-0 ${
+              className={`px-3.5 py-1.5 rounded text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                 activePageView === 'sheet'
                   ? 'bg-white text-[#107c41] font-bold shadow-xs'
                   : 'bg-white/10 hover:bg-white/20 text-white'
@@ -256,7 +253,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
             {onOpenNews && (
               <button
                 onClick={onOpenNews}
-                className={`px-3 py-1 rounded text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                   activePageView === 'news'
                     ? 'bg-white text-[#107c41] font-bold shadow-xs'
                     : 'bg-white/10 hover:bg-white/20 text-white'
@@ -268,7 +265,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
 
             <button
               onClick={onOpenEcoCalendar}
-              className={`px-3 py-1 rounded text-xs font-semibold transition-all shrink-0 ${
+              className={`px-3.5 py-1.5 rounded text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                 activePageView === 'calendar'
                   ? 'bg-white text-[#107c41] font-bold shadow-xs'
                   : 'bg-white/10 hover:bg-white/20 text-white'
@@ -279,7 +276,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
 
             <button
               onClick={onOpenLotCalc}
-              className={`px-3 py-1 rounded text-xs font-semibold transition-all shrink-0 ${
+              className={`px-3.5 py-1.5 rounded text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                 activePageView === 'lot-calc'
                   ? 'bg-white text-[#107c41] font-bold shadow-xs'
                   : 'bg-white/10 hover:bg-white/20 text-white'
@@ -290,7 +287,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
 
             <button
               onClick={onOpenLiveChart}
-              className={`px-3 py-1 rounded text-xs font-semibold transition-all shrink-0 ${
+              className={`px-3.5 py-1.5 rounded text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                 activePageView === 'chart'
                   ? 'bg-white text-[#107c41] font-bold shadow-xs'
                   : 'bg-white/10 hover:bg-white/20 text-white'
@@ -298,7 +295,7 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
             >
               Live Chart
             </button>
-          </div>
+          </nav>
 
           {/* Sisi Kanan: Theme Toggle & User Profile */}
           <div className="flex items-center gap-2 shrink-0">
@@ -490,15 +487,6 @@ export const ExcelHeader: React.FC<ExcelHeaderProps> = ({
               >
                 <TrendingUp className="w-3.5 h-3.5 text-cyan-300" />
                 <span>Target Modal</span>
-              </button>
-
-              <button
-                onClick={onOpenStatementCard}
-                className="flex items-center gap-1 px-2 py-1 rounded hover:bg-white/15 text-emerald-100 hover:text-white transition-colors"
-                title="Statemen Trading"
-              >
-                <Award className="w-3.5 h-3.5 text-yellow-300" />
-                <span>Statemen</span>
               </button>
             </div>
 

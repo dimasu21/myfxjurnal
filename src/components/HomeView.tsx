@@ -7,9 +7,7 @@ import {
   BookOpen, 
   TrendingUp, 
   Clock, 
-  ArrowRight, 
-  Radio, 
-  SlidersHorizontal, 
+  Newspaper,
   Sun, 
   Moon, 
   ChevronRight, 
@@ -24,6 +22,8 @@ interface HomeViewProps {
   trades: Trade[];
   onNavigate: (view: any) => void;
   onOpenNewTrade: () => void;
+  isDarkMode?: boolean;
+  onToggleDarkMode?: () => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
@@ -31,6 +31,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   trades,
   onNavigate,
   onOpenNewTrade,
+  isDarkMode = false,
+  onToggleDarkMode,
 }) => {
   const [activeTab, setActiveTab] = useState<'my-account' | 'watchlist'>('my-account');
 
@@ -93,26 +95,72 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   return (
     <div className="flex-1 flex flex-col bg-[#f4f7f9] dark:bg-[#0f172a] text-gray-900 dark:text-slate-100 overflow-y-auto">
+      {/* ============================================================ */}
+      {/* MOBILE TOP HEADER (Lega, Bersih & Terstruktur) */}
+      {/* ============================================================ */}
+      <div className="md:hidden bg-white dark:bg-[#111827] border-b border-gray-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between gap-3 sticky top-0 z-20">
+        <div className="flex items-center gap-3 min-w-0">
+          <img
+            src="/fx-logo.png"
+            alt="Fx"
+            className="h-7 w-auto object-contain shrink-0"
+          />
+          <div className="min-w-0">
+            <h1 className="text-sm font-bold text-gray-900 dark:text-white truncate leading-tight">
+              Halo, {user.username || 'Trader'}
+            </h1>
+            <p className="text-[11px] text-gray-500 dark:text-slate-400 truncate">
+              {user.broker ? `${user.broker}${user.accountType ? ` • ${user.accountType}` : ''}` : 'Ringkasan Jurnal Trading'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {onToggleDarkMode && (
+            <button
+              type="button"
+              onClick={onToggleDarkMode}
+              className="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+              title={isDarkMode ? 'Mode Terang' : 'Mode Gelap'}
+            >
+              {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => onNavigate('profile')}
+            className="w-8 h-8 rounded-full overflow-hidden bg-[#107c41] text-white flex items-center justify-center text-xs font-bold border border-emerald-700/30 shrink-0"
+            title="Profil Saya"
+          >
+            {user.avatarUrl ? (
+              <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
+            ) : (
+              <span>{(user.username || 'T').charAt(0).toUpperCase()}</span>
+            )}
+          </button>
+        </div>
+      </div>
+
       {/* Centered Main Container */}
-      <div className="flex-1 max-w-[1240px] w-full mx-auto p-4 sm:p-6 pb-24 md:pb-10 space-y-6">
+      <div className="flex-1 max-w-[1240px] w-full mx-auto p-3.5 sm:p-6 pb-24 md:pb-10 space-y-5 sm:space-y-6">
 
         {/* 2-Column Grid Layout Terpusat */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
           
           {/* ============================================================ */}
           {/* KOLOM KIRI (LEBAR ~70%): Akun Saya & Riwayat Entri Jurnal */}
           {/* ============================================================ */}
-          <div className="lg:col-span-8 space-y-6">
+          <div className="lg:col-span-8 space-y-5 sm:space-y-6">
             
             {/* 1. KOTAK 'AKUN SAYA' & PORTOFOLIO */}
             <div className="bg-white dark:bg-[#1a2232] border border-gray-200 dark:border-slate-800 rounded shadow-xs overflow-hidden">
               
-              {/* Tabs Bar Header */}
-              <div className="bg-[#f8fafc] dark:bg-[#141a24] border-b border-gray-200 dark:border-slate-800 px-4 pt-3 flex items-center justify-between">
-                <div className="flex items-center gap-1">
+              {/* Tabs Bar & Actions Header (Dipisah rapi di mobile agar tidak sempit) */}
+              <div className="bg-[#f8fafc] dark:bg-[#141a24] border-b border-gray-200 dark:border-slate-800 px-3.5 sm:px-4 pt-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+                <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-1">
                   <button
                     onClick={() => setActiveTab('my-account')}
-                    className={`px-4 py-2 text-xs font-bold transition-all rounded-t border-t-2 ${
+                    className={`px-3 sm:px-4 py-2 text-xs font-bold transition-all rounded-t border-t-2 text-center ${
                       activeTab === 'my-account'
                         ? 'bg-white dark:bg-[#1a2232] text-gray-900 dark:text-white border-t-[#107c41] border-x border-gray-200 dark:border-slate-800 -mb-[1px]'
                         : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 border-t-transparent'
@@ -122,7 +170,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   </button>
                   <button
                     onClick={() => setActiveTab('watchlist')}
-                    className={`px-4 py-2 text-xs font-bold transition-all rounded-t border-t-2 ${
+                    className={`px-3 sm:px-4 py-2 text-xs font-bold transition-all rounded-t border-t-2 text-center ${
                       activeTab === 'watchlist'
                         ? 'bg-white dark:bg-[#1a2232] text-gray-900 dark:text-white border-t-[#107c41] border-x border-gray-200 dark:border-slate-800 -mb-[1px]'
                         : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 border-t-transparent'
@@ -132,7 +180,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2 pb-2">
+                {/* Desktop Action Buttons */}
+                <div className="hidden sm:flex items-center gap-2.5 pb-2">
                   <button
                     onClick={onOpenNewTrade}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-800 dark:text-gray-200 rounded text-xs font-semibold cursor-pointer border border-gray-300 dark:border-slate-700 transition-colors"
@@ -150,8 +199,26 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
               </div>
 
+              {/* Mobile Dedicated Action Bar (Lega & Nyaman dijempol) */}
+              <div className="sm:hidden grid grid-cols-2 gap-2.5 px-3.5 py-3 bg-white dark:bg-[#1a2232] border-b border-gray-100 dark:border-slate-800/80">
+                <button
+                  onClick={onOpenNewTrade}
+                  className="flex items-center justify-center gap-1.5 py-2 px-3 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-800 dark:text-gray-200 rounded text-xs font-semibold border border-gray-200 dark:border-slate-700 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Entri Baru</span>
+                </button>
+                <button
+                  onClick={() => onNavigate('sheet')}
+                  className="flex items-center justify-center gap-1.5 py-2 px-3 bg-[#107c41] hover:bg-[#0e6b37] text-white rounded text-xs font-bold shadow-xs transition-colors"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>Buka Sheet</span>
+                </button>
+              </div>
+
               {/* Tab Content */}
-              <div className="p-5 space-y-5">
+              <div className="p-4 sm:p-5 space-y-5">
 
                 {/* 6 Metrik KPI Finansial Riil (Dari Jurnal) */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center">
@@ -266,8 +333,53 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </button>
               </div>
 
-              {/* Table Rows */}
-              <div className="overflow-x-auto">
+              {/* Mobile Compact List View (Rapi tanpa scroll horizontal sempit) */}
+              <div className="sm:hidden divide-y divide-gray-100 dark:divide-slate-800/70">
+                {trades.length === 0 ? (
+                  <div className="py-8 px-4 text-center text-gray-500 text-xs">
+                    Belum ada transaksi tercatat. Ketuk "Entri Baru" di atas untuk mencatat.
+                  </div>
+                ) : (
+                  trades.slice(-5).reverse().map((t) => {
+                    const isWin = t.status === 'WIN' || Number(t.pips) > 0;
+                    const isLoss = t.status === 'LOSS' || Number(t.pips) < 0;
+                    return (
+                      <div key={t.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                        <div className="min-w-0 space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <strong className="text-xs font-mono text-gray-900 dark:text-white">{t.pair}</strong>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                              t.posisi === 'BUY' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                            }`}>
+                              {t.posisi}
+                            </span>
+                            <span className="text-[11px] font-mono text-gray-500 dark:text-slate-400">{t.lot}</span>
+                          </div>
+                          <span className="text-[10px] text-gray-500 block truncate">
+                            {t.tanggal}{t.strategi ? ` • ${t.strategi}` : ''}
+                          </span>
+                        </div>
+
+                        <div className="text-right shrink-0 space-y-0.5">
+                          <span className={`block text-xs font-bold font-mono ${
+                            isWin ? 'text-emerald-600' : isLoss ? 'text-rose-600' : 'text-gray-500'
+                          }`}>
+                            {t.pnl !== undefined ? (
+                              Number(t.pnl) >= 0 ? `+$${t.pnl}` : `-$${Math.abs(Number(t.pnl))}`
+                            ) : '-'}
+                          </span>
+                          <span className="text-[10px] font-mono text-gray-500 block">
+                            {Number(t.pips) > 0 ? `+${t.pips}` : t.pips} pips
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Desktop Table Rows */}
+              <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-[#f8fafc] dark:bg-[#141a24] text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-slate-800 font-semibold">
                     <tr>
@@ -396,7 +508,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div className="bg-white dark:bg-[#1a2232] border border-gray-200 dark:border-slate-800 rounded shadow-xs overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Radio className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
+                  <Newspaper className="w-3.5 h-3.5 text-[#107c41] dark:text-emerald-400" />
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white">
                     Berita Forex Terkini
                   </h3>
