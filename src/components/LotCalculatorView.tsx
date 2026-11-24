@@ -46,6 +46,7 @@ const AVAILABLE_PAIRS = [
   { pair: 'NZD/USD', name: 'New Zealand Dollar / USD', digits: 5, pipSize: 0.0001, category: 'forex' },
   { pair: 'EUR/JPY', name: 'Euro / Japanese Yen', digits: 3, pipSize: 0.01, category: 'jpy' },
   { pair: 'GBP/JPY', name: 'British Pound / Japanese Yen', digits: 3, pipSize: 0.01, category: 'jpy' },
+  { pair: 'NAS100', name: 'NASDAQ 100 (NAS100 / US100 / USTEC / NDX)', digits: 1, pipSize: 1.0, category: 'index' },
   { pair: 'BTC/USD', name: 'Bitcoin / US Dollar', digits: 1, pipSize: 1.0, category: 'crypto' },
 ];
 
@@ -225,6 +226,9 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
     } else if (pairInfo.category === 'crypto') {
       // BTC/USD: 1 lot = 1 BTC. $1 move = $1 / lot
       pipValuePerStandardLot = 1;
+    } else if (pairInfo.category === 'index') {
+      // NASDAQ 100 (NAS100 / US100 / USTEC): 1 lot = 1 kontrak indeks. 1.0 point move = $1 / lot
+      pipValuePerStandardLot = 1;
     }
 
     // 4. Hitung Ukuran Lot Matematis
@@ -237,11 +241,18 @@ export const LotCalculatorView: React.FC<LotCalculatorViewProps> = ({
     const rawLotPrecision = parseFloat(rawLots.toFixed(4));
 
     // Kontrak / Units
-    const units = Math.round(standardLotFormatted * (pairInfo.category === 'commodity' ? 100 : 100000));
+    const contractSize = pairInfo.category === 'commodity' ? 100 : (pairInfo.category === 'index' || pairInfo.category === 'crypto') ? 1 : 100000;
+    const units = Math.round(standardLotFormatted * contractSize);
 
     // Kebutuhan Margin Estimasi
     const basePrice = entryNum > 0 ? entryNum : (currentTicker?.bid || 1);
-    const notionalValue = standardLotFormatted * (pairInfo.category === 'commodity' ? 100 * basePrice : 100000 * (cleanPair.startsWith('USD') ? 1 : basePrice));
+    const notionalValue = standardLotFormatted * (
+      pairInfo.category === 'commodity'
+        ? 100 * basePrice
+        : (pairInfo.category === 'index' || pairInfo.category === 'crypto')
+        ? 1 * basePrice
+        : 100000 * (cleanPair.startsWith('USD') ? 1 : basePrice)
+    );
     const isUnlimitedLeverage = leverage === 0;
     const requiredMargin = isUnlimitedLeverage ? 0 : (leverage > 0 ? notionalValue / leverage : notionalValue / 100);
 

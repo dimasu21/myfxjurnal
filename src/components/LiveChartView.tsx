@@ -23,6 +23,7 @@ const POPULAR_PAIRS = [
   { label: 'USD/CAD', symbol: 'FX:USDCAD' },
   { label: 'USD/CHF', symbol: 'FX:USDCHF' },
   { label: 'NZD/USD', symbol: 'FX:NZDUSD' },
+  { label: 'NAS100 / US100 (NASDAQ 100)', symbol: 'PEPPERSTONE:NAS100' },
   { label: 'BTC/USD', symbol: 'BINANCE:BTCUSDT' },
 ];
 
@@ -42,6 +43,7 @@ export const LiveChartView: React.FC<LiveChartViewProps> = ({
   const getInitialSymbol = () => {
     const clean = initialPair.toUpperCase().trim();
     if (clean.includes('XAU') || clean.includes('GOLD')) return 'OANDA:XAUUSD';
+    if (clean.includes('NAS') || clean.includes('US100') || clean.includes('USTEC') || clean.includes('NDX')) return 'PEPPERSTONE:NAS100';
     if (clean.includes('BTC')) return 'BINANCE:BTCUSDT';
     const found = POPULAR_PAIRS.find((p) => p.label.startsWith(clean));
     return found ? found.symbol : `FX:${clean.replace('/', '')}`;

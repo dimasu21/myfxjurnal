@@ -12,6 +12,7 @@ const INITIAL_TICKERS: ForexTicker[] = [
   { pair: 'USD/CHF', bid: 0.8386, ask: 0.8389, change: 0.05, high: 0.8420, low: 0.8350, digits: 4 },
   { pair: 'NZD/USD', bid: 0.5527, ask: 0.5530, change: -0.28, high: 0.5570, low: 0.5500, digits: 4 },
   { pair: 'BTC/USD', bid: 66330.0, ask: 66350.0, change: 2.45, high: 67200.0, low: 65100.0, digits: 1 },
+  { pair: 'NAS100', bid: 26256.6, ask: 26258.4, change: 0.45, high: 26350.0, low: 26100.0, digits: 1 },
 ];
 
 export function useForexTickers() {
@@ -19,22 +20,47 @@ export function useForexTickers() {
   const [isLive, setIsLive] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
-  // 1. Fetch harga pasar riil dari server API publik (Binance & Open Exchange API)
+  // 1. Fetch harga pasar riil dari server API publik (Binance, ExchangeRate, & NASDAQ Proxy)
   useEffect(() => {
     let isMounted = true;
 
     async function syncRealMarketPrices() {
       try {
-        const [goldRes, btcRes, forexRes] = await Promise.allSettled([
+        const [goldRes, btcRes, forexRes, nasdaqRes] = await Promise.allSettled([
           fetch('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT').then((r) => r.json()),
           fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT').then((r) => r.json()),
           fetch('https://open.er-api.com/v6/latest/USD').then((r) => r.json()),
+          fetch('/api/nasdaq').then((r) => r.json()),
         ]);
 
         if (!isMounted) return;
 
         setTickers((prev) => {
           return prev.map((item) => {
+            // NASDAQ 100 (NAS100 / US100 / USTEC)
+            if (item.pair === 'NAS100' && nasdaqRes.status === 'fulfilled' && nasdaqRes.value) {
+              const raw = nasdaqRes.value;
+              const meta = raw?.chart?.result?.[0]?.meta;
+              const livePrice = Number(raw.price ?? meta?.regularMarketPrice);
+              if (livePrice > 1000) {
+                const prevClose = Number(raw.prevClose ?? meta?.chartPreviousClose ?? livePrice);
+                const pctChange = raw.change !== undefined
+                  ? Number(raw.change)
+                  : prevClose > 0
+                  ? Number((((livePrice - prevClose) / prevClose) * 100).toFixed(2))
+                  : item.change;
+                const bid = parseFloat(livePrice.toFixed(1));
+                const ask = parseFloat((bid + 1.8).toFixed(1));
+                return {
+                  ...item,
+                  bid,
+                  ask,
+                  change: pctChange,
+                  high: Number(raw.high ?? meta?.regularMarketDayHigh ?? item.high),
+                  low: Number(raw.low ?? meta?.regularMarketDayLow ?? item.low),
+                };
+              }
+            }
             // Gold Spot (PAXG 1:1 Troy Ounce Emas Murni)
             if (item.pair === 'XAU/USD' && goldRes.status === 'fulfilled' && goldRes.value?.price) {
               const liveGold = parseFloat(goldRes.value.price);
@@ -118,7 +144,7 @@ export function useForexTickers() {
           const pipScale = item.digits === 4 ? 0.0001 : item.digits === 2 ? 0.01 : 1.0;
           const delta = (Math.floor(Math.random() * 5) - 2) * pipScale;
           const newBid = Math.max(0.0001, parseFloat((item.bid + delta).toFixed(item.digits)));
-          const spread = item.digits === 4 ? 0.0002 : item.digits === 2 ? 0.03 : 15;
+          const spread = item.digits === 4 ? 0.0002 : item.digits === 2 ? 0.03 : item.pair === 'NAS100' ? 1.8 : 15;
           const newAsk = parseFloat((newBid + spread).toFixed(item.digits));
 
           return {

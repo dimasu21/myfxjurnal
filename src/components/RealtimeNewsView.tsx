@@ -27,6 +27,7 @@ const INSTRUMENT_TABS = [
   { id: 'ALL', label: 'Semua' },
   { id: 'USD', label: 'USD' },
   { id: 'XAU', label: 'XAU' },
+  { id: 'NAS100', label: 'NAS100' },
   { id: 'EUR', label: 'EUR' },
   { id: 'GBP', label: 'GBP' },
   { id: 'JPY', label: 'JPY' },

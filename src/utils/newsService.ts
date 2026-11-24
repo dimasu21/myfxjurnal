@@ -2,7 +2,7 @@ export interface ForexNewsItem {
   id: string;
   title: string;
   summary: string;
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'XAU' | 'AUD' | 'CAD' | 'BTC' | 'GLOBAL';
+  currency: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'XAU' | 'NAS100' | 'AUD' | 'CAD' | 'BTC' | 'GLOBAL';
   pair: string;
   pairChange: string;
   category: 'Bank Sentral' | 'Komoditas' | 'Teknikal' | 'Ekonomi & CPI' | 'Geopolitik';
@@ -66,6 +66,14 @@ export function detectImpact(text: string): 'HIGH' | 'MED' | 'LOW' {
 // Deteksi Mata Uang & Pair Utama
 export function detectCurrency(text: string): { currency: ForexNewsItem['currency']; pair: string; pairChange: string } {
   const lower = text.toLowerCase();
+  if (
+    lower.includes('nasdaq') || lower.includes('nas100') || lower.includes('us100') || 
+    lower.includes('ustec') || lower.includes('ndx') || lower.includes('ixic') ||
+    lower.includes('nvidia') || lower.includes('nvda') || lower.includes('apple') || 
+    lower.includes('tech stock') || lower.includes('qqq') || lower.includes('wall street')
+  ) {
+    return { currency: 'NAS100', pair: 'NAS100', pairChange: '+0.45%' };
+  }
   if (lower.includes('gold') || lower.includes('xau') || lower.includes('emas') || lower.includes('bullion')) {
     return { currency: 'XAU', pair: 'XAU/USD', pairChange: '+0.85%' };
   }
@@ -145,6 +153,22 @@ export const CURATED_MARKET_NEWS: ForexNewsItem[] = [
     timestamp: NOW - 4 * 60000,
     source: 'FXStreet',
     url: 'https://www.fxstreet.com/markets/commodities/metals/gold',
+    sentiment: 'Bullish',
+  },
+  {
+    id: 'c-nas-1',
+    title: 'NASDAQ 100 (NAS100 / US100) Menguji Zona Resistance 26.300 Seiring Reli Saham Semikonduktor & AI',
+    summary: 'Kinerja solid saham teknologi berkapitalisasi besar (Nvidia, Apple, Microsoft) menjaga momentum bullish indeks saham AS meski imbal hasil Treasury berfluktuasi.',
+    currency: 'NAS100',
+    pair: 'NAS100',
+    pairChange: '+0.45%',
+    category: 'Teknikal',
+    impact: 'HIGH',
+    publishedAt: '7m',
+    timeWIB: formatTimeWIB(NOW - 7 * 60000),
+    timestamp: NOW - 7 * 60000,
+    source: 'Yahoo NASDAQ',
+    url: 'https://finance.yahoo.com/quote/%5ENDX',
     sentiment: 'Bullish',
   },
   {
@@ -334,6 +358,7 @@ export async function fetchLiveMarketNews(): Promise<ForexNewsItem[]> {
   const feeds = [
     { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.fxstreet.com/rss/news', source: 'FXStreet' },
     { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.forexlive.com/feed/news', source: 'ForexLive' },
+    { url: 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent('https://finance.yahoo.com/rss/headline?s=%5EIXIC'), source: 'Yahoo NASDAQ' },
     { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://finance.yahoo.com/news/rssindex', source: 'Yahoo Finance' },
   ];
 
